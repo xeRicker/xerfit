@@ -25,6 +25,7 @@ class Store {
         ]).map((p, i) => ({
             color: p.color || ['#00ff36', '#5de9ff', '#c595ff'][i % 3],
             icon: p.icon || ['egg', 'chicken', 'grain'][i % 3],
+            favorite: Boolean(p.favorite),
             defaultMeal: mealDefaults.includes(p.defaultMeal) ? p.defaultMeal : 'global',
             ...p
         }));
@@ -66,6 +67,16 @@ class Store {
 
     deleteProduct(id) {
         this.state.products = this.state.products.filter(p => p.id !== id);
+        StorageService.save('db/products', this.state.products);
+        this.notify();
+    }
+
+    toggleFavoriteProduct(id) {
+        this.state.products = this.state.products.map(product => (
+            String(product.id) === String(id)
+                ? { ...product, favorite: !product.favorite }
+                : product
+        ));
         StorageService.save('db/products', this.state.products);
         this.notify();
     }
