@@ -7,7 +7,7 @@
 }
 
 body {
-    background: radial-gradient(circle at 20% -20%, rgba(0, 255, 54, 0.15), transparent 40%), var(--bg-app);
+    background: radial-gradient(circle at 20% -20%, rgba(37, 150, 190, 0.2), transparent 42%), var(--bg-app);
     color: var(--text-main);
     overflow: hidden;
     height: 100dvh;
@@ -30,15 +30,54 @@ button { background: transparent; cursor: pointer; }
     height: 100%;
 }
 
+#top-brand {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 110;
+    background: rgba(4, 8, 12, 0.96);
+    border-bottom: 1px solid var(--line-soft);
+    padding: calc(var(--safe-top) + 8px) 16px 10px;
+    text-align: center;
+}
+
+.brand-title {
+    font-family: var(--font-head);
+    font-size: 30px;
+    font-weight: 800;
+    font-style: italic;
+    letter-spacing: 1.6px;
+    color: var(--accent-main);
+    text-shadow: 0 0 14px rgba(37, 150, 190, 0.35);
+    line-height: 1;
+}
+
+.brand-alpha {
+    font-family: var(--font-head);
+    display: inline-block;
+    margin-top: 2px;
+    padding: 2px 8px;
+    border-radius: 999px;
+    border: 1px solid var(--line-strong);
+    color: var(--accent-cyan);
+    font-size: 11px;
+    letter-spacing: 1.1px;
+    font-weight: 700;
+}
+
 .view-container {
     flex: 1;
     overflow-y: auto;
     overflow-x: hidden;
     overscroll-behavior-y: contain;
+    padding-top: calc(var(--safe-top) + 76px);
     padding-bottom: calc(84px + var(--safe-bottom));
 }
 
-h1, h2, h3, p, span, div {
-    overflow-wrap: anywhere;
-    word-break: break-word;
+h1, h2, h3 {
+    font-family: var(--font-head);
+    font-style: italic;
 }
+
+h1, h2, h3, p, span, div { overflow-wrap: anywhere; word-break: break-word; }
