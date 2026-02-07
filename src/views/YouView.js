@@ -53,6 +53,5 @@ export class YouView extends Component {
         if (save) save.disabled = !this.hasChanges(state);
     }
     }
-
     destroy() { this.unsub(); 
 }
