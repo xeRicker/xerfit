@@ -5,10 +5,11 @@ export class DayStrip extends Component {
     constructor(container) {
         super(container);
         this.days = this.generateDays();
+        this.lastDate = null;
+        this.didInitialScroll = false;
     }
 
     generateDays() {
-        // Generate 14 days centered on today
         const days = [];
         for (let i = -7; i <= 7; i++) {
             const d = new Date();
@@ -30,22 +31,22 @@ export class DayStrip extends Component {
             const hasData = logs[dateStr] && logs[dateStr].length > 0;
 
             return `
-                <div class="day-pill ${isToday ? 'active' : ''} ${hasData ? 'has-data' : ''}" 
-                     data-date="${dateStr}">
+                <button class="day-pill ${isToday ? 'active' : ''} ${hasData ? 'has-data' : ''}" data-date="${dateStr}">
                     <span class="day-name">${dayName}</span>
                     <span class="day-num">${dayNum}</span>
                     <div class="day-indicator"></div>
-                </div>
+                </button>
             `;
         }).join('');
 
         this.container.innerHTML = `<div class="day-strip">${html}</div>`;
 
-        // Auto scroll to active
-        setTimeout(() => {
-            const active = this.container.querySelector('.active');
-            if(active) active.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
-        }, 100);
+        const active = this.container.querySelector('.active');
+        if (active && (!this.didInitialScroll || this.lastDate !== current)) {
+            active.scrollIntoView({ behavior: this.didInitialScroll ? 'smooth' : 'auto', inline: 'center', block: 'nearest' });
+            this.didInitialScroll = true;
+        }
+        this.lastDate = current;
 
         this.container.querySelectorAll('.day-pill').forEach(el => {
             el.addEventListener('click', () => store.setDate(el.dataset.date));

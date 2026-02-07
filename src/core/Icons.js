@@ -1,11 +1,17 @@
 export const Icons = {
-    days: `<svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2" stroke="currentColor" stroke-width="2" fill="none"/><line x1="16" y1="2" x2="16" y2="6" stroke="currentColor" stroke-width="2"/><line x1="8" y1="2" x2="8" y2="6" stroke="currentColor" stroke-width="2"/><line x1="3" y1="10" x2="21" y2="10" stroke="currentColor" stroke-width="2"/></svg>`,
-
-    products: `<svg viewBox="0 0 24 24"><path d="M4 10h16v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V10z" stroke="currentColor" stroke-width="2" fill="none"/><path d="M8 10V6a4 4 0 0 1 8 0v4" stroke="currentColor" stroke-width="2" fill="none"/></svg>`,
-
+    days: `<svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="17" rx="3" stroke="currentColor" stroke-width="2" fill="none"/><line x1="3" y1="10" x2="21" y2="10" stroke="currentColor" stroke-width="2"/><line x1="8" y1="2.5" x2="8" y2="6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="16" y1="2.5" x2="16" y2="6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>`,
+    products: `<svg viewBox="0 0 24 24"><path d="M9 4h6l1 3h3v13H5V7h3l1-3Z" stroke="currentColor" stroke-width="2" fill="none"/><line x1="12" y1="10" x2="12" y2="16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>`,
     user: `<svg viewBox="0 0 24 24"><circle cx="12" cy="7" r="4" stroke="currentColor" stroke-width="2" fill="none"/><path d="M4 21v-2a4 4 0 0 1 4-4h8a4 4 0 0 1 4 4v2" stroke="currentColor" stroke-width="2" fill="none"/></svg>`,
-
     plus: `<svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="5" y1="12" x2="19" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>`,
-
-    trash: `<svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6" stroke="currentColor" stroke-width="2" fill="none"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" stroke="currentColor" stroke-width="2" fill="none"/></svg>`
+    close: `<svg viewBox="0 0 24 24"><line x1="6" y1="6" x2="18" y2="18" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/><line x1="18" y1="6" x2="6" y2="18" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>`,
+    check: `<svg viewBox="0 0 24 24"><polyline points="4 12 10 18 20 7" stroke="currentColor" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+    breakfast: `<svg viewBox="0 0 24 24"><path d="M4 14a4 4 0 0 0 4 4h8a4 4 0 0 0 0-8H8" stroke="currentColor" stroke-width="2" fill="none"/><path d="M8 10c0-3 2-5 4-5" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></svg>`,
+    lunch: `<svg viewBox="0 0 24 24"><path d="M4 12h16" stroke="currentColor" stroke-width="2"/><path d="M6 7v10" stroke="currentColor" stroke-width="2"/><path d="M18 7v10" stroke="currentColor" stroke-width="2"/><rect x="8" y="9" width="8" height="6" rx="2" stroke="currentColor" stroke-width="2" fill="none"/></svg>`,
+    dinner: `<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="7" stroke="currentColor" stroke-width="2" fill="none"/><circle cx="12" cy="12" r="2" fill="currentColor"/></svg>`,
+    calories: `<svg viewBox="0 0 24 24"><path d="M12 3c5 4 6 8 6 10a6 6 0 1 1-12 0c0-3 2-6 6-10Z" stroke="currentColor" stroke-width="2" fill="none"/></svg>`,
+    chicken: `<svg viewBox="0 0 24 24"><path d="M7 14c0-3 2-5 5-5 2.8 0 5 2.2 5 5a5 5 0 0 1-5 5H9" stroke="currentColor" stroke-width="2" fill="none"/><circle cx="8" cy="15" r="2" fill="currentColor"/></svg>`,
+    egg: `<svg viewBox="0 0 24 24"><path d="M12 4c3 0 6 4 6 8a6 6 0 1 1-12 0c0-4 3-8 6-8Z" stroke="currentColor" stroke-width="2" fill="none"/></svg>`,
+    leaf: `<svg viewBox="0 0 24 24"><path d="M19 5c-7 0-12 5-12 12 7 0 12-5 12-12Z" stroke="currentColor" stroke-width="2" fill="none"/><path d="M8 16c2-2 4-4 8-6" stroke="currentColor" stroke-width="2"/></svg>`,
+    fish: `<svg viewBox="0 0 24 24"><path d="M3 12c3-4 7-6 11-6v12c-4 0-8-2-11-6Z" stroke="currentColor" stroke-width="2" fill="none"/><path d="M14 9l4-2v10l-4-2" stroke="currentColor" stroke-width="2" fill="none"/></svg>`,
+    grain: `<svg viewBox="0 0 24 24"><line x1="12" y1="4" x2="12" y2="20" stroke="currentColor" stroke-width="2"/><path d="M12 7c-2 0-3-1-3-3 2 0 3 1 3 3Zm0 4c-2 0-3-1-3-3 2 0 3 1 3 3Zm0 4c-2 0-3-1-3-3 2 0 3 1 3 3Z" fill="currentColor"/></svg>`
 };

@@ -5,11 +5,23 @@ import { Dashboard } from '../components/Dashboard.js';
 import { ProductModal } from '../components/ProductModal.js';
 import { Icons } from '../core/Icons.js';
 
+const MEALS = [
+    { id: 'breakfast', title: 'Śniadanie', icon: Icons.breakfast },
+    { id: 'lunch', title: 'Obiad', icon: Icons.lunch },
+    { id: 'dinner', title: 'Kolacja', icon: Icons.dinner }
+];
+
 export class DaysView extends Component {
     constructor(container) {
         super(container);
         this.modal = new ProductModal();
+        this.dayStrip = null;
+        this.dashboard = null;
         this.unsub = store.subscribe(s => this.update(s));
+    }
+
+    iconFor(entry) {
+        return Icons[entry.icon] || Icons.leaf;
     }
 
     update(state) {
@@ -27,52 +39,65 @@ export class DaysView extends Component {
             <div id="day-strip-container" style="position: sticky; top: 0; z-index: 10;"></div>
             <div id="dashboard-container"></div>
 
-            <div style="padding: 0 16px;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin: 16px 4px 8px;">
-                    <h3 style="font-size: 14px; color: var(--text-sub); text-transform: uppercase; letter-spacing: 1px;">Log</h3>
-                    <span style="font-size: 12px; color: var(--text-dim);">${meals.length} entries</span>
+            <div style="padding: 0 0 10px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin: 10px 16px 10px;">
+                    <h3 style="font-size: 13px; color: var(--text-sub); text-transform: uppercase; letter-spacing: 1px;">Posiłki dnia</h3>
+                    <span style="font-size: 12px; color: var(--text-dim);">${meals.length} wpisów</span>
                 </div>
-                
-                ${meals.length === 0 ?
-            `<div style="text-align: center; padding: 40px; color: var(--text-dim); font-size: 13px;">No data for this day</div>` : ''}
 
-                <div class="meal-list">
-                    ${meals.map(m => `
-                        <div class="list-item anim-slide">
-                            <div style="flex: 1;">
-                                <div style="font-weight: 500; font-size: 15px; color: var(--text-main);">${m.name}</div>
-                                <div style="font-size: 12px; color: var(--text-sub); margin-top: 2px;">
-                                    ${m.grams}g <span style="margin: 0 4px; color: #333;">|</span> <span style="color: var(--neon-blue);">${Math.round(m.cal)} kcal</span>
+                ${MEALS.map(group => {
+                    const entries = meals.filter(m => (m.meal || 'breakfast') === group.id);
+                    return `
+                        <section class="card" style="margin: 0 0 14px 0; border-radius: 0; border-left: 0; border-right: 0;">
+                            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;">
+                                <div style="display:flex; align-items:center; gap:8px; font-size:15px; font-weight:700;">
+                                    <span style="width:18px; height:18px; color:var(--accent-main);">${group.icon}</span>
+                                    ${group.title}
                                 </div>
+                                <span style="font-size:11px; color:var(--text-sub);">${entries.length} produktów</span>
                             </div>
-                            <!-- Compact Macros -->
-                            <div style="display: flex; gap: 6px; font-size: 10px; font-weight: 600; color: var(--text-dim);">
-                                <span style="color: var(--neon-green);">P${Math.round(m.p)}</span>
-                                <span style="color: var(--neon-blue);">C${Math.round(m.c)}</span>
-                                <span style="color: var(--neon-purple);">F${Math.round(m.f)}</span>
-                            </div>
-                            <button class="del-btn" data-id="${m.id}" style="background:none; color: var(--text-dim); padding: 8px; margin-left: 8px;">
-                                ${Icons.trash}
-                            </button>
-                        </div>
-                    `).join('')}
-                </div>
+                            ${entries.length === 0 ? `<div style="font-size:12px; color:var(--text-dim);">Brak produktów.</div>` : entries.map((m, idx) => `
+                                <div class="list-item anim-slide" style="animation-delay:${idx * 40}ms; border-left:3px solid ${m.color || '#00ff36'};">
+                                    <div style="display:flex; align-items:center; gap:10px; flex:1;">
+                                        <span style="width:18px; height:18px; color:${m.color || '#00ff36'};">${this.iconFor(m)}</span>
+                                        <div>
+                                            <div style="font-weight: 600; font-size: 15px;">${m.name}</div>
+                                            <div style="font-size: 12px; color: var(--text-sub); margin-top: 2px;">${m.grams}g · <span style="color: var(--accent-main);">${Math.round(m.cal)} kcal</span></div>
+                                        </div>
+                                    </div>
+                                    <div style="display:flex; gap:6px; font-size:10px; font-weight:700; color:var(--text-sub); margin-right:6px;">
+                                        <span>B${Math.round(m.p)}</span>
+                                        <span>T${Math.round(m.f)}</span>
+                                        <span>W${Math.round(m.c)}</span>
+                                    </div>
+                                    <button class="del-btn" data-id="${m.id}" style="width:24px; height:24px; color:var(--accent-red);">${Icons.close}</button>
+                                </div>
+                            `).join('')}
+                        </section>
+                    `;
+                }).join('')}
             </div>
-            
-            <button id="add-btn" class="btn-float">${Icons.plus}</button>
-            <div style="height: 100px;"></div>
+
+            <button id="add-btn" class="btn-float" title="Dodaj produkt">${Icons.plus}</button>
+            <div style="height: 96px;"></div>
         `;
 
-        // Mount Sub-components
-        new DayStrip(this.container.querySelector('#day-strip-container')).render(state);
-        new Dashboard(this.container.querySelector('#dashboard-container')).render(totals, state.user);
+        const stripContainer = this.container.querySelector('#day-strip-container');
+        const dashboardContainer = this.container.querySelector('#dashboard-container');
+        if (!this.dayStrip) this.dayStrip = new DayStrip(stripContainer);
+        else this.dayStrip.container = stripContainer;
+        this.dayStrip.render(state);
 
-        // Events
+        if (!this.dashboard) this.dashboard = new Dashboard(dashboardContainer);
+        else this.dashboard.container = dashboardContainer;
+        this.dashboard.render(totals, state.user);
+
         this.container.querySelector('#add-btn').onclick = () => {
-            this.modal.open(state.products, (prod, grams) => store.addLogEntry(prod, grams));
+            this.modal.open(state.products, (product, grams, meal) => store.addMealEntry(product, grams, meal));
         };
+
         this.container.querySelectorAll('.del-btn').forEach(btn => {
-            btn.onclick = (e) => store.deleteLogEntry(e.currentTarget.dataset.id);
+            btn.onclick = (e) => store.deleteMealEntry(e.currentTarget.dataset.id);
         });
     }
 

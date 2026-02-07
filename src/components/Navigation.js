@@ -15,9 +15,9 @@ export class Navigation extends Component {
 
     render() {
         const tabs = [
-            { id: 'days', icon: Icons.days, label: 'Days' },
-            { id: 'products', icon: Icons.products, label: 'Products' },
-            { id: 'you', icon: Icons.user, label: 'You' }
+            { id: 'days', icon: Icons.days, label: 'Dzień' },
+            { id: 'products', icon: Icons.products, label: 'Produkty' },
+            { id: 'you', icon: Icons.user, label: 'Ty' }
         ];
 
         this.container.innerHTML = tabs.map(t => `
