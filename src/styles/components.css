@@ -1,23 +1,20 @@
-/* Cards */
 .card {
-    background: var(--bg-surface);
-    border: 1px solid #333;
-    border-radius: var(--radius-m);
+    background: var(--grad-surface);
+    border: 1px solid var(--line-soft);
+    border-radius: var(--radius-l);
     padding: 16px;
     margin: 16px;
-    position: relative;
 }
 
-/* Navigation */
 .glass-nav {
     position: fixed;
     bottom: 0;
     width: 100%;
-    height: calc(60px + var(--safe-bottom));
+    height: calc(66px + var(--safe-bottom));
     background: var(--bg-glass);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border-top: 1px solid #333;
+    backdrop-filter: blur(30px);
+    -webkit-backdrop-filter: blur(30px);
+    border-top: 1px solid var(--line-soft);
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
     padding-bottom: var(--safe-bottom);
@@ -30,127 +27,156 @@
     align-items: center;
     justify-content: center;
     color: var(--text-dim);
-    gap: 4px;
+    gap: 3px;
     font-size: 10px;
-    font-weight: 600;
-    transition: color 0.3s;
+    font-weight: 700;
+    transition: all 0.25s var(--ease-material);
 }
 
 .nav-item.active {
-    color: var(--neon-blue);
-    text-shadow: 0 0 10px rgba(0, 229, 255, 0.4);
+    color: var(--neon-green);
+    text-shadow: 0 0 10px rgba(57, 255, 136, 0.45);
 }
-.nav-item svg { width: 24px; height: 24px; fill: currentColor; }
 
-/* Day Strip */
+.nav-item svg { width: 22px; height: 22px; fill: currentColor; }
+
 .day-strip {
     display: flex;
     overflow-x: auto;
+    scroll-snap-type: x proximity;
     padding: 10px 16px;
     gap: 10px;
-    background: var(--bg-app);
-    border-bottom: 1px solid #222;
+    background: rgba(8, 13, 10, 0.88);
+    border-bottom: 1px solid var(--line-soft);
 }
+
 .day-strip::-webkit-scrollbar { display: none; }
 
 .day-pill {
-    min-width: 48px;
-    height: 60px;
+    scroll-snap-align: center;
+    min-width: 56px;
+    height: 64px;
     background: var(--bg-surface);
     border-radius: var(--radius-m);
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    border: 1px solid #333;
-    transition: all 0.2s var(--ease-material);
+    border: 1px solid var(--line-soft);
+    transition: all 0.22s var(--ease-material);
     color: var(--text-sub);
 }
 
 .day-pill.active {
-    background: var(--bg-surface-2);
-    border-color: var(--neon-blue);
+    background: var(--bg-elevated);
+    border-color: var(--line-strong);
     color: var(--text-main);
-    box-shadow: var(--glow-blue);
+    box-shadow: var(--glow-green);
+    transform: translateY(-1px);
 }
 
 .day-indicator {
-    width: 4px; height: 4px; background: var(--neon-green);
-    border-radius: 50%; margin-top: 4px;
+    width: 5px;
+    height: 5px;
+    background: var(--neon-green);
+    border-radius: 50%;
+    margin-top: 4px;
     opacity: 0;
 }
+
 .day-pill.has-data .day-indicator { opacity: 1; }
 
-/* Inputs */
-.input-group { margin-bottom: 16px; }
+.input-group { margin-bottom: 14px; }
+
 .input-label {
-    display: block; color: var(--text-sub);
-    font-size: 11px; margin-bottom: 6px;
-    text-transform: uppercase; letter-spacing: 0.5px;
+    display: block;
+    color: var(--text-sub);
+    font-size: 11px;
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
 }
+
 .input-field {
     width: 100%;
-    background: #1A1A1A;
-    color: white;
-    padding: 14px;
-    border-radius: var(--radius-s);
-    border: 1px solid #333;
-    font-size: 16px;
+    background: var(--bg-surface-2);
+    color: var(--text-main);
+    padding: 13px;
+    border-radius: 12px;
+    border: 1px solid var(--line-soft);
+    font-size: 15px;
     transition: border-color 0.2s;
 }
-.input-field:focus { border-color: var(--neon-blue); }
 
-/* Buttons */
+.input-field:focus { border-color: var(--line-strong); }
+
 .btn-primary {
     background: var(--grad-primary);
-    color: #000;
+    color: #05120b;
     padding: 14px;
     border-radius: var(--radius-m);
-    font-weight: 700;
+    font-weight: 800;
     width: 100%;
-    font-size: 16px;
-    box-shadow: var(--glow-blue);
+    font-size: 15px;
+    box-shadow: var(--glow-green);
 }
 
 .btn-float {
     position: fixed;
-    bottom: calc(80px + var(--safe-bottom));
+    bottom: calc(84px + var(--safe-bottom));
     right: 20px;
-    width: 56px; height: 56px;
-    background: var(--neon-blue);
-    color: #000;
-    border-radius: 16px;
-    display: flex; align-items: center; justify-content: center;
-    box-shadow: var(--glow-blue);
+    width: 56px;
+    height: 56px;
+    background: var(--grad-primary);
+    color: #05120b;
+    border-radius: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: var(--glow-green);
     z-index: 90;
 }
 
-/* List Items */
 .list-item {
-    display: flex; justify-content: space-between; align-items: center;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     padding: 14px 16px;
     background: var(--bg-surface);
     border-radius: var(--radius-m);
     margin-bottom: 8px;
-    border: 1px solid #222;
+    border: 1px solid var(--line-soft);
 }
 
-/* Modal */
 .modal-sheet {
-    position: fixed; bottom: 0; left: 0; width: 100%;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
     background: var(--bg-surface-2);
-    border-radius: 24px 24px 0 0;
-    padding: 24px; padding-bottom: calc(24px + var(--safe-bottom));
+    border-radius: 28px 28px 0 0;
+    padding: 22px;
+    padding-bottom: calc(22px + var(--safe-bottom));
     transform: translateY(100%);
     transition: transform 0.3s var(--ease-material);
     z-index: 200;
-    border-top: 1px solid #333;
+    border-top: 1px solid var(--line-soft);
 }
+
 .modal-sheet.open { transform: translateY(0); }
+
 .backdrop {
-    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0,0,0,0.6); z-index: 199;
-    opacity: 0; pointer-events: none; transition: opacity 0.3s;
-    backdrop-filter: blur(4px);
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.65);
+    z-index: 199;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s;
+    backdrop-filter: blur(6px);
 }
+
 .backdrop.open { opacity: 1; pointer-events: auto; }

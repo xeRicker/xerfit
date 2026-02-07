@@ -1,41 +1,38 @@
 :root {
-    /* Base Backgrounds */
-    --bg-app: #000000;
-    --bg-surface: #121212;
-    --bg-surface-2: #1E1E1E;
-    --bg-glass: rgba(18, 18, 18, 0.85);
+    --bg-app: #070b08;
+    --bg-surface: #101612;
+    --bg-surface-2: #17201a;
+    --bg-elevated: #1d2820;
+    --bg-glass: rgba(12, 18, 14, 0.72);
 
-    /* Text */
-    --text-main: #FFFFFF;
-    --text-sub: #A0A0A0;
-    --text-dim: #555555;
+    --text-main: #f4fff6;
+    --text-sub: #a9b8ad;
+    --text-dim: #6f7f73;
 
-    /* Neon Accents */
-    --neon-blue: #00E5FF;
-    --neon-purple: #D500F9;
-    --neon-green: #00E676;
-    --neon-red: #FF1744;
+    --neon-green: #39ff88;
+    --neon-green-soft: #7cffb4;
+    --neon-cyan: #5ce8ff;
+    --neon-purple: #ba87ff;
+    --neon-red: #ff6b7a;
+    --neon-blue: var(--neon-cyan);
+    --text-light: #d6e2d9;
 
-    /* Gradients */
-    --grad-primary: linear-gradient(135deg, #00E5FF, #2979FF);
-    --grad-purple: linear-gradient(135deg, #D500F9, #651FFF);
-    --grad-green: linear-gradient(135deg, #00E676, #00C853);
-    --grad-surface: linear-gradient(180deg, #1E1E1E 0%, #121212 100%);
+    --grad-primary: linear-gradient(135deg, #4cff93 0%, #23d86f 100%);
+    --grad-surface: linear-gradient(180deg, #1a241d 0%, #101612 100%);
+    --grad-glow: radial-gradient(circle at top, rgba(57, 255, 136, 0.2), transparent 65%);
 
-    /* Typography */
     --font-main: 'Inter', sans-serif;
 
-    /* Shapes */
-    --radius-s: 8px;
-    --radius-m: 16px;
-    --radius-l: 24px;
+    --radius-s: 10px;
+    --radius-m: 18px;
+    --radius-l: 26px;
     --radius-pill: 999px;
 
-    /* Effects */
-    --glow-blue: 0 0 20px rgba(0, 229, 255, 0.3);
-    --glow-purple: 0 0 20px rgba(213, 0, 249, 0.3);
+    --glow-green: 0 0 28px rgba(57, 255, 136, 0.28);
+    --line-soft: rgba(164, 192, 172, 0.2);
+    --line-strong: rgba(57, 255, 136, 0.42);
 
-    --ease-material: cubic-bezier(0.2, 0.0, 0, 1.0);
+    --ease-material: cubic-bezier(0.2, 0.8, 0.2, 1);
 
     --safe-bottom: env(safe-area-inset-bottom, 20px);
     --safe-top: env(safe-area-inset-top, 20px);
