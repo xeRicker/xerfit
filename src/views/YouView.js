@@ -54,5 +54,5 @@ export class YouView extends Component {
     }
     }
 
-    destroy() { this.unsub(); }
+    destroy() { this.unsub(); 
 }
