@@ -6,6 +6,11 @@ const ICON_OPTIONS = ['leaf', 'chicken', 'egg', 'fish', 'grain'];
 const COLOR_OPTIONS = ['#00ff36', '#5de9ff', '#c595ff', '#ffd166', '#ff6f82', '#8cff9f'];
 const PAGE_SIZE = 5;
 
+const emptyForm = () => ({
+    name: '', cal: '', p: '', c: '', f: '',
+    color: '#00ff36', icon: 'leaf', defaultMeal: 'global'
+});
+
 export class ProductsView extends Component {
     constructor(container) {
         super(container);
@@ -14,10 +19,9 @@ export class ProductsView extends Component {
         this.sortBy = 'name';
         this.page = 1;
         this.onlyFavorites = false;
-        this.form = {
-            name: '', cal: '', p: '', c: '', f: '',
-            color: '#00ff36', icon: 'leaf', defaultMeal: 'global'
-        };
+        this.formOpen = false;
+        this.editingId = null;
+        this.form = emptyForm();
         this.unsub = store.subscribe(s => this.update(s));
     }
 
@@ -26,6 +30,27 @@ export class ProductsView extends Component {
     isFormValid() {
         const f = this.form;
         return Boolean(f.name.trim()) && [f.cal, f.p, f.c, f.f].every(v => String(v).length > 0 && Number(v) >= 0);
+    }
+
+    getEditingProduct(products) {
+        return products.find(p => String(p.id) === String(this.editingId)) || null;
+    }
+
+    hasFormChanges(products) {
+        if (!this.editingId) return true;
+        const p = this.getEditingProduct(products);
+        if (!p) return true;
+        const current = {
+            name: p.name,
+            cal: String(p.cal),
+            p: String(p.p),
+            c: String(p.c),
+            f: String(p.f),
+            color: p.color || '#00ff36',
+            icon: p.icon || 'leaf',
+            defaultMeal: p.defaultMeal || 'global'
+        };
+        return Object.keys(current).some(key => String(current[key]) !== String(this.form[key]));
     }
 
     getFiltered(products) {
@@ -51,9 +76,37 @@ export class ProductsView extends Component {
         };
     }
 
+    openCreateForm() {
+        this.formOpen = true;
+        this.editingId = null;
+        this.form = emptyForm();
+    }
+
+    openEditForm(product) {
+        this.formOpen = true;
+        this.editingId = product.id;
+        this.form = {
+            name: product.name,
+            cal: String(product.cal),
+            p: String(product.p),
+            c: String(product.c),
+            f: String(product.f),
+            color: product.color || '#00ff36',
+            icon: product.icon || 'leaf',
+            defaultMeal: product.defaultMeal || 'global'
+        };
+    }
+
+    closeForm() {
+        this.formOpen = false;
+        this.editingId = null;
+        this.form = emptyForm();
+    }
+
     update(state) {
-        const canSave = this.isFormValid();
+        const canSave = this.isFormValid() && this.hasFormChanges(state.products);
         const { items, pages, total } = this.getFiltered(state.products);
+        const isEditing = Boolean(this.editingId);
 
         this.container.innerHTML = `
             <header style="padding: calc(var(--safe-top) + 20px) 20px 10px;">
@@ -61,46 +114,16 @@ export class ProductsView extends Component {
                     <span style="width:18px; height:18px; color: var(--accent-main);">${Icons.products}</span>
                     Produkty
                 </h1>
-                <p style="color: var(--text-sub); font-size: 13px;">Wyszukiwanie, sortowanie i ulubione</p>
+                <p style="color: var(--text-sub); font-size: 13px;">Wyszukiwanie, sortowanie, ulubione i edycja</p>
             </header>
 
             <div style="padding: 0 16px;">
-                <div class="card" style="margin: 0 0 18px 0; border-color: var(--line-strong); background: var(--grad-liquid), var(--grad-surface);">
-                    <h3 style="margin-bottom: 12px; font-size: 13px; color: var(--accent-main); letter-spacing: .7px;">NOWY PRODUKT</h3>
-                    <input id="p-name" class="input-field" placeholder="Nazwa" value="${this.form.name}" style="margin-bottom: 8px;">
-                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 8px;">
-                        <input id="p-cal" type="number" class="input-field" placeholder="kcal" value="${this.form.cal}">
-                        <input id="p-p" type="number" class="input-field" placeholder="B" value="${this.form.p}">
-                        <input id="p-f" type="number" class="input-field" placeholder="T" value="${this.form.f}">
-                        <input id="p-c" type="number" class="input-field" placeholder="W" value="${this.form.c}">
-                    </div>
-
-                    <div style="margin-top:12px;">
-                        <label class="input-label">Kolor</label>
-                        <div id="color-options" style="display:flex; gap:8px; flex-wrap:wrap;">
-                            ${COLOR_OPTIONS.map(color => `<button class="color-opt" data-color="${color}" style="width:24px; height:24px; border-radius:50%; background:${color}; border:${this.form.color === color ? '2px solid #fff' : '1px solid #00000055'};"></button>`).join('')}
-                        </div>
-                    </div>
-
-                    <div style="margin-top:10px; display:grid; grid-template-columns:1fr 1fr; gap:8px;">
-                        <select id="p-icon" class="input-field">${ICON_OPTIONS.map(icon => `<option value="${icon}" ${this.form.icon === icon ? 'selected' : ''}>${icon}</option>`).join('')}</select>
-                        <select id="p-meal" class="input-field">
-                            <option value="global" ${this.form.defaultMeal === 'global' ? 'selected' : ''}>Globalny</option>
-                            <option value="breakfast" ${this.form.defaultMeal === 'breakfast' ? 'selected' : ''}>Śniadanie</option>
-                            <option value="lunch" ${this.form.defaultMeal === 'lunch' ? 'selected' : ''}>Obiad</option>
-                            <option value="dinner" ${this.form.defaultMeal === 'dinner' ? 'selected' : ''}>Kolacja</option>
-                        </select>
-                    </div>
-
-                    <button id="save-prod" class="btn-primary" ${canSave ? '' : 'disabled'} style="margin-top: 12px;">Zapisz produkt</button>
-                </div>
-
                 <div class="card" style="margin: 0 0 12px 0; padding:12px;">
                     <div style="display:flex; gap:8px; align-items:center; margin-bottom:8px;">
                         <span style="width:16px; height:16px; color:var(--accent-cyan);">${Icons.search}</span>
                         <input id="search" class="input-field" placeholder="Szukaj produktów..." value="${this.query}" style="padding:10px;">
                     </div>
-                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;">
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px; margin-bottom: 8px;">
                         <select id="sort" class="input-field">
                             <option value="name" ${this.sortBy === 'name' ? 'selected' : ''}>Sort: nazwa</option>
                             <option value="protein" ${this.sortBy === 'protein' ? 'selected' : ''}>Sort: białko</option>
@@ -109,7 +132,44 @@ export class ProductsView extends Component {
                         </select>
                         <button id="toggle-fav" class="input-field" style="text-align:center; color:${this.onlyFavorites ? 'var(--accent-main)' : 'var(--text-sub)'};">${this.onlyFavorites ? '★ Ulubione' : '☆ Wszystkie'}</button>
                     </div>
+                    <button id="toggle-form" class="input-field" style="text-align:center; color:var(--accent-main);">${this.formOpen ? 'Ukryj formularz' : 'Dodaj produkt'}</button>
                 </div>
+
+                ${this.formOpen ? `
+                    <div class="card" style="margin: 0 0 16px 0; border-color: var(--line-strong); background: var(--grad-liquid), var(--grad-surface);">
+                        <h3 style="margin-bottom: 12px; font-size: 13px; color: var(--accent-main); letter-spacing: .7px;">${isEditing ? 'EDYCJA PRODUKTU' : 'NOWY PRODUKT'}</h3>
+                        <input id="p-name" class="input-field" placeholder="Nazwa" value="${this.form.name}" style="margin-bottom: 8px;">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 8px;">
+                            <input id="p-cal" type="number" class="input-field" placeholder="kcal" value="${this.form.cal}">
+                            <input id="p-p" type="number" class="input-field" placeholder="B" value="${this.form.p}">
+                            <input id="p-f" type="number" class="input-field" placeholder="T" value="${this.form.f}">
+                            <input id="p-c" type="number" class="input-field" placeholder="W" value="${this.form.c}">
+                        </div>
+
+                        <div style="margin-top:12px;">
+                            <label class="input-label">Kolor</label>
+                            <div id="color-options" style="display:flex; gap:8px; flex-wrap:wrap;">
+                                ${COLOR_OPTIONS.map(color => `<button class="color-opt" data-color="${color}" style="width:24px; height:24px; border-radius:50%; background:${color}; border:${this.form.color === color ? '2px solid #fff' : '1px solid #00000055'};"></button>`).join('')}
+                            </div>
+                        </div>
+
+                        <div style="margin-top:10px; display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+                            <select id="p-icon" class="input-field">${ICON_OPTIONS.map(icon => `<option value="${icon}" ${this.form.icon === icon ? 'selected' : ''}>${icon}</option>`).join('')}</select>
+                            <select id="p-meal" class="input-field">
+                                <option value="global" ${this.form.defaultMeal === 'global' ? 'selected' : ''}>Globalny</option>
+                                <option value="breakfast" ${this.form.defaultMeal === 'breakfast' ? 'selected' : ''}>Śniadanie</option>
+                                <option value="lunch" ${this.form.defaultMeal === 'lunch' ? 'selected' : ''}>Obiad</option>
+                                <option value="dinner" ${this.form.defaultMeal === 'dinner' ? 'selected' : ''}>Kolacja</option>
+                            </select>
+                        </div>
+
+                        <div style="display:grid; grid-template-columns: 1fr ${isEditing ? '1fr 1fr' : '1fr'}; gap: 8px; margin-top: 12px;">
+                            <button id="save-prod" class="btn-primary" ${canSave ? '' : 'disabled'}>${isEditing ? 'Zapisz edycję' : 'Zapisz produkt'}</button>
+                            ${isEditing ? '<button id="cancel-edit" class="input-field">Anuluj edycję</button>' : ''}
+                            <button id="collapse-form" class="input-field">Zamknij</button>
+                        </div>
+                    </div>
+                ` : ''}
 
                 <div style="margin-bottom: 8px; font-size: 12px; color: var(--text-sub);">Wyniki: ${total}</div>
                 ${items.map(p => `
@@ -123,6 +183,7 @@ export class ProductsView extends Component {
                         </div>
                         <div style="display:flex; align-items:center; gap:8px; margin-left:10px;">
                             <button class="fav-prod" data-id="${p.id}" style="color: ${p.favorite ? 'var(--accent-main)' : 'var(--text-sub)'}; width:22px; height:22px;">${p.favorite ? Icons.starFilled : Icons.star}</button>
+                            <button class="edit-prod" data-id="${p.id}" style="color: var(--accent-cyan); width:22px; height:22px;">${Icons.edit}</button>
                             ${this.pendingDeleteId === p.id ? `<button class="confirm-del" data-id="${p.id}" style="font-size:11px; padding:6px 8px; border-radius:8px; background:rgba(255,107,122,.12); color:var(--accent-red); border:1px solid rgba(255,107,122,.5);">Potwierdź</button>` : ''}
                             <button class="del-prod" data-id="${p.id}" style="color: var(--accent-red); width:22px; height:22px;">${Icons.close}</button>
                         </div>
@@ -142,6 +203,7 @@ export class ProductsView extends Component {
     }
 
     syncForm() {
+        if (!this.formOpen) return;
         this.form = {
             ...this.form,
             name: this.container.querySelector('#p-name').value,
@@ -155,11 +217,20 @@ export class ProductsView extends Component {
     }
 
     bindEvents() {
+        const toggleForm = this.container.querySelector('#toggle-form');
+        if (toggleForm) {
+            toggleForm.onclick = () => {
+                if (this.formOpen) this.closeForm();
+                else this.openCreateForm();
+                this.update(store.state);
+            };
+        }
+
         ['#p-name', '#p-cal', '#p-p', '#p-f', '#p-c', '#p-icon', '#p-meal'].forEach(sel => {
             const el = this.container.querySelector(sel);
             if (!el) return;
-            el.oninput = () => this.syncForm();
-            el.onchange = () => this.syncForm();
+            el.oninput = () => { this.syncForm(); this.update(store.state); };
+            el.onchange = () => { this.syncForm(); this.update(store.state); };
         });
 
         this.container.querySelectorAll('.color-opt').forEach(btn => {
@@ -169,23 +240,33 @@ export class ProductsView extends Component {
             };
         });
 
-        this.container.querySelector('#save-prod').onclick = () => {
-            this.syncForm();
-            if (!this.isFormValid()) return;
-            store.addProduct({
-                name: this.form.name.trim(),
-                cal: Number(this.form.cal),
-                p: Number(this.form.p),
-                c: Number(this.form.c),
-                f: Number(this.form.f),
-                color: this.form.color,
-                icon: this.form.icon,
-                defaultMeal: this.form.defaultMeal,
-                favorite: false
-            });
-            this.form = { name: '', cal: '', p: '', c: '', f: '', color: '#00ff36', icon: 'leaf', defaultMeal: 'global' };
-            this.update(store.state);
-        };
+        const save = this.container.querySelector('#save-prod');
+        if (save) {
+            save.onclick = () => {
+                this.syncForm();
+                if (!this.isFormValid()) return;
+                const payload = {
+                    name: this.form.name.trim(),
+                    cal: Number(this.form.cal),
+                    p: Number(this.form.p),
+                    c: Number(this.form.c),
+                    f: Number(this.form.f),
+                    color: this.form.color,
+                    icon: this.form.icon,
+                    defaultMeal: this.form.defaultMeal
+                };
+                if (this.editingId) store.updateProduct(this.editingId, payload);
+                else store.addProduct({ ...payload, favorite: false });
+                this.closeForm();
+                this.update(store.state);
+            };
+        }
+
+        const cancel = this.container.querySelector('#cancel-edit');
+        if (cancel) cancel.onclick = () => { this.closeForm(); this.update(store.state); };
+
+        const collapse = this.container.querySelector('#collapse-form');
+        if (collapse) collapse.onclick = () => { this.closeForm(); this.update(store.state); };
 
         this.container.querySelector('#search').oninput = (e) => { this.query = e.currentTarget.value; this.page = 1; this.update(store.state); };
         this.container.querySelector('#sort').onchange = (e) => { this.sortBy = e.currentTarget.value; this.page = 1; this.update(store.state); };
@@ -193,6 +274,15 @@ export class ProductsView extends Component {
 
         this.container.querySelectorAll('.fav-prod').forEach(btn => {
             btn.onclick = () => store.toggleFavoriteProduct(btn.dataset.id);
+        });
+
+        this.container.querySelectorAll('.edit-prod').forEach(btn => {
+            btn.onclick = () => {
+                const product = store.state.products.find(p => String(p.id) === String(btn.dataset.id));
+                if (!product) return;
+                this.openEditForm(product);
+                this.update(store.state);
+            };
         });
 
         this.container.querySelectorAll('.del-prod').forEach(btn => {

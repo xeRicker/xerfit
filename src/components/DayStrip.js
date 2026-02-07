@@ -5,7 +5,6 @@ export class DayStrip extends Component {
     constructor(container) {
         super(container);
         this.days = this.generateDays();
-        this.lastDate = null;
         this.didInitialScroll = false;
     }
 
@@ -28,13 +27,14 @@ export class DayStrip extends Component {
             const isToday = dateStr === current;
             const dayName = date.toLocaleDateString('pl-PL', { weekday: 'short' });
             const dayNum = date.getDate();
-            const hasData = logs[dateStr] && logs[dateStr].length > 0;
+            const dayCal = (logs[dateStr] || []).reduce((sum, e) => sum + e.cal, 0);
+            const pct = Math.min(100, Math.round((dayCal / Math.max(1, state.user.targetCal || 1)) * 100));
 
             return `
-                <button class="day-pill ${isToday ? 'active' : ''} ${hasData ? 'has-data' : ''}" data-date="${dateStr}">
+                <button class="day-pill ${isToday ? 'active' : ''}" data-date="${dateStr}">
                     <span class="day-name">${dayName}</span>
                     <span class="day-num">${dayNum}</span>
-                    <div class="day-indicator"></div>
+                    <div class="day-cal-track"><div class="day-cal-fill" style="width:${pct}%;"></div></div>
                 </button>
             `;
         }).join('');
@@ -42,11 +42,10 @@ export class DayStrip extends Component {
         this.container.innerHTML = `<div class="day-strip">${html}</div>`;
 
         const active = this.container.querySelector('.active');
-        if (active && (!this.didInitialScroll || this.lastDate !== current)) {
-            active.scrollIntoView({ behavior: this.didInitialScroll ? 'smooth' : 'auto', inline: 'center', block: 'nearest' });
+        if (active && !this.didInitialScroll) {
+            active.scrollIntoView({ behavior: 'auto', inline: 'center', block: 'nearest' });
             this.didInitialScroll = true;
         }
-        this.lastDate = current;
 
         this.container.querySelectorAll('.day-pill').forEach(el => {
             el.addEventListener('click', () => store.setDate(el.dataset.date));

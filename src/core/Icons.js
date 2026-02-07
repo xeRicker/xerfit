@@ -4,6 +4,7 @@ export const Icons = {
     products: `<svg viewBox="0 0 24 24"><path d="M5 7h14v12H5z" stroke="currentColor" stroke-width="2" fill="none"/><path d="M9 7V5h6v2" stroke="currentColor" stroke-width="2"/></svg>`,
     user: `<svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="2" fill="none"/><path d="M4 20c1.8-4 5-6 8-6s6.2 2 8 6" stroke="currentColor" stroke-width="2" fill="none"/></svg>`,
     plus: `<svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19" stroke="currentColor" stroke-width="2"/><line x1="5" y1="12" x2="19" y2="12" stroke="currentColor" stroke-width="2"/></svg>`,
+    edit: `<svg viewBox="0 0 24 24"><path d="M4 20h4l10-10-4-4L4 16v4Z" stroke="currentColor" stroke-width="2" fill="none"/><path d="m12 6 4 4" stroke="currentColor" stroke-width="2"/></svg>`,
     close: `<svg viewBox="0 0 24 24"><line x1="5" y1="5" x2="19" y2="19" stroke="currentColor" stroke-width="2"/><line x1="19" y1="5" x2="5" y2="19" stroke="currentColor" stroke-width="2"/></svg>`,
     check: `<svg viewBox="0 0 24 24"><polyline points="4 13 10 18 20 6" stroke="currentColor" stroke-width="2" fill="none"/></svg>`,
     star: `<svg viewBox="0 0 24 24"><path d="M12 3.8l2.6 5.1 5.7.8-4.1 4 1 5.7L12 16.9 6.8 19.4l1-5.7-4.1-4 5.7-.8z" stroke="currentColor" stroke-width="2" fill="none"/></svg>`,

@@ -64,7 +64,7 @@ export class DaysView extends Component {
                                 <span style="font-size:11px; color:var(--text-sub);">${entries.length} produktów</span>
                             </div>
                             ${entries.length === 0 ? `<div style="font-size:12px; color:var(--text-dim);">Brak produktów.</div>` : entries.map((m, idx) => `
-                                <div class="list-item anim-slide" style="animation-delay:${idx * 40}ms; border-left:3px solid ${m.color || '#00ff36'};">
+                                <div class="list-item" style="animation-delay:${idx * 40}ms; border-left:3px solid ${m.color || '#00ff36'};">
                                     <div style="display:flex; align-items:center; gap:10px; flex:1;">
                                         <span style="width:20px; height:20px; color:${m.color || '#00ff36'};">${this.iconFor(m)}</span>
                                         <div>
