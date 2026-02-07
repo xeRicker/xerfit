@@ -46,7 +46,6 @@
     display: flex;
     overflow-x: auto;
     scroll-snap-type: x mandatory;
-    scroll-behavior: smooth;
     padding: 10px 16px;
     gap: 10px;
     background: rgba(7, 15, 10, 0.9);
@@ -57,7 +56,7 @@
 .day-pill {
     scroll-snap-align: center;
     min-width: 62px;
-    height: 70px;
+    height: 74px;
     background: var(--bg-surface);
     border-radius: 18px;
     display: flex;
@@ -67,6 +66,7 @@
     border: 1px solid var(--line-soft);
     color: var(--text-sub);
     transition: all .2s var(--ease-fluid);
+    gap: 3px;
 }
 
 .day-pill.active {
@@ -76,8 +76,19 @@
     background: linear-gradient(170deg, rgba(0,255,54,.18), rgba(16,26,18,.92));
 }
 
-.day-indicator { width: 10px; height: 10px; border-radius: 50%; margin-top: 4px; background: var(--accent-main); box-shadow: 0 0 12px rgba(0,255,54,.7); opacity: 0; }
-.day-pill.has-data .day-indicator { opacity: 1; }
+.day-cal-track {
+    width: 42px;
+    height: 5px;
+    border-radius: 999px;
+    background: rgba(255,255,255,.08);
+    overflow: hidden;
+}
+
+.day-cal-fill {
+    height: 100%;
+    background: var(--accent-main);
+    box-shadow: 0 0 8px rgba(0,255,54,.5);
+}
 
 .input-group { margin-bottom: 14px; }
 .input-label { display: block; color: var(--text-sub); font-size: 11px; margin-bottom: 6px; text-transform: uppercase; letter-spacing: .6px; }
@@ -93,6 +104,10 @@
     transition: border-color .2s;
 }
 .input-field:focus { border-color: var(--line-strong); }
+.input-field:disabled {
+    opacity: .45;
+    cursor: not-allowed;
+}
 
 .btn-primary {
     background: var(--grad-primary);
@@ -105,7 +120,7 @@
     box-shadow: var(--glow-main);
     transition: transform .2s var(--ease-fluid), opacity .2s;
 }
-.btn-primary:disabled { opacity: .45; box-shadow: none; }
+.btn-primary:disabled { opacity: .45; box-shadow: none; cursor: not-allowed; }
 
 .btn-float {
     position: fixed;
@@ -163,3 +178,34 @@
 
 .cal-hot { color: #ffb36b; text-shadow: 0 0 14px rgba(255, 152, 78, .6); }
 .cal-bomb { color: #ff766f; text-shadow: 0 0 16px rgba(255, 72, 72, .65); animation: pulseFire 1.2s ease-in-out infinite; }
+
+.week-chart {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 6px;
+    align-items: end;
+    height: 110px;
+}
+
+.week-chart-bar {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: end;
+    gap: 4px;
+    align-items: center;
+    color: var(--text-sub);
+    font-size: 10px;
+}
+
+.week-chart-bar .fill {
+    width: 100%;
+    border-radius: 8px 8px 4px 4px;
+    background: rgba(93,233,255,.35);
+    border: 1px solid rgba(93,233,255,.4);
+    min-height: 10px;
+}
+
+.week-chart-bar.active .fill {
+    background: rgba(93,233,255,.8);
+}

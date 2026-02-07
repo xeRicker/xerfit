@@ -81,6 +81,16 @@ class Store {
         this.notify();
     }
 
+    updateProduct(id, data) {
+        this.state.products = this.state.products.map(product => (
+            String(product.id) === String(id)
+                ? { ...product, ...data }
+                : product
+        ));
+        StorageService.save('db/products', this.state.products);
+        this.notify();
+    }
+
     addMealEntry(product, grams, meal = 'breakfast') {
         const date = this.state.currentDate;
         if (!this.state.logs[date]) this.state.logs[date] = [];
