@@ -17,6 +17,7 @@ export class DaysView extends Component {
         this.modal = new ProductModal();
         this.dayStrip = null;
         this.dashboard = null;
+        this.collapsedMeals = {};
         this.unsub = store.subscribe(s => this.update(s));
     }
 
@@ -54,6 +55,7 @@ export class DaysView extends Component {
 
                 ${MEALS.map(group => {
                     const entries = meals.filter(m => (m.meal || 'breakfast') === group.id);
+                    const collapsed = Boolean(this.collapsedMeals[group.id]);
                     return `
                         <section class="card" style="margin: 0 0 14px 0; border-radius: 0; border-left: 0; border-right: 0;">
                             <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;">
@@ -61,22 +63,27 @@ export class DaysView extends Component {
                                     <span style="width:18px; height:18px; color:var(--accent-main);">${group.icon}</span>
                                     ${group.title}
                                 </div>
-                                <span style="font-size:11px; color:var(--text-sub);">${entries.length} produktów</span>
+                                <div style="display:flex; align-items:center; gap:8px;">
+                                    <button class="copy-meal" data-meal="${group.id}" style="font-size:11px; color:var(--accent-cyan);">Kopiuj do</button>
+                                    <button class="toggle-meal" data-meal="${group.id}" style="font-size:11px; color:var(--text-sub);">${collapsed ? 'Rozwiń' : 'Zwiń'}</button>
+                                    <span style="font-size:11px; color:var(--text-sub);">${entries.length} produktów</span>
+                                </div>
                             </div>
-                            ${entries.length === 0 ? `<div style="font-size:12px; color:var(--text-dim);">Brak produktów.</div>` : entries.map((m, idx) => `
+                            ${collapsed ? '<div style="font-size:12px; color:var(--text-dim);">Sekcja zwinięta.</div>' : entries.length === 0 ? `<div style="font-size:12px; color:var(--text-dim);">Brak produktów.</div>` : entries.map((m, idx) => `
                                 <div class="list-item" style="animation-delay:${idx * 40}ms; border-left:3px solid ${m.color || '#00ff36'};">
                                     <div style="display:flex; align-items:center; gap:10px; flex:1;">
                                         <span style="width:20px; height:20px; color:${m.color || '#00ff36'};">${this.iconFor(m)}</span>
-                                        <div>
-                                            <div style="font-weight: 600; font-size: 15px;">${m.name}</div>
-                                            <div style="font-size: 12px; color: var(--text-sub); margin-top: 2px;">${m.grams}g · <span style="color: var(--accent-main);">${Math.round(m.cal)} kcal</span> · ${this.getEnergyLabel(m.cal)}</div>
+                                        <div style="min-width:0;">
+                                            <div class="entry-title" style="font-weight: 600; font-size: 15px;">${m.name}</div>
+                                            <div class="entry-sub" style="font-size: 12px; color: var(--text-sub); margin-top: 2px;">${m.grams}g · <span style="color: var(--accent-main);">${Math.round(m.cal)} kcal</span> · ${this.getEnergyLabel(m.cal)}</div>
                                         </div>
                                     </div>
-                                    <div style="display:flex; gap:6px; font-size:10px; font-weight:700; color:var(--text-sub); margin-right:6px;">
+                                    <div style="display:flex; gap:6px; font-size:10px; font-weight:700; color:var(--text-sub); margin-right:6px; flex-wrap:wrap; justify-content:flex-end;">
                                         <span>B${Math.round(m.p)}</span>
                                         <span>T${Math.round(m.f)}</span>
                                         <span>W${Math.round(m.c)}</span>
                                     </div>
+                                    <button class="edit-btn" data-id="${m.id}" style="width:24px; height:24px; color:var(--accent-cyan);">${Icons.edit}</button>
                                     <button class="del-btn" data-id="${m.id}" style="width:24px; height:24px; color:var(--accent-red);">${Icons.close}</button>
                                 </div>
                             `).join('')}
@@ -105,6 +112,38 @@ export class DaysView extends Component {
 
         this.container.querySelectorAll('.del-btn').forEach(btn => {
             btn.onclick = (e) => store.deleteMealEntry(e.currentTarget.dataset.id);
+        });
+
+        this.container.querySelectorAll('.edit-btn').forEach(btn => {
+            btn.onclick = (e) => {
+                const id = e.currentTarget.dataset.id;
+                const entry = meals.find(item => String(item.id) === String(id));
+                if (!entry) return;
+                const next = window.prompt('Nowa gramatura (g):', String(Math.round(entry.grams)));
+                if (next === null) return;
+                const grams = Number(next);
+                if (!Number.isFinite(grams) || grams <= 0) return;
+                store.updateMealEntry(id, { grams });
+            };
+        });
+
+        this.container.querySelectorAll('.toggle-meal').forEach(btn => {
+            btn.onclick = () => {
+                const mealId = btn.dataset.meal;
+                this.collapsedMeals[mealId] = !this.collapsedMeals[mealId];
+                this.update(store.state);
+            };
+        });
+
+        this.container.querySelectorAll('.copy-meal').forEach(btn => {
+            btn.onclick = () => {
+                const sourceMeal = btn.dataset.meal;
+                const targetDate = window.prompt('Data docelowa (RRRR-MM-DD):', state.currentDate);
+                if (!targetDate) return;
+                const targetMeal = window.prompt('Posiłek docelowy: breakfast / lunch / dinner', sourceMeal) || sourceMeal;
+                if (!['breakfast', 'lunch', 'dinner'].includes(targetMeal)) return;
+                store.copyMealEntries(state.currentDate, sourceMeal, targetDate, targetMeal);
+            };
         });
     }
 

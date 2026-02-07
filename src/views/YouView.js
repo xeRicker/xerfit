@@ -28,14 +28,6 @@ export class YouView extends Component {
         };
     }
 
-    calculateTdeeForDraft() {
-        const u = this.draft;
-        const bmr = u.sex === 'female'
-            ? (10 * u.weight) + (6.25 * u.height) - (5 * u.age) - 161
-            : (10 * u.weight) + (6.25 * u.height) - (5 * u.age) + 5;
-        return Math.round(bmr * Number(u.activity || 1.2));
-    }
-
     getMacroKcal() {
         return (this.draft.targetP * MACRO_KCAL.p) + (this.draft.targetC * MACRO_KCAL.c) + (this.draft.targetF * MACRO_KCAL.f);
     }
@@ -49,10 +41,6 @@ export class YouView extends Component {
         return keys.some(key => Number.isFinite(this.draft[key])
             ? Number(this.draft[key]) !== Number(state.user[key])
             : this.draft[key] !== state.user[key]);
-    }
-
-    isMacroValid() {
-        return this.getMacroDelta() === 0;
     }
 
     autoFillMacros() {
@@ -70,12 +58,9 @@ export class YouView extends Component {
         this.ensureDraft(state);
         this.normalizeDraft();
 
-        const draftTdee = this.calculateTdeeForDraft();
         const changed = this.hasChanges(state);
         const macroDelta = this.getMacroDelta();
-        const macroValid = this.isMacroValid();
-        const canSave = changed && macroValid;
-        const tdeeDifferent = Number(this.draft.targetCal) !== draftTdee;
+        const canSave = changed;
 
         this.container.innerHTML = `
             <header style="padding: calc(var(--safe-top) + 20px) 20px 10px;">
@@ -111,16 +96,7 @@ export class YouView extends Component {
                     </div>
                     <div class="input-group" style="margin-bottom:0;">
                         <label class="input-label" id="activity-label">Aktywność (${Number(this.draft.activity || 1.4).toFixed(2)})</label>
-                        <input type="range" min="1.2" max="2.0" step="0.05" id="u-activity" value="${this.draft.activity || 1.4}" style="width:100%; accent-color: var(--accent-main);">
-                    </div>
-                </div>
-
-                <div class="card" style="margin: 0 0 14px 0;">
-                    <h3 style="margin-bottom: 10px; font-size: 14px; color: var(--accent-main);">TDEE i cele</h3>
-                    <div style="font-size:13px; color:var(--text-sub); margin-bottom:10px;">Szacowane TDEE (na podstawie draftu): <strong style="color:var(--text-main);">${draftTdee} kcal</strong></div>
-                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-                        <button id="apply-tdee" class="input-field" ${tdeeDifferent ? '' : 'disabled'} style="text-align:center; border-color: var(--line-strong); color:var(--accent-main);">Ustaw TDEE jako cel kalorii</button>
-                        <button id="auto-macros" class="input-field" style="text-align:center;">Auto makra 30/45/25</button>
+                        <input type="range" min="1.2" max="2.0" step="0.05" id="u-activity" value="${this.draft.activity || 1.4}" class="smooth-range" style="width:100%; accent-color: var(--accent-main);">
                     </div>
                 </div>
 
@@ -136,8 +112,11 @@ export class YouView extends Component {
                         <div class="input-group"><label class="input-label">Węgle (g)</label><input type="number" id="u-c" class="input-field" value="${this.draft.targetC}"></div>
                     </div>
 
-                    <div style="margin-top: 4px; font-size: 12px; color:${macroValid ? 'var(--accent-soft)' : 'var(--accent-red)'};">
-                        Makra = ${Math.round(this.getMacroKcal())} kcal ${macroValid ? '✓' : `· różnica ${macroDelta > 0 ? '+' : ''}${macroDelta} kcal`}
+                    <div style="display:grid; grid-template-columns: 1fr auto; gap:8px; align-items:center; margin-top: 4px;">
+                        <div id="macro-status" style="font-size: 12px; color:${Math.abs(macroDelta) <= 50 ? 'var(--accent-soft)' : 'var(--accent-red)'};">
+                            Makra = ${Math.round(this.getMacroKcal())} kcal · różnica ${macroDelta > 0 ? '+' : ''}${macroDelta} kcal
+                        </div>
+                        <button id="auto-macros" class="input-field" style="text-align:center; padding:8px 10px; width:auto;">Auto makra</button>
                     </div>
                 </div>
 
@@ -147,6 +126,7 @@ export class YouView extends Component {
         `;
 
         this.bindEvents(state);
+        this.refreshComputed(state);
     }
 
     syncDraft() {
@@ -172,33 +152,46 @@ export class YouView extends Component {
             if (!el) return;
             const handler = () => {
                 this.syncDraft();
-                this.update(state);
+                this.refreshComputed(state);
             };
             el.oninput = handler;
             el.onchange = handler;
         });
 
-        this.container.querySelector('#apply-tdee').onclick = () => {
-            this.syncDraft();
-            this.draft.targetCal = this.calculateTdeeForDraft();
-            this.update(state);
-        };
-
         this.container.querySelector('#auto-macros').onclick = () => {
             this.syncDraft();
             this.autoFillMacros();
-            this.update(state);
+            ['#u-p', '#u-f', '#u-c'].forEach(sel => {
+                const el = this.container.querySelector(sel);
+                if (el) el.value = this.draft[sel === '#u-p' ? 'targetP' : sel === '#u-f' ? 'targetF' : 'targetC'];
+            });
+            this.refreshComputed(state);
         };
 
         this.container.querySelector('#save-profile').onclick = () => {
             this.syncDraft();
-            if (!this.isMacroValid() || !this.hasChanges(state)) return;
+            if (!this.hasChanges(state)) return;
             store.updateUser(this.draft);
             const btn = this.container.querySelector('#save-profile');
             const original = btn.innerText;
             btn.innerText = 'Zapisano!';
             setTimeout(() => { btn.innerText = original; }, 1000);
         };
+    }
+
+    refreshComputed(state) {
+        const activityLabel = this.container.querySelector('#activity-label');
+        if (activityLabel) activityLabel.textContent = `Aktywność (${Number(this.draft.activity || 1.4).toFixed(2)})`;
+
+        const macroDelta = this.getMacroDelta();
+        const macroStatus = this.container.querySelector('#macro-status');
+        if (macroStatus) {
+            macroStatus.textContent = `Makra = ${Math.round(this.getMacroKcal())} kcal · różnica ${macroDelta > 0 ? '+' : ''}${macroDelta} kcal`;
+            macroStatus.style.color = Math.abs(macroDelta) <= 50 ? 'var(--accent-soft)' : 'var(--accent-red)';
+        }
+
+        const saveBtn = this.container.querySelector('#save-profile');
+        if (saveBtn) saveBtn.disabled = !this.hasChanges(state);
     }
 
     destroy() { this.unsub(); }
