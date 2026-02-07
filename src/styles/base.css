@@ -7,20 +7,12 @@
 }
 
 body {
-    background: var(--bg-app);
+    background: radial-gradient(circle at 20% -20%, rgba(0, 255, 54, 0.15), transparent 40%), var(--bg-app);
     color: var(--text-main);
     overflow: hidden;
     height: 100vh;
     width: 100vw;
     font-size: 14px;
-}
-
-body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background: var(--grad-glow);
-    pointer-events: none;
 }
 
 input, button, select, textarea {
@@ -29,10 +21,7 @@ input, button, select, textarea {
     outline: none;
 }
 
-button {
-    cursor: pointer;
-    background: transparent;
-}
+button { background: transparent; cursor: pointer; }
 
 #app {
     display: flex;

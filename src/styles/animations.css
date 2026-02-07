@@ -1,7 +1,7 @@
 .anim-slide {
-    animation: slideUp 0.36s var(--ease-material) forwards;
+    animation: slideUp .34s var(--ease-fluid) forwards;
     opacity: 0;
-    transform: translateY(14px) scale(0.99);
+    transform: translateY(12px) scale(.99);
 }
 
 @keyframes slideUp {
