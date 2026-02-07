@@ -115,6 +115,49 @@ class Store {
         this.notify();
     }
 
+    updateMealEntry(entryId, data = {}) {
+        const date = this.state.currentDate;
+        const entries = this.state.logs[date] || [];
+        let updated = false;
+
+        this.state.logs[date] = entries.map(entry => {
+            if (String(entry.id) !== String(entryId)) return entry;
+            updated = true;
+            const grams = Math.max(1, Number(data.grams ?? entry.grams));
+            const ratio = grams / Math.max(1, Number(entry.grams) || 1);
+            return {
+                ...entry,
+                meal: data.meal || entry.meal,
+                grams,
+                p: entry.p * ratio,
+                c: entry.c * ratio,
+                f: entry.f * ratio,
+                cal: entry.cal * ratio
+            };
+        });
+
+        if (!updated) return;
+        StorageService.save('db/logs', this.state.logs);
+        this.notify();
+    }
+
+    copyMealEntries(sourceDate, sourceMeal, targetDate, targetMeal) {
+        const source = (this.state.logs[sourceDate] || []).filter(entry => (entry.meal || 'breakfast') === sourceMeal);
+        if (!source.length) return;
+        if (!this.state.logs[targetDate]) this.state.logs[targetDate] = [];
+
+        const copies = source.map(entry => ({
+            ...entry,
+            id: `${Date.now()}-${Math.random().toString(16).slice(2, 7)}`,
+            meal: targetMeal,
+            copiedFrom: sourceDate
+        }));
+
+        this.state.logs[targetDate] = [...this.state.logs[targetDate], ...copies];
+        StorageService.save('db/logs', this.state.logs);
+        this.notify();
+    }
+
     deleteMealEntry(id) {
         const date = this.state.currentDate;
         this.state.logs[date] = (this.state.logs[date] || []).filter(e => e.id !== id);

@@ -46,10 +46,25 @@
     display: flex;
     overflow-x: auto;
     scroll-snap-type: x mandatory;
-    padding: 10px 16px;
+    padding: 10px 16px 12px;
     gap: 10px;
     background: rgba(7, 15, 10, 0.9);
     border-bottom: 1px solid var(--line-soft);
+}
+
+.day-strip-wrap {
+    padding-top: calc(var(--safe-top) + 6px);
+    background: rgba(7, 15, 10, 0.96);
+}
+
+.app-logo {
+    padding: 0 16px 6px;
+    font-size: 20px;
+    font-weight: 800;
+    font-style: italic;
+    letter-spacing: 0.6px;
+    color: var(--accent-main);
+    text-shadow: 0 0 14px rgba(0, 255, 54, 0.35);
 }
 .day-strip::-webkit-scrollbar { display: none; }
 
@@ -141,11 +156,17 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
+    gap: 8px;
     padding: 14px 16px;
     margin-bottom: 8px;
     background: var(--bg-surface);
     border: 1px solid var(--line-soft);
     border-radius: 16px;
+}
+
+.entry-title,
+.entry-sub {
+    overflow-wrap: anywhere;
 }
 
 .modal-sheet {
@@ -185,6 +206,19 @@
     gap: 6px;
     align-items: end;
     height: 110px;
+    position: relative;
+    padding-top: 14px;
+}
+
+.week-chart-average {
+    position: absolute;
+    left: 0;
+    right: 0;
+    border-top: 1px dashed rgba(93,233,255,.55);
+    font-size: 10px;
+    color: var(--accent-cyan);
+    text-align: right;
+    transform: translateY(50%);
 }
 
 .week-chart-bar {
@@ -204,6 +238,10 @@
     background: rgba(93,233,255,.35);
     border: 1px solid rgba(93,233,255,.4);
     min-height: 10px;
+}
+
+.smooth-range {
+    touch-action: pan-x;
 }
 
 .week-chart-bar.active .fill {

@@ -49,6 +49,7 @@ export class WeekView extends Component {
         const average = Math.round(total / 7);
         const selected = dayStats.find((d) => d.key === this.selectedDate) || dayStats[0];
         const maxDayCal = Math.max(1, ...dayStats.map(d => Math.round(d.cal)));
+        const avgHeight = Math.max(8, Math.round((average / maxDayCal) * 100));
 
         this.container.innerHTML = `
             <header style="padding: calc(var(--safe-top) + 20px) 20px 12px;">
@@ -70,11 +71,14 @@ export class WeekView extends Component {
                     <div class="week-chart">
                         ${dayStats.map(day => {
                             const h = Math.max(10, Math.round((day.cal / maxDayCal) * 100));
+                            const readableDate = day.date.toLocaleDateString('pl-PL', { day: '2-digit', month: '2-digit' });
                             return `<button class="week-chart-bar ${this.selectedDate === day.key ? 'active' : ''}" data-date="${day.key}">
                                 <div class="fill" style="height:${h}%;"></div>
                                 <span>${Math.round(day.cal)}</span>
+                                <span style="font-size:10px; color:var(--text-dim);">${readableDate}</span>
                             </button>`;
                         }).join('')}
+                        <div class="week-chart-average" style="bottom:${avgHeight}%;">Średnia ${average} kcal</div>
                     </div>
 
                     <div style="display:grid; grid-template-columns: repeat(7, 1fr); gap:6px; margin-top: 10px;">

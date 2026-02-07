@@ -39,7 +39,12 @@ export class DayStrip extends Component {
             `;
         }).join('');
 
-        this.container.innerHTML = `<div class="day-strip">${html}</div>`;
+        this.container.innerHTML = `
+            <div class="day-strip-wrap">
+                <div class="app-logo">Xerfit</div>
+                <div class="day-strip">${html}</div>
+            </div>
+        `;
 
         const active = this.container.querySelector('.active');
         if (active && !this.didInitialScroll) {
