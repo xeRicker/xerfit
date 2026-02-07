@@ -112,7 +112,7 @@ export class ProductModal extends Component {
                     Posiłek: <strong style="color:var(--accent-main);">${MEALS.find(m => m.id === this.meal)?.label}</strong>
                 </div>
                 <div class="input-group" style="margin-bottom: 14px;">
-                    <input type="number" id="gram-input" class="input-field" placeholder="Gramy" value="100" autofocus style="font-size: 30px; font-weight: 700; text-align: center; color: var(--accent-main);">
+                    <input type="number" id="gram-input" class="input-field" placeholder="Gramy" value="100" autofocus style="font-size: 30px; font-weight: 700; text-align: right; color: var(--accent-main);">
                 </div>
                 <div style="display:flex; gap:8px;">
                     <button id="back-step" class="input-field" style="text-align:center;">Wróć</button>

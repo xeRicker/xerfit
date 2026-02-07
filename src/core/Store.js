@@ -15,7 +15,8 @@ class Store {
             targetCal: 2500,
             targetP: 180,
             targetC: 250,
-            targetF: 70
+            targetF: 70,
+            proteinMode: 'medium'
         });
 
         const products = StorageService.get('db/products', [
@@ -23,8 +24,8 @@ class Store {
             { id: '2', name: 'Pierś z kurczaka', p: 31, c: 0, f: 3.6, cal: 165 },
             { id: '3', name: 'Płatki owsiane', p: 13, c: 68, f: 6.5, cal: 379 }
         ]).map((p, i) => ({
-            color: p.color || ['#00ff36', '#5de9ff', '#c595ff'][i % 3],
-            icon: p.icon || ['egg', 'chicken', 'grain'][i % 3],
+            color: p.color || ['#2596be', '#6b8cff', '#7ac4de', '#58b8da'][i % 3],
+            icon: p.icon || ['egg', 'chicken', 'grain', 'fish'][i % 3],
             favorite: Boolean(p.favorite),
             defaultMeal: mealDefaults.includes(p.defaultMeal) ? p.defaultMeal : 'global',
             ...p
@@ -102,7 +103,7 @@ class Store {
             name: product.name,
             grams,
             meal,
-            color: product.color || '#00ff36',
+            color: product.color || '#2596be',
             icon: product.icon || 'leaf',
             p: product.p * factor,
             c: product.c * factor,
@@ -137,6 +138,36 @@ class Store {
         });
 
         if (!updated) return;
+        StorageService.save('db/logs', this.state.logs);
+        this.notify();
+    }
+
+
+    updateMealEntryForDate(date, entryId, data = {}) {
+        const entries = this.state.logs[date] || [];
+        let updated = false;
+        this.state.logs[date] = entries.map(entry => {
+            if (String(entry.id) !== String(entryId)) return entry;
+            updated = true;
+            const grams = Math.max(1, Number(data.grams ?? entry.grams));
+            const ratio = grams / Math.max(1, Number(entry.grams) || 1);
+            return {
+                ...entry,
+                meal: data.meal || entry.meal,
+                grams,
+                p: entry.p * ratio,
+                c: entry.c * ratio,
+                f: entry.f * ratio,
+                cal: entry.cal * ratio
+            };
+        });
+        if (!updated) return;
+        StorageService.save('db/logs', this.state.logs);
+        this.notify();
+    }
+
+    deleteMealEntryForDate(date, id) {
+        this.state.logs[date] = (this.state.logs[date] || []).filter(e => String(e.id) !== String(id));
         StorageService.save('db/logs', this.state.logs);
         this.notify();
     }

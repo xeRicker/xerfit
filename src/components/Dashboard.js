@@ -29,9 +29,9 @@ export class Dashboard extends Component {
                 </div>
 
                 <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:10px;">
-                    ${this.macroCard('Białko', totals.p, targets.targetP, '#6eff98')}
-                    ${this.macroCard('Tłuszcze', totals.f, targets.targetF, '#e4b8ff')}
-                    ${this.macroCard('Węgle', totals.c, targets.targetC, '#7fe8ff')}
+                    ${this.macroCard('Białko', totals.p, targets.targetP, 'var(--macro-protein)')}
+                    ${this.macroCard('Tłuszcze', totals.f, targets.targetF, 'var(--macro-fat)')}
+                    ${this.macroCard('Węgle', totals.c, targets.targetC, 'var(--macro-carb)')}
                 </div>
             </div>
         `;
