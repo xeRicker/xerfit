@@ -3,11 +3,11 @@
     margin: 0;
     padding: 0;
     -webkit-tap-highlight-color: transparent;
-    font-family: var(--font-main); /* Enforce Inter everywhere */
+    font-family: var(--font-main);
 }
 
 body {
-    background-color: var(--bg-app);
+    background: var(--bg-app);
     color: var(--text-main);
     overflow: hidden;
     height: 100vh;
@@ -15,11 +15,23 @@ body {
     font-size: 14px;
 }
 
-/* Fix inputs and buttons not inheriting font */
+body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: var(--grad-glow);
+    pointer-events: none;
+}
+
 input, button, select, textarea {
     font-family: inherit;
     border: none;
     outline: none;
+}
+
+button {
+    cursor: pointer;
+    background: transparent;
 }
 
 #app {
@@ -32,5 +44,5 @@ input, button, select, textarea {
     flex: 1;
     overflow-y: auto;
     overflow-x: hidden;
-    padding-bottom: calc(80px + var(--safe-bottom));
+    padding-bottom: calc(84px + var(--safe-bottom));
 }

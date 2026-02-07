@@ -26,8 +26,8 @@ class Store {
 
     notify() { this.subscribers.forEach(cb => cb(this.state)); }
 
-    // Actions
     setDate(dateStr) {
+        if (this.state.currentDate === dateStr) return;
         this.state.currentDate = dateStr;
         this.notify();
     }
@@ -51,7 +51,7 @@ class Store {
         this.notify();
     }
 
-    addLogEntry(product, grams) {
+    addLogEntry(product, grams, meal = 'breakfast') {
         const date = this.state.currentDate;
         if (!this.state.logs[date]) this.state.logs[date] = [];
 
@@ -60,7 +60,8 @@ class Store {
             id: Date.now().toString(),
             productId: product.id,
             name: product.name,
-            grams: grams,
+            grams,
+            meal,
             p: product.p * factor,
             c: product.c * factor,
             f: product.f * factor,
@@ -74,7 +75,7 @@ class Store {
 
     deleteLogEntry(id) {
         const date = this.state.currentDate;
-        this.state.logs[date] = this.state.logs[date].filter(e => e.id !== id);
+        this.state.logs[date] = (this.state.logs[date] || []).filter(e => e.id !== id);
         StorageService.save('db/logs', this.state.logs);
         this.notify();
     }
