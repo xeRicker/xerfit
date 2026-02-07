@@ -4,11 +4,16 @@ import { Icons } from '../core/Icons.js';
 
 const ICON_OPTIONS = ['leaf', 'chicken', 'egg', 'fish', 'grain'];
 const COLOR_OPTIONS = ['#00ff36', '#5de9ff', '#c595ff', '#ffd166', '#ff6f82', '#8cff9f'];
+const PAGE_SIZE = 5;
 
 export class ProductsView extends Component {
     constructor(container) {
         super(container);
         this.pendingDeleteId = null;
+        this.query = '';
+        this.sortBy = 'name';
+        this.page = 1;
+        this.onlyFavorites = false;
         this.form = {
             name: '', cal: '', p: '', c: '', f: '',
             color: '#00ff36', icon: 'leaf', defaultMeal: 'global'
@@ -23,8 +28,32 @@ export class ProductsView extends Component {
         return Boolean(f.name.trim()) && [f.cal, f.p, f.c, f.f].every(v => String(v).length > 0 && Number(v) >= 0);
     }
 
+    getFiltered(products) {
+        const query = this.query.trim().toLowerCase();
+        const source = products
+            .filter(p => !query || p.name.toLowerCase().includes(query))
+            .filter(p => !this.onlyFavorites || p.favorite);
+
+        const sorted = [...source].sort((a, b) => {
+            if (this.sortBy === 'protein') return b.p - a.p;
+            if (this.sortBy === 'fat') return b.f - a.f;
+            if (this.sortBy === 'calories') return b.cal - a.cal;
+            return a.name.localeCompare(b.name, 'pl');
+        });
+
+        const pages = Math.max(1, Math.ceil(sorted.length / PAGE_SIZE));
+        if (this.page > pages) this.page = pages;
+
+        return {
+            pages,
+            total: sorted.length,
+            items: sorted.slice((this.page - 1) * PAGE_SIZE, this.page * PAGE_SIZE)
+        };
+    }
+
     update(state) {
         const canSave = this.isFormValid();
+        const { items, pages, total } = this.getFiltered(state.products);
 
         this.container.innerHTML = `
             <header style="padding: calc(var(--safe-top) + 20px) 20px 10px;">
@@ -32,11 +61,11 @@ export class ProductsView extends Component {
                     <span style="width:18px; height:18px; color: var(--accent-main);">${Icons.products}</span>
                     Produkty
                 </h1>
-                <p style="color: var(--text-sub); font-size: 13px;">Twoja baza produktów</p>
+                <p style="color: var(--text-sub); font-size: 13px;">Wyszukiwanie, sortowanie i ulubione</p>
             </header>
 
             <div style="padding: 0 16px;">
-                <div class="card" style="margin: 0 0 24px 0; border-color: var(--line-strong); background: var(--grad-liquid), var(--grad-surface);">
+                <div class="card" style="margin: 0 0 18px 0; border-color: var(--line-strong); background: var(--grad-liquid), var(--grad-surface);">
                     <h3 style="margin-bottom: 12px; font-size: 13px; color: var(--accent-main); letter-spacing: .7px;">NOWY PRODUKT</h3>
                     <input id="p-name" class="input-field" placeholder="Nazwa" value="${this.form.name}" style="margin-bottom: 8px;">
                     <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 8px;">
@@ -54,45 +83,57 @@ export class ProductsView extends Component {
                     </div>
 
                     <div style="margin-top:10px; display:grid; grid-template-columns:1fr 1fr; gap:8px;">
-                        <div>
-                            <label class="input-label">Ikona</label>
-                            <select id="p-icon" class="input-field">
-                                ${ICON_OPTIONS.map(icon => `<option value="${icon}" ${this.form.icon === icon ? 'selected' : ''}>${icon}</option>`).join('')}
-                            </select>
-                        </div>
-                        <div>
-                            <label class="input-label">Domyślny posiłek</label>
-                            <select id="p-meal" class="input-field">
-                                <option value="global" ${this.form.defaultMeal === 'global' ? 'selected' : ''}>Globalny</option>
-                                <option value="breakfast" ${this.form.defaultMeal === 'breakfast' ? 'selected' : ''}>Śniadanie</option>
-                                <option value="lunch" ${this.form.defaultMeal === 'lunch' ? 'selected' : ''}>Obiad</option>
-                                <option value="dinner" ${this.form.defaultMeal === 'dinner' ? 'selected' : ''}>Kolacja</option>
-                            </select>
-                        </div>
+                        <select id="p-icon" class="input-field">${ICON_OPTIONS.map(icon => `<option value="${icon}" ${this.form.icon === icon ? 'selected' : ''}>${icon}</option>`).join('')}</select>
+                        <select id="p-meal" class="input-field">
+                            <option value="global" ${this.form.defaultMeal === 'global' ? 'selected' : ''}>Globalny</option>
+                            <option value="breakfast" ${this.form.defaultMeal === 'breakfast' ? 'selected' : ''}>Śniadanie</option>
+                            <option value="lunch" ${this.form.defaultMeal === 'lunch' ? 'selected' : ''}>Obiad</option>
+                            <option value="dinner" ${this.form.defaultMeal === 'dinner' ? 'selected' : ''}>Kolacja</option>
+                        </select>
                     </div>
 
-                    <button id="save-prod" class="btn-primary" ${canSave ? '' : 'disabled'} style="margin-top: 12px; display:flex; align-items:center; justify-content:center; gap:8px;">
-                        <span style="width:16px; height:16px;">${Icons.check}</span>
-                        Zapisz produkt
-                    </button>
+                    <button id="save-prod" class="btn-primary" ${canSave ? '' : 'disabled'} style="margin-top: 12px;">Zapisz produkt</button>
                 </div>
 
-                <div style="margin-bottom: 8px; font-size: 12px; color: var(--text-sub); text-transform: uppercase; letter-spacing: 1px;">Zapisane produkty</div>
-                ${state.products.map(p => `
+                <div class="card" style="margin: 0 0 12px 0; padding:12px;">
+                    <div style="display:flex; gap:8px; align-items:center; margin-bottom:8px;">
+                        <span style="width:16px; height:16px; color:var(--accent-cyan);">${Icons.search}</span>
+                        <input id="search" class="input-field" placeholder="Szukaj produktów..." value="${this.query}" style="padding:10px;">
+                    </div>
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;">
+                        <select id="sort" class="input-field">
+                            <option value="name" ${this.sortBy === 'name' ? 'selected' : ''}>Sort: nazwa</option>
+                            <option value="protein" ${this.sortBy === 'protein' ? 'selected' : ''}>Sort: białko</option>
+                            <option value="fat" ${this.sortBy === 'fat' ? 'selected' : ''}>Sort: tłuszcz</option>
+                            <option value="calories" ${this.sortBy === 'calories' ? 'selected' : ''}>Sort: kalorie</option>
+                        </select>
+                        <button id="toggle-fav" class="input-field" style="text-align:center; color:${this.onlyFavorites ? 'var(--accent-main)' : 'var(--text-sub)'};">${this.onlyFavorites ? '★ Ulubione' : '☆ Wszystkie'}</button>
+                    </div>
+                </div>
+
+                <div style="margin-bottom: 8px; font-size: 12px; color: var(--text-sub);">Wyniki: ${total}</div>
+                ${items.map(p => `
                     <div class="list-item" style="border-left: 4px solid ${p.color || '#00ff36'};">
                         <div style="flex: 1; display:flex; align-items:center; gap:10px;">
                             <span style="width:18px; height:18px; color:${p.color || '#00ff36'};">${this.iconFor(p.icon)}</span>
                             <div>
                                 <div style="font-weight: 600; font-size: 15px;">${p.name}</div>
-                                <div style="font-size: 11px; color: var(--text-sub); margin-top: 2px;">100g: ${p.cal} kcal · B${p.p} T${p.f} W${p.c} · ${({global:'globalny',breakfast:'śniadanie',lunch:'obiad',dinner:'kolacja'})[p.defaultMeal || 'global']}</div>
+                                <div style="font-size: 11px; color: var(--text-sub); margin-top: 2px;">100g: ${p.cal} kcal · B${p.p} T${p.f} W${p.c}</div>
                             </div>
                         </div>
                         <div style="display:flex; align-items:center; gap:8px; margin-left:10px;">
+                            <button class="fav-prod" data-id="${p.id}" style="color: ${p.favorite ? 'var(--accent-main)' : 'var(--text-sub)'}; width:22px; height:22px;">${p.favorite ? Icons.starFilled : Icons.star}</button>
                             ${this.pendingDeleteId === p.id ? `<button class="confirm-del" data-id="${p.id}" style="font-size:11px; padding:6px 8px; border-radius:8px; background:rgba(255,107,122,.12); color:var(--accent-red); border:1px solid rgba(255,107,122,.5);">Potwierdź</button>` : ''}
-                            <button class="del-prod" data-id="${p.id}" style="color: var(--accent-red); width:22px; height:22px; display:grid; place-items:center;">${Icons.close}</button>
+                            <button class="del-prod" data-id="${p.id}" style="color: var(--accent-red); width:22px; height:22px;">${Icons.close}</button>
                         </div>
                     </div>
                 `).join('')}
+
+                <div style="display:flex; justify-content:space-between; margin:8px 0 0; color:var(--text-sub);">
+                    <button id="prev-page" ${this.page === 1 ? 'disabled' : ''}>← Poprzednia</button>
+                    <span>Strona ${this.page}/${pages}</span>
+                    <button id="next-page" ${this.page === pages ? 'disabled' : ''}>Następna →</button>
+                </div>
             </div>
             <div style="height: 100px;"></div>
         `;
@@ -116,8 +157,9 @@ export class ProductsView extends Component {
     bindEvents() {
         ['#p-name', '#p-cal', '#p-p', '#p-f', '#p-c', '#p-icon', '#p-meal'].forEach(sel => {
             const el = this.container.querySelector(sel);
-            el.oninput = () => { this.syncForm(); this.update(store.state); };
-            el.onchange = () => { this.syncForm(); this.update(store.state); };
+            if (!el) return;
+            el.oninput = () => this.syncForm();
+            el.onchange = () => this.syncForm();
         });
 
         this.container.querySelectorAll('.color-opt').forEach(btn => {
@@ -128,6 +170,7 @@ export class ProductsView extends Component {
         });
 
         this.container.querySelector('#save-prod').onclick = () => {
+            this.syncForm();
             if (!this.isFormValid()) return;
             store.addProduct({
                 name: this.form.name.trim(),
@@ -137,11 +180,20 @@ export class ProductsView extends Component {
                 f: Number(this.form.f),
                 color: this.form.color,
                 icon: this.form.icon,
-                defaultMeal: this.form.defaultMeal
+                defaultMeal: this.form.defaultMeal,
+                favorite: false
             });
             this.form = { name: '', cal: '', p: '', c: '', f: '', color: '#00ff36', icon: 'leaf', defaultMeal: 'global' };
             this.update(store.state);
         };
+
+        this.container.querySelector('#search').oninput = (e) => { this.query = e.currentTarget.value; this.page = 1; this.update(store.state); };
+        this.container.querySelector('#sort').onchange = (e) => { this.sortBy = e.currentTarget.value; this.page = 1; this.update(store.state); };
+        this.container.querySelector('#toggle-fav').onclick = () => { this.onlyFavorites = !this.onlyFavorites; this.page = 1; this.update(store.state); };
+
+        this.container.querySelectorAll('.fav-prod').forEach(btn => {
+            btn.onclick = () => store.toggleFavoriteProduct(btn.dataset.id);
+        });
 
         this.container.querySelectorAll('.del-prod').forEach(btn => {
             btn.onclick = (e) => {
@@ -157,6 +209,11 @@ export class ProductsView extends Component {
                 this.pendingDeleteId = null;
             };
         });
+
+        const prev = this.container.querySelector('#prev-page');
+        const next = this.container.querySelector('#next-page');
+        if (prev) prev.onclick = () => { if (this.page > 1) { this.page -= 1; this.update(store.state); } };
+        if (next) next.onclick = () => { this.page += 1; this.update(store.state); };
     }
 
     destroy() { this.unsub(); }

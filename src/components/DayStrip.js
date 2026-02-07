@@ -11,7 +11,7 @@ export class DayStrip extends Component {
 
     generateDays() {
         const days = [];
-        for (let i = -7; i <= 7; i++) {
+        for (let i = -14; i <= 14; i++) {
             const d = new Date();
             d.setDate(d.getDate() + i);
             days.push(d);
@@ -26,7 +26,7 @@ export class DayStrip extends Component {
         const html = this.days.map(date => {
             const dateStr = date.toISOString().split('T')[0];
             const isToday = dateStr === current;
-            const dayName = date.toLocaleDateString('en-US', { weekday: 'short' });
+            const dayName = date.toLocaleDateString('pl-PL', { weekday: 'short' });
             const dayNum = date.getDate();
             const hasData = logs[dateStr] && logs[dateStr].length > 0;
 

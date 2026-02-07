@@ -24,6 +24,13 @@ export class DaysView extends Component {
         return Icons[entry.icon] || Icons.leaf;
     }
 
+    getEnergyLabel(calories) {
+        if (calories >= 1500) return '💣 Bomba kaloryczna';
+        if (calories >= 1000) return '🔥 Bardzo kaloryczne';
+        if (calories >= 500) return '⚡ Sycące';
+        return '🌿 Lekkie';
+    }
+
     update(state) {
         const date = state.currentDate;
         const meals = state.logs[date] || [];
@@ -59,10 +66,10 @@ export class DaysView extends Component {
                             ${entries.length === 0 ? `<div style="font-size:12px; color:var(--text-dim);">Brak produktów.</div>` : entries.map((m, idx) => `
                                 <div class="list-item anim-slide" style="animation-delay:${idx * 40}ms; border-left:3px solid ${m.color || '#00ff36'};">
                                     <div style="display:flex; align-items:center; gap:10px; flex:1;">
-                                        <span style="width:18px; height:18px; color:${m.color || '#00ff36'};">${this.iconFor(m)}</span>
+                                        <span style="width:20px; height:20px; color:${m.color || '#00ff36'};">${this.iconFor(m)}</span>
                                         <div>
                                             <div style="font-weight: 600; font-size: 15px;">${m.name}</div>
-                                            <div style="font-size: 12px; color: var(--text-sub); margin-top: 2px;">${m.grams}g · <span style="color: var(--accent-main);">${Math.round(m.cal)} kcal</span></div>
+                                            <div style="font-size: 12px; color: var(--text-sub); margin-top: 2px;">${m.grams}g · <span style="color: var(--accent-main);">${Math.round(m.cal)} kcal</span> · ${this.getEnergyLabel(m.cal)}</div>
                                         </div>
                                     </div>
                                     <div style="display:flex; gap:6px; font-size:10px; font-weight:700; color:var(--text-sub); margin-right:6px;">
