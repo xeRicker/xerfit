@@ -1,38 +1,36 @@
 :root {
-    --bg-app: #070b08;
-    --bg-surface: #101612;
-    --bg-surface-2: #17201a;
-    --bg-elevated: #1d2820;
-    --bg-glass: rgba(12, 18, 14, 0.72);
+    --bg-app: #050b07;
+    --bg-surface: #0d1610;
+    --bg-surface-2: #132117;
+    --bg-elevated: #1a2d1f;
+    --bg-glass: rgba(10, 20, 13, 0.68);
 
-    --text-main: #f4fff6;
-    --text-sub: #a9b8ad;
-    --text-dim: #6f7f73;
+    --text-main: #edfff2;
+    --text-sub: #adcab4;
+    --text-dim: #6f8975;
 
-    --neon-green: #39ff88;
-    --neon-green-soft: #7cffb4;
-    --neon-cyan: #5ce8ff;
-    --neon-purple: #ba87ff;
-    --neon-red: #ff6b7a;
-    --neon-blue: var(--neon-cyan);
-    --text-light: #d6e2d9;
+    --accent-main: #00ff36;
+    --accent-soft: #61ff83;
+    --accent-deep: #00bf2b;
+    --accent-cyan: #5de9ff;
+    --accent-purple: #c595ff;
+    --accent-red: #ff6f82;
 
-    --grad-primary: linear-gradient(135deg, #4cff93 0%, #23d86f 100%);
-    --grad-surface: linear-gradient(180deg, #1a241d 0%, #101612 100%);
-    --grad-glow: radial-gradient(circle at top, rgba(57, 255, 136, 0.2), transparent 65%);
+    --grad-primary: linear-gradient(135deg, #7dff7c 0%, #00ff36 45%, #00bf2b 100%);
+    --grad-liquid: linear-gradient(160deg, rgba(112, 255, 143, 0.22) 0%, rgba(0, 255, 54, 0.06) 40%, rgba(93, 233, 255, 0.1) 100%);
+    --grad-surface: linear-gradient(165deg, #15261a 0%, #0c1710 100%);
 
     --font-main: 'Inter', sans-serif;
-
     --radius-s: 10px;
     --radius-m: 18px;
-    --radius-l: 26px;
+    --radius-l: 28px;
     --radius-pill: 999px;
 
-    --glow-green: 0 0 28px rgba(57, 255, 136, 0.28);
-    --line-soft: rgba(164, 192, 172, 0.2);
-    --line-strong: rgba(57, 255, 136, 0.42);
+    --glow-main: 0 0 32px rgba(0, 255, 54, 0.32);
+    --line-soft: rgba(165, 214, 176, 0.2);
+    --line-strong: rgba(0, 255, 54, 0.5);
 
-    --ease-material: cubic-bezier(0.2, 0.8, 0.2, 1);
+    --ease-fluid: cubic-bezier(0.22, 0.8, 0.2, 1);
 
     --safe-bottom: env(safe-area-inset-bottom, 20px);
     --safe-top: env(safe-area-inset-top, 20px);
