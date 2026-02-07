@@ -1,0 +1,9 @@
+.anim-slide {
+    animation: slideUp 0.4s var(--ease-material) forwards;
+    opacity: 0;
+    transform: translateY(20px);
+}
+
+@keyframes slideUp {
+    to { opacity: 1; transform: translateY(0); }
+}

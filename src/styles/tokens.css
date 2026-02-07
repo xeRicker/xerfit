@@ -1,0 +1,42 @@
+:root {
+    /* Base Backgrounds */
+    --bg-app: #000000;
+    --bg-surface: #121212;
+    --bg-surface-2: #1E1E1E;
+    --bg-glass: rgba(18, 18, 18, 0.85);
+
+    /* Text */
+    --text-main: #FFFFFF;
+    --text-sub: #A0A0A0;
+    --text-dim: #555555;
+
+    /* Neon Accents */
+    --neon-blue: #00E5FF;
+    --neon-purple: #D500F9;
+    --neon-green: #00E676;
+    --neon-red: #FF1744;
+
+    /* Gradients */
+    --grad-primary: linear-gradient(135deg, #00E5FF, #2979FF);
+    --grad-purple: linear-gradient(135deg, #D500F9, #651FFF);
+    --grad-green: linear-gradient(135deg, #00E676, #00C853);
+    --grad-surface: linear-gradient(180deg, #1E1E1E 0%, #121212 100%);
+
+    /* Typography */
+    --font-main: 'Inter', sans-serif;
+
+    /* Shapes */
+    --radius-s: 8px;
+    --radius-m: 16px;
+    --radius-l: 24px;
+    --radius-pill: 999px;
+
+    /* Effects */
+    --glow-blue: 0 0 20px rgba(0, 229, 255, 0.3);
+    --glow-purple: 0 0 20px rgba(213, 0, 249, 0.3);
+
+    --ease-material: cubic-bezier(0.2, 0.0, 0, 1.0);
+
+    --safe-bottom: env(safe-area-inset-bottom, 20px);
+    --safe-top: env(safe-area-inset-top, 20px);
+}
