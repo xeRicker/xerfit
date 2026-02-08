@@ -1,28 +1,29 @@
 :root {
-    --bg-app: #040608;
-    --bg-surface: #0b1015;
-    --bg-surface-2: #121921;
-    --bg-elevated: #161f29;
-    --bg-glass: rgba(6, 10, 14, 0.9);
+    --bg-app: #030503;
+    --bg-surface: #0a0f0a;
+    --bg-surface-2: #101710;
+    --bg-elevated: #161f16;
+    --bg-glass: rgba(5, 10, 5, 0.92);
 
-    --text-main: #f2f7ff;
-    --text-sub: #a8bcd4;
-    --text-dim: #6c7f96;
+    --text-main: #f4ffee;
+    --text-sub: #b6c9b0;
+    --text-dim: #7b8f78;
 
-    --accent-main: #2596be;
-    --accent-soft: #58b8da;
-    --accent-deep: #1b7898;
-    --accent-cyan: #8ed8ef;
-    --accent-purple: #5d8cff;
+    --accent-main: #b8ff2c;
+    --accent-soft: #d1ff76;
+    --accent-deep: #7db000;
+    --accent-cyan: #7ed2ff;
+    --accent-purple: #b76fff;
     --accent-red: #ff6f82;
+    --accent-orange: #ff9f43;
 
-    --macro-protein: #2596be;
-    --macro-fat: #6b8cff;
-    --macro-carb: #7ac4de;
+    --macro-protein: #7ed2ff;
+    --macro-fat: #ff9f43;
+    --macro-carb: #b76fff;
 
-    --grad-primary: linear-gradient(135deg, #58b8da 0%, #2596be 45%, #1b7898 100%);
-    --grad-liquid: linear-gradient(165deg, rgba(37, 150, 190, 0.2) 0%, rgba(14, 19, 25, 0.95) 75%);
-    --grad-surface: linear-gradient(165deg, #141b23 0%, #090e13 100%);
+    --grad-primary: linear-gradient(135deg, #d1ff76 0%, #b8ff2c 45%, #7db000 100%);
+    --grad-liquid: linear-gradient(165deg, rgba(184, 255, 44, 0.2) 0%, rgba(10, 16, 10, 0.95) 75%);
+    --grad-surface: linear-gradient(165deg, #182018 0%, #0a0f0a 100%);
 
     --font-main: 'Inter', sans-serif;
     --font-head: 'Kanit', sans-serif;
@@ -31,9 +32,9 @@
     --radius-l: 28px;
     --radius-pill: 999px;
 
-    --glow-main: 0 0 26px rgba(37, 150, 190, 0.35);
-    --line-soft: rgba(168, 188, 212, 0.2);
-    --line-strong: rgba(88, 184, 218, 0.6);
+    --glow-main: 0 0 24px rgba(184, 255, 44, 0.32);
+    --line-soft: rgba(182, 201, 176, 0.22);
+    --line-strong: rgba(184, 255, 44, 0.56);
 
     --ease-fluid: cubic-bezier(0.22, 0.8, 0.2, 1);
 

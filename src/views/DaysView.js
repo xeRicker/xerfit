@@ -61,8 +61,8 @@ export class DaysView extends Component {
         this.container.innerHTML = `
             <div id="day-strip-container" style="position: sticky; top: 0; z-index: 10;"></div>
             <div id="dashboard-container"></div>
-            <div style="padding: 0 0 10px;">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin: 10px 16px 10px;"><h3 style="font-size: 13px; color: var(--text-sub); text-transform: uppercase; letter-spacing: 1px;">Posiłki dnia</h3><span style="font-size: 12px; color: var(--text-dim);">${meals.length} wpisów</span></div>
+            <div style="padding: 0 16px 10px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin: 10px 0 10px;"><h3 style="font-size: 13px; color: var(--text-sub); text-transform: uppercase; letter-spacing: 1px;">Posiłki dnia</h3><span style="font-size: 12px; color: var(--text-dim);">${meals.length} wpisów</span></div>
                 ${MEALS.map(group => {
                     const entries = meals.filter(m => (m.meal || 'breakfast') === group.id);
                     const collapsed = Boolean(this.collapsedMeals[group.id]);
@@ -89,7 +89,7 @@ export class DaysView extends Component {
         this.container.querySelector('#add-btn').onclick = () => this.modal.open(state.products, (product, grams, meal) => store.addMealEntry(product, grams, meal));
         this.container.querySelectorAll('.del-btn').forEach(btn => { btn.onclick = (e) => store.deleteMealEntry(e.currentTarget.dataset.id); });
         this.container.querySelectorAll('.edit-btn').forEach(btn => { btn.onclick = (e) => this.openEntryEditor(meals.find(item => String(item.id) === String(e.currentTarget.dataset.id))); });
-        this.container.querySelectorAll('.toggle-meal').forEach(btn => { btn.onclick = () => { const mealId = btn.dataset.meal; this.collapsedMeals[mealId] = !this.collapsedMeals[mealId]; this.update(store.state); }; });
+        this.container.querySelectorAll('.toggle-meal').forEach(btn => { btn.onclick = () => { const mealId = btn.dataset.meal; this.collapsedMeals[mealId] = !this.collapsedMeals[mealId]; store.toast(this.collapsedMeals[mealId] ? 'Sekcja zwinięta.' : 'Sekcja rozwinięta.'); this.update(store.state); }; });
         this.container.querySelectorAll('.copy-meal').forEach(btn => { btn.onclick = () => this.openCopyDialog(btn.dataset.meal); });
         this.container.querySelectorAll('.close-dialog').forEach(el => { el.onclick = () => this.closeDialog(); });
         const saveEdit = this.container.querySelector('#save-edit');
@@ -102,7 +102,7 @@ export class DaysView extends Component {
         if (confirmCopy) confirmCopy.onclick = () => {
             const targetDate = this.container.querySelector('#copy-date')?.value;
             const targetMeal = this.container.querySelector('#copy-meal')?.value;
-            if (targetDate && targetMeal) store.copyMealEntries(state.currentDate, this.activeDialog.meal, targetDate, targetMeal);
+            if (targetDate && targetMeal) { store.copyMealEntries(state.currentDate, this.activeDialog.meal, targetDate, targetMeal); store.toast('Skopiowano posiłek.'); }
             this.closeDialog();
         };
     }

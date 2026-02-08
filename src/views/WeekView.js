@@ -47,7 +47,7 @@ export class WeekView extends Component {
             <header style="padding: 14px 20px 12px;"><h1 style="font-size: 24px; font-weight: 800;">Tygodniowe kalorie</h1></header>
             <div style="padding: 0 16px;">
                 <div class="card" style="margin: 0 0 12px 0;">
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 12px; gap: 8px;"><button id="week-prev" class="input-field" style="width:auto; padding:8px 12px;">←</button><strong style="text-align:center;">${weekDays[0].toLocaleDateString('pl-PL')} - ${weekDays[6].toLocaleDateString('pl-PL')}</strong><button id="week-next" class="input-field" style="width:auto; padding:8px 12px;">→</button></div>
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 12px; gap: 8px;"><button id="week-prev" class="icon-nav-btn">${Icons.chevronLeft}</button><strong style="text-align:center;">${weekDays[0].toLocaleDateString('pl-PL')} - ${weekDays[6].toLocaleDateString('pl-PL')}</strong><button id="week-next" class="icon-nav-btn">${Icons.chevronRight}</button></div>
                     <div class="week-chart">
                         ${dayStats.map(day => {
                             const h = Math.max(10, Math.round((day.cal / maxDayCal) * 100));
