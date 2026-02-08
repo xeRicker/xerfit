@@ -41,7 +41,7 @@ export class WeekView extends Component {
         const average = Math.round(dayStats.reduce((sum, day) => sum + day.cal, 0) / 7);
         const selected = dayStats.find((d) => d.key === this.selectedDate) || dayStats[0];
         const maxDayCal = Math.max(1, ...dayStats.map(d => Math.round(d.cal)));
-        const avgBottom = Math.min(88, Math.max(16, Math.round((average / maxDayCal) * 100)));
+        const avgBottom = Math.min(82, Math.max(12, Math.round((average / maxDayCal) * 100)));
 
         this.container.innerHTML = `
             <header style="padding: 14px 20px 12px;"><h1 style="font-size: 24px; font-weight: 800;">Tygodniowe kalorie</h1></header>
@@ -58,7 +58,7 @@ export class WeekView extends Component {
                             const gradient = `linear-gradient(to top, var(--macro-carb) 0% ${cShare}%, var(--macro-fat) ${cShare}% ${cShare + fShare}%, var(--macro-protein) ${cShare + fShare}% 100%)`;
                             return `<button class="week-chart-bar ${this.selectedDate === day.key ? 'active' : ''}" data-date="${day.key}"><div class="fill" style="height:${h}%; background:${gradient};"></div><span>${Math.round(day.cal)}</span><span style="font-size:10px; color:var(--text-dim);">${day.date.toLocaleDateString('pl-PL', { day: '2-digit', month: '2-digit' })}</span></button>`;
                         }).join('')}
-                        <div class="week-chart-average" style="bottom:${avgBottom}%;">Średnia ${average} kcal</div>
+                        <div class="week-chart-average" style="bottom:${avgBottom}%;"><span style="background:rgba(4,8,12,.9); padding-left:6px;">Średnia · ${average} kcal</span></div>
                     </div>
                     <div style="display:flex; gap:12px; margin-top:8px;"><span class="macro-pill"><span style="width:12px;height:12px;background:var(--macro-protein);border-radius:3px;"></span>Białko</span><span class="macro-pill"><span style="width:12px;height:12px;background:var(--macro-fat);border-radius:3px;"></span>Tłuszcze</span><span class="macro-pill"><span style="width:12px;height:12px;background:var(--macro-carb);border-radius:3px;"></span>Węgle</span></div>
                 </div>
