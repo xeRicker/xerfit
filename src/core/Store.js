@@ -17,11 +17,9 @@ const defaultUser = {
 };
 
 const defaultProducts = [
-    { id: '1', name: 'Pierś z kurczaka', p: 31, c: 0, f: 3.6, cal: 165, icon: 'chicken', color: '#b8ff2c', defaultMeal: 'lunch' },
-    { id: '2', name: 'Ryż biały', p: 7.1, c: 78.9, f: 0.7, cal: 356, icon: 'rice', color: '#7ed2ff', defaultMeal: 'lunch' },
-    { id: '3', name: 'Ziemniaki', p: 1.9, c: 17.5, f: 0.1, cal: 77, icon: 'potato', color: '#ff9f43', defaultMeal: 'dinner' },
-    { id: '4', name: 'Jajka', p: 12.6, c: 1.1, f: 10.6, cal: 143, icon: 'egg', color: '#ffd166', defaultMeal: 'breakfast' },
-    { id: '5', name: 'Owsianka', p: 13.2, c: 67.7, f: 6.5, cal: 379, icon: 'oats', color: '#b76fff', defaultMeal: 'breakfast' }
+    { id: '1', name: 'Jajko', p: 12.6, c: 1.1, f: 10.6, cal: 143 },
+    { id: '2', name: 'Pierś z kurczaka', p: 31, c: 0, f: 3.6, cal: 165 },
+    { id: '3', name: 'Płatki owsiane', p: 13, c: 68, f: 6.5, cal: 379 }
 ];
 
 class Store {
