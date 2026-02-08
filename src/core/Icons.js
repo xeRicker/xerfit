@@ -31,5 +31,17 @@ export const Icons = {
     cheese: `<svg viewBox="0 0 24 24"><path d="M5 16h14l-2-8H7l-2 8Z" stroke="currentColor" stroke-width="2" fill="none"/></svg>`,
     pasta: `<svg viewBox="0 0 24 24"><path d="M4 12h16M6 8h12M6 16h12" stroke="currentColor" stroke-width="2"/></svg>`,
     snack: `<svg viewBox="0 0 24 24"><rect x="6" y="5" width="12" height="14" rx="3" stroke="currentColor" stroke-width="2" fill="none"/></svg>`,
-    bottle: `<svg viewBox="0 0 24 24"><path d="M10 4h4v3l2 3v8a2 2 0 0 1-2 2h-4a2 2 0 0 1-2-2v-8l2-3V4Z" stroke="currentColor" stroke-width="2" fill="none"/></svg>`
+    bottle: `<svg viewBox="0 0 24 24"><path d="M10 4h4v3l2 3v8a2 2 0 0 1-2 2h-4a2 2 0 0 1-2-2v-8l2-3V4Z" stroke="currentColor" stroke-width="2" fill="none"/></svg>`,
+
+    chevronLeft: `<svg viewBox="0 0 24 24"><path d="m15 5-7 7 7 7" stroke="currentColor" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+    chevronRight: `<svg viewBox="0 0 24 24"><path d="m9 5 7 7-7 7" stroke="currentColor" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+    rice: `<svg viewBox="0 0 24 24"><ellipse cx="12" cy="14" rx="7" ry="4" stroke="currentColor" stroke-width="2" fill="none"/><path d="M6 11h12" stroke="currentColor" stroke-width="2"/></svg>`,
+    potato: `<svg viewBox="0 0 24 24"><path d="M7 8c2-3 8-3 10 2 2 5-2 9-7 9-4 0-7-3-6-7 .4-2 1.5-3.3 3-4Z" stroke="currentColor" stroke-width="2" fill="none"/></svg>`,
+    oats: `<svg viewBox="0 0 24 24"><path d="M12 4v16" stroke="currentColor" stroke-width="2"/><path d="M9 8c-1.8 0-3-1-3-3 2.2 0 3 1.2 3 3Zm0 6c-1.8 0-3-1-3-3 2.2 0 3 1.2 3 3Zm6-3c1.8 0 3-1 3-3-2.2 0-3 1.2-3 3Zm0 6c1.8 0 3-1 3-3-2.2 0-3 1.2-3 3Z" fill="currentColor"/></svg>`,
+    avocado: `<svg viewBox="0 0 24 24"><path d="M12 4c4 0 7 3 7 8s-3 8-7 8-7-3-7-8 3-8 7-8Z" stroke="currentColor" stroke-width="2" fill="none"/><circle cx="12" cy="13" r="2.3" fill="currentColor"/></svg>`,
+    yogurt: `<svg viewBox="0 0 24 24"><path d="M7 7h10l-1.2 11H8.2L7 7Z" stroke="currentColor" stroke-width="2" fill="none"/><path d="M6 7h12" stroke="currentColor" stroke-width="2"/></svg>`,
+    profile1: `<svg viewBox="0 0 64 64"><rect width="64" height="64" rx="20" fill="#24340d"/><circle cx="32" cy="26" r="12" fill="#b8ff2c"/><path d="M14 54c3-10 11-15 18-15s15 5 18 15" fill="#b8ff2c"/></svg>`,
+    profile2: `<svg viewBox="0 0 64 64"><rect width="64" height="64" rx="20" fill="#103035"/><circle cx="32" cy="24" r="10" fill="#7ed2ff"/><rect x="18" y="38" width="28" height="14" rx="7" fill="#7ed2ff"/></svg>`,
+    profile3: `<svg viewBox="0 0 64 64"><rect width="64" height="64" rx="20" fill="#321446"/><path d="M32 15c9 0 16 7 16 16s-7 16-16 16-16-7-16-16 7-16 16-16Zm0 7a9 9 0 1 0 0 18 9 9 0 0 0 0-18Z" fill="#b76fff"/></svg>`,
+    profile4: `<svg viewBox="0 0 64 64"><rect width="64" height="64" rx="20" fill="#3a260f"/><path d="M16 45c5-8 11-12 16-12s11 4 16 12" fill="#ff9f43"/><circle cx="32" cy="23" r="9" fill="#ff9f43"/></svg>`,
 };
