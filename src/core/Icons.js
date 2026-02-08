@@ -31,7 +31,7 @@ export const Icons = {
     cheese: `<svg viewBox="0 0 24 24"><path d="M5 16h14l-2-8H7l-2 8Z" stroke="currentColor" stroke-width="2" fill="none"/></svg>`,
     pasta: `<svg viewBox="0 0 24 24"><path d="M4 12h16M6 8h12M6 16h12" stroke="currentColor" stroke-width="2"/></svg>`,
     snack: `<svg viewBox="0 0 24 24"><rect x="6" y="5" width="12" height="14" rx="3" stroke="currentColor" stroke-width="2" fill="none"/></svg>`,
-    bottle: `<svg viewBox="0 0 24 24"><path d="M10 4h4v3l2 3v8a2 2 0 0 1-2 2h-4a2 2 0 0 1-2-2v-8l2-3V4Z" stroke="currentColor" stroke-width="2" fill="none"/></svg>`,
+    bottle: `<svg viewBox="0 0 24 24"><path d="M10 4h4v3l2 3v8a2 2 0 0 1-2 2h-4a2 2 0 0 1-2-2v-8l2-3V4Z" stroke="currentColor" stroke-width="2" fill="none"/></svg>`
 
     chevronLeft: `<svg viewBox="0 0 24 24"><path d="m15 5-7 7 7 7" stroke="currentColor" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
     chevronRight: `<svg viewBox="0 0 24 24"><path d="m9 5 7 7-7 7" stroke="currentColor" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
@@ -43,5 +43,5 @@ export const Icons = {
     profile1: `<svg viewBox="0 0 64 64"><rect width="64" height="64" rx="20" fill="#24340d"/><circle cx="32" cy="26" r="12" fill="#b8ff2c"/><path d="M14 54c3-10 11-15 18-15s15 5 18 15" fill="#b8ff2c"/></svg>`,
     profile2: `<svg viewBox="0 0 64 64"><rect width="64" height="64" rx="20" fill="#103035"/><circle cx="32" cy="24" r="10" fill="#7ed2ff"/><rect x="18" y="38" width="28" height="14" rx="7" fill="#7ed2ff"/></svg>`,
     profile3: `<svg viewBox="0 0 64 64"><rect width="64" height="64" rx="20" fill="#321446"/><path d="M32 15c9 0 16 7 16 16s-7 16-16 16-16-7-16-16 7-16 16-16Zm0 7a9 9 0 1 0 0 18 9 9 0 0 0 0-18Z" fill="#b76fff"/></svg>`,
-    profile4: `<svg viewBox="0 0 64 64"><rect width="64" height="64" rx="20" fill="#3a260f"/><path d="M16 45c5-8 11-12 16-12s11 4 16 12" fill="#ff9f43"/><circle cx="32" cy="23" r="9" fill="#ff9f43"/></svg>`,
+    profile4: `<svg viewBox="0 0 64 64"><rect width="64" height="64" rx="20" fill="#3a260f"/><path d="M16 45c5-8 11-12 16-12s11 4 16 12" fill="#ff9f43"/><circle cx="32" cy="23" r="9" fill="#ff9f43"/></svg>",
 };

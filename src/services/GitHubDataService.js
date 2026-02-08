@@ -33,25 +33,15 @@ async function putFile(path, data, sha = undefined) {
     return response.json();
 }
 
-async function deleteFile(path, sha) {
-    const url = `https://api.github.com/repos/${GITHUB_CONFIG.REPO_OWNER}/${GITHUB_CONFIG.REPO_NAME}/contents/${path}`;
-    const response = await fetch(url, {
-        method: 'DELETE',
-        headers,
-        body: JSON.stringify({ message: `Delete ${path}`, sha })
-    });
-    if (!response.ok) throw new Error(`GitHub DELETE failed (${response.status})`);
-}
-
 export class GitHubDataService {
     static async loadProfiles() {
-        if (!hasToken()) return null;
+        if (!hasToken()) return [{ id: 'default', name: 'Domyślny' }];
         try {
             const file = await getFile('database/profiles.json');
-            if (!file) return null;
+            if (!file) return [{ id: 'default', name: 'Domyślny' }];
             return JSON.parse(fromBase64(file.content));
         } catch {
-            return null;
+            return [{ id: 'default', name: 'Domyślny' }];
         }
     }
 
@@ -80,18 +70,6 @@ export class GitHubDataService {
             await putFile(path, data, existing?.sha);
         } catch {
             // silent fallback to local cache only
-        }
-    }
-
-    static async deleteProfileData(profileId) {
-        if (!hasToken()) return;
-        try {
-            const path = `database/${profileId}.json`;
-            const existing = await getFile(path);
-            if (!existing?.sha) return;
-            await deleteFile(path, existing.sha);
-        } catch {
-            // silent fallback
         }
     }
 }
