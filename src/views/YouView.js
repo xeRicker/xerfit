@@ -52,6 +52,5 @@ export class YouView extends Component {
         const save = this.container.querySelector('#save-profile');
         if (save) save.disabled = !this.hasChanges(state);
     }
-    }
-    destroy() { this.unsub(); 
+    destroy() { this.unsub(); }
 }
