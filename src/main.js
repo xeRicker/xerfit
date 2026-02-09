@@ -75,7 +75,8 @@ class App {
                 layer.innerHTML = `
                     <div class="profile-picker-backdrop"></div>
                     <div class="profile-picker">
-                        <div class="profile-head"><h2>Wybierz profil</h2><button id="manage-profiles" class="btn-muted chip-btn">${managing ? 'Zakończ' : 'Zarządzaj'}</button></div>
+                        <div class="profile-head"><h2>Wybierz profil</h2><button id="manage-profiles" class="btn-muted chip-btn">${managing ? 'Gotowe' : 'Zarządzaj'}</button></div>
+                        <div class="profile-hint">${managing ? 'Edytuj, usuń lub dodaj profile.' : 'Stuknij profil, aby rozpocząć.'}</div>
                         <div class="profile-grid">${profiles.map(profile => `<button class="profile-card" data-id="${profile.id}"><span class="profile-avatar">${Icons[profile.avatar]}</span><span class="profile-name">${profile.name}</span>${managing ? `<span class="profile-tools"><button class="profile-tool" data-edit="${profile.id}" title="Edytuj">${Icons.edit}</button>${profile.id !== 'default' ? `<button class="profile-tool danger" data-delete="${profile.id}" title="Usuń">${Icons.close}</button>` : ''}</span>` : ''}</button>`).join('')}</div>
                         ${editor ? renderEditor() : `<button id="show-create" class="btn-primary profile-add-btn">${Icons.plus}<span>Dodaj profil</span></button>`}
                     </div>`;
@@ -180,12 +181,13 @@ class App {
         const btn = document.getElementById('github-sync-btn');
         if (!btn) return;
         const { hasPendingSync, isSyncing } = this.syncState;
-        btn.disabled = isSyncing || !hasPendingSync;
+        btn.disabled = isSyncing;
+        btn.classList.toggle('is-collapsed', !hasPendingSync && !isSyncing);
         btn.classList.toggle('is-pending', hasPendingSync && !isSyncing);
         btn.classList.toggle('is-syncing', isSyncing);
         btn.innerHTML = isSyncing
             ? `${Icons.calendar}<span>Zapisywanie…</span>`
-            : `${Icons.check}<span>${hasPendingSync ? 'Zapisz' : 'Wszystko zapisane'}</span>`;
+            : `${Icons.check}<span>${hasPendingSync ? 'Zapisz' : 'Zapisane'}</span>`;
     }
     showLoading(label) {
         const layer = document.getElementById('modal-layer');

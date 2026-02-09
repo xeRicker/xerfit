@@ -54,10 +54,10 @@ export class WeekView extends Component {
         const maxDayCal = Math.max(1, ...dayStats.map(d => Math.round(d.cal)));
 
         this.container.innerHTML = `
-            <header style="padding: 14px 20px 12px;"><h1 style="font-size: 24px; font-weight: 800;">Podsumowanie</h1></header>
-            <div style="padding: 0 16px;">
-                <div class="card" style="margin: 0 0 12px 0;">
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 12px; gap: 8px;"><button id="week-prev" class="icon-nav-btn">${Icons.chevronLeft}</button><strong style="text-align:center;">${weekDays[0].toLocaleDateString('pl-PL')} - ${weekDays[6].toLocaleDateString('pl-PL')}</strong><button id="week-next" class="icon-nav-btn">${Icons.chevronRight}</button></div>
+            <header class="screen-header"><h1>Podsumowanie</h1></header>
+            <div class="screen-shell">
+                <div class="card week-card">
+                    <div class="week-head"><button id="week-prev" class="icon-nav-btn">${Icons.chevronLeft}</button><strong>${weekDays[0].toLocaleDateString('pl-PL')} - ${weekDays[6].toLocaleDateString('pl-PL')}</strong><button id="week-next" class="icon-nav-btn">${Icons.chevronRight}</button></div>
                     <div class="week-chart">
                         ${dayStats.map(day => {
                             const h = Math.max(10, Math.round((day.cal / maxDayCal) * 100));
@@ -71,11 +71,11 @@ export class WeekView extends Component {
                     </div>
                     <div class="week-legend-row"><span class="macro-pill"><span style="width:12px;height:12px;background:var(--macro-protein);border-radius:3px;"></span>Białko</span><span class="macro-pill"><span style="width:12px;height:12px;background:var(--macro-fat);border-radius:3px;"></span>Tłuszcze</span><span class="macro-pill"><span style="width:12px;height:12px;background:var(--macro-carb);border-radius:3px;"></span>Węgle</span><span class="week-average-pill">Średnia · ${average} kcal</span></div>
                 </div>
-                <div class="card" style="margin: 0 0 16px 0;">
-                    <h3 style="margin-bottom:10px; text-transform: capitalize;">${new Date(selected.key).toLocaleDateString('pl-PL', { weekday: 'long', day: 'numeric', month: 'long' })}</h3>
+                <div class="card week-detail-card">
+                    <h3 class="week-day-title">${new Date(selected.key).toLocaleDateString('pl-PL', { weekday: 'long', day: 'numeric', month: 'long' })}</h3>
                     ${MEALS.map(meal => {
                         const entries = selected.meals.filter(m => (m.meal || 'breakfast') === meal);
-                        return `<div style="margin-bottom:10px;"><div class="meal-label meal-label-week"><span class="meal-label-icon">${MEAL_ICONS[meal]}</span><span>${MEAL_LABELS[meal]}</span></div>${entries.length ? entries.map(entry => this.renderEntry(entry)).join('') : `<div class="meal-empty"><span>Brak produktów</span></div>`}</div>`;
+                        return `<div class="week-meal-group"><div class="meal-label meal-label-week"><span class="meal-label-icon">${MEAL_ICONS[meal]}</span><span>${MEAL_LABELS[meal]}</span></div>${entries.length ? entries.map(entry => this.renderEntry(entry)).join('') : `<div class="meal-empty"><span>Brak produktów</span></div>`}</div>`;
                     }).join('')}
                 </div>
             </div><div style="height: 96px;"></div>`;
