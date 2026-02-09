@@ -5,6 +5,7 @@ import { Icons } from '../core/Icons.js';
 const toDateKey = (date) => date.toISOString().split('T')[0];
 const MEALS = ['breakfast', 'lunch', 'dinner'];
 const MEAL_LABELS = { breakfast: 'Śniadanie', lunch: 'Obiad', dinner: 'Kolacja' };
+const MEAL_ICONS = { breakfast: Icons.breakfast, lunch: Icons.lunch, dinner: Icons.dinner };
 
 export class WeekView extends Component {
     constructor(container) {
@@ -22,6 +23,19 @@ export class WeekView extends Component {
         const monday = new Date(base);
         monday.setDate(base.getDate() - day + this.weekOffset * 7);
         return Array.from({ length: 7 }).map((_, index) => { const date = new Date(monday); date.setDate(monday.getDate() + index); return date; });
+    }
+
+    renderEntry(entry) {
+        return `<div class="list-item meal-entry" style="margin-bottom: 8px; border-left:4px solid ${entry.color || '#2596be'};">
+            <div style="display:flex; align-items:center; gap:10px; flex:1; min-width:0;"><span style="width:20px; height:20px; color:${entry.color || '#2596be'};">${Icons[entry.icon] || Icons.leaf}</span><div style="min-width:0;"><div class="entry-title" style="font-weight: 600; font-size: 15px;">${entry.name}</div><div class="entry-sub" style="font-size: 12px; color: var(--text-sub); margin-top: 2px;">${Math.round(entry.grams)}g · <span style="color: var(--accent-main);">${Math.round(entry.cal)} kcal</span></div></div></div>
+            <div class="meal-entry-side">
+                <div class="macro-stack"><span class="macro-pill macro-pill-strong"><span style="width:14px;height:14px;color:var(--macro-protein);">${Icons.protein}</span>${Math.round(entry.p)}</span><span class="macro-pill macro-pill-strong"><span style="width:14px;height:14px;color:var(--macro-fat);">${Icons.fat}</span>${Math.round(entry.f)}</span><span class="macro-pill macro-pill-strong"><span style="width:14px;height:14px;color:var(--macro-carb);">${Icons.carbs}</span>${Math.round(entry.c)}</span></div>
+                <div class="entry-actions">${this.editEntryId === String(entry.id)
+        ? `<input type="number" class="input-field edit-inline" data-id="${entry.id}" value="${Math.round(this.editValue || entry.grams)}" style="width:74px;padding:6px;text-align:right;"> <button class="save-inline btn-icon" data-id="${entry.id}" style="color:var(--accent-main);">${Icons.check}</button> <button class="cancel-inline btn-icon" style="color:var(--text-sub);">${Icons.close}</button>`
+        : `<button class="edit-day-entry btn-icon" data-id="${entry.id}" data-grams="${Math.round(entry.grams)}" style="color:var(--accent-cyan);">${Icons.edit}</button><button class="del-day-entry btn-icon" data-id="${entry.id}" style="color:var(--accent-red);">${Icons.close}</button>`}
+                </div>
+            </div>
+        </div>`;
     }
 
     update(state) {
@@ -66,7 +80,7 @@ export class WeekView extends Component {
                     <h3 style="margin-bottom:10px; text-transform: capitalize;">${new Date(selected.key).toLocaleDateString('pl-PL', { weekday: 'long', day: 'numeric', month: 'long' })}</h3>
                     ${MEALS.map(meal => {
                         const entries = selected.meals.filter(m => (m.meal || 'breakfast') === meal);
-                        return `<div style="margin-bottom:10px;"><div style="font-size:13px; color:var(--text-sub); margin-bottom:6px;">${MEAL_LABELS[meal]}</div>${entries.length ? entries.map(entry => `<div class="list-item" style="margin-bottom: 8px; border-left:4px solid ${entry.color || '#2596be'};"><div><div style="font-weight:700;">${entry.name}</div><div style="font-size:12px; color:var(--text-sub);">${entry.grams}g · B${Math.round(entry.p)} T${Math.round(entry.f)} W${Math.round(entry.c)}</div></div><div style="display:flex;align-items:center;gap:8px;"><span style="color:var(--accent-main); font-weight:700;">${Math.round(entry.cal)} kcal</span>${this.editEntryId === String(entry.id) ? `<input type="number" class="input-field edit-inline" data-id="${entry.id}" value="${Math.round(this.editValue || entry.grams)}" style="width:74px;padding:6px;text-align:right;"> <button class="save-inline" data-id="${entry.id}" style="width:20px;height:20px;color:var(--accent-main);">${Icons.check}</button> <button class="cancel-inline" style="width:20px;height:20px;color:var(--text-sub);">${Icons.close}</button>` : `<button class="edit-day-entry" data-id="${entry.id}" data-grams="${Math.round(entry.grams)}" style="width:20px;height:20px;color:var(--accent-cyan);">${Icons.edit}</button><button class="del-day-entry" data-id="${entry.id}" style="width:20px;height:20px;color:var(--accent-red);">${Icons.close}</button>`}</div></div>`).join('') : '<div style="color:var(--text-dim); font-size:12px;">Brak produktów.</div>'}</div>`;
+                        return `<div style="margin-bottom:10px;"><div class="meal-label meal-label-week"><span class="meal-label-icon">${MEAL_ICONS[meal]}</span><span>${MEAL_LABELS[meal]}</span></div>${entries.length ? entries.map(entry => this.renderEntry(entry)).join('') : `<div class="meal-empty"><span class="meal-label-icon">${MEAL_ICONS[meal]}</span><span>Brak produktów</span></div>`}</div>`;
                     }).join('')}
                 </div>
             </div><div style="height: 96px;"></div>`;
@@ -77,7 +91,7 @@ export class WeekView extends Component {
         this.container.querySelectorAll('.del-day-entry').forEach(btn => { btn.onclick = () => store.deleteMealEntryForDate(this.selectedDate, btn.dataset.id); });
         this.container.querySelectorAll('.edit-day-entry').forEach(btn => { btn.onclick = () => { this.editEntryId = String(btn.dataset.id); this.editValue = Number(btn.dataset.grams) || 100; this.update(store.state); }; });
         this.container.querySelectorAll('.edit-inline').forEach(input => { input.oninput = () => { this.editValue = Number(input.value) || 0; }; });
-        this.container.querySelectorAll('.save-inline').forEach(btn => { btn.onclick = () => { if (this.editValue > 0) store.updateMealEntryForDate(this.selectedDate, btn.dataset.id, { grams: this.editValue }); this.editEntryId = null; }; });
+        this.container.querySelectorAll('.save-inline').forEach(btn => { btn.onclick = () => { if (this.editValue > 0) store.updateMealEntryForDate(this.selectedDate, btn.dataset.id, { grams: this.editValue }); this.editEntryId = null; this.update(store.state); }; });
         this.container.querySelectorAll('.cancel-inline').forEach(btn => { btn.onclick = () => { this.editEntryId = null; this.update(store.state); }; });
     }
 
