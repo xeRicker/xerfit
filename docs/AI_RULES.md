@@ -114,3 +114,58 @@ After every change:
 - Provide production-ready code
 - Explain what was changed (briefly)
 - Do NOT ask follow-up questions
+
+## UI PATTERN REUSE (CRITICAL)
+
+If you design a UI element once, it becomes a **canonical pattern**.
+
+Examples:
+- Navigation arrows (left / right)
+- Section headers (e.g. "Śniadanie")
+- Icons paired with text
+- Action buttons
+- Cards, list items, pills, tabs
+
+Rules:
+- The FIRST implementation defines:
+  - Font
+  - Icon usage
+  - Icon style
+  - Spacing
+  - Color
+  - Interaction behavior
+
+- Every future occurrence of a similar element MUST:
+  - Reuse the same visual style
+  - Reuse the same icon logic
+  - Reuse the same typography
+  - Reuse the same component or CSS class
+
+Do NOT redesign the same concept twice.
+
+If an existing pattern exists:
+- Reuse it
+- Extend it
+- Never replace it with a visually different version
+
+---
+
+## SEMANTIC CONSISTENCY RULE
+
+If two UI elements represent the same concept
+(e.g. "Śniadanie", "Lunch", navigation arrows, day headers):
+
+They MUST look identical across the entire application.
+
+Different screens ≠ different style.
+
+---
+
+## COMPONENT-FIRST MINDSET
+
+Before creating a new UI element:
+- Check if a similar element already exists
+- If yes → reuse it
+- If no → create it as a reusable component
+
+Do NOT create one-off UI elements.
