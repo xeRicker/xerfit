@@ -62,16 +62,22 @@ export class DaysView extends Component {
             <div id="day-strip-container" style="position: sticky; top: 0; z-index: 10;"></div>
             <div id="dashboard-container"></div>
             <div style="padding: 0 16px 10px;">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin: 10px 0 10px;"><h3 style="font-size: 13px; color: var(--text-sub); text-transform: uppercase; letter-spacing: 1px;">Posiłki dnia</h3><span style="font-size: 12px; color: var(--text-dim);">${meals.length} wpisów</span></div>
+                <div class="section-title-row"><h3>Posiłki dnia</h3></div>
                 ${MEALS.map(group => {
                     const entries = meals.filter(m => (m.meal || 'breakfast') === group.id);
                     const collapsed = Boolean(this.collapsedMeals[group.id]);
-                    return `<section class="card" style="margin: 0 0 14px 0; border-radius: 18px;">
-                        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;">
-                            <div style="display:flex; align-items:center; gap:8px; font-size:15px; font-weight:700;"><span style="width:18px; height:18px; color:var(--accent-main);">${group.icon}</span>${group.title}</div>
-                            <div style="display:flex; align-items:center; gap:8px;"><button class="copy-meal btn-icon" data-meal="${group.id}" title="Kopiuj">${Icons.calendar}</button><button class="toggle-meal btn-icon" data-meal="${group.id}" title="Zwiń">${collapsed ? Icons.expand : Icons.collapse}</button><span style="font-size:11px; color:var(--text-sub);">${entries.length}</span></div>
+                    return `<section class="card meal-card">
+                        <div class="meal-head">
+                            <div class="meal-label"><span class="meal-label-icon">${group.icon}</span><span>${group.title}</span></div>
+                            <div class="meal-head-actions"><button class="copy-meal btn-icon" data-meal="${group.id}" title="Kopiuj">${Icons.calendar}</button><button class="toggle-meal btn-icon" data-meal="${group.id}" title="Zwiń">${collapsed ? Icons.expand : Icons.collapse}</button></div>
                         </div>
-                        ${collapsed ? '<div style="font-size:12px; color:var(--text-dim);">Sekcja zwinięta.</div>' : entries.length === 0 ? `<div style="font-size:12px; color:var(--text-dim);">Brak produktów.</div>` : entries.map((m, idx) => `<div class="list-item" style="animation-delay:${idx * 40}ms; border-left:3px solid ${m.color || '#2596be'};"><div style="display:flex; align-items:center; gap:10px; flex:1;"><span style="width:20px; height:20px; color:${m.color || '#2596be'};">${this.iconFor(m)}</span><div style="min-width:0;"><div class="entry-title" style="font-weight: 600; font-size: 15px;">${m.name}</div><div class="entry-sub" style="font-size: 12px; color: var(--text-sub); margin-top: 2px;">${m.grams}g · <span style="color: var(--accent-main);">${Math.round(m.cal)} kcal</span></div></div></div><div style="display:flex; gap:8px; font-size:10px; font-weight:700; color:var(--text-sub); margin-right:6px;"><span class="macro-pill"><span style="width:12px;height:12px;color:var(--macro-protein);">${Icons.protein}</span>${Math.round(m.p)}</span><span class="macro-pill"><span style="width:12px;height:12px;color:var(--macro-fat);">${Icons.fat}</span>${Math.round(m.f)}</span><span class="macro-pill"><span style="width:12px;height:12px;color:var(--macro-carb);">${Icons.carbs}</span>${Math.round(m.c)}</span></div><button class="edit-btn" data-id="${m.id}" style="width:24px; height:24px; color:var(--accent-cyan);">${Icons.edit}</button><button class="del-btn" data-id="${m.id}" style="width:24px; height:24px; color:var(--accent-red);">${Icons.close}</button></div>`).join('')}
+                        ${collapsed ? '' : entries.length === 0 ? `<div class="meal-empty"><span class="meal-label-icon">${group.icon}</span><span>Brak produktów</span></div>` : entries.map((m, idx) => `<div class="list-item meal-entry" style="animation-delay:${idx * 40}ms; border-left:3px solid ${m.color || '#2596be'};">
+                            <div style="display:flex; align-items:center; gap:10px; flex:1; min-width:0;"><span style="width:20px; height:20px; color:${m.color || '#2596be'};">${this.iconFor(m)}</span><div style="min-width:0;"><div class="entry-title" style="font-weight: 600; font-size: 15px;">${m.name}</div><div class="entry-sub" style="font-size: 12px; color: var(--text-sub); margin-top: 2px;">${m.grams}g · <span style="color: var(--accent-main);">${Math.round(m.cal)} kcal</span></div></div></div>
+                            <div class="meal-entry-side">
+                                <div class="macro-stack"><span class="macro-pill macro-pill-strong"><span style="width:14px;height:14px;color:var(--macro-protein);">${Icons.protein}</span>${Math.round(m.p)}</span><span class="macro-pill macro-pill-strong"><span style="width:14px;height:14px;color:var(--macro-fat);">${Icons.fat}</span>${Math.round(m.f)}</span><span class="macro-pill macro-pill-strong"><span style="width:14px;height:14px;color:var(--macro-carb);">${Icons.carbs}</span>${Math.round(m.c)}</span></div>
+                                <div class="entry-actions"><button class="edit-btn btn-icon" data-id="${m.id}" style="color:var(--accent-cyan);">${Icons.edit}</button><button class="del-btn btn-icon" data-id="${m.id}" style="color:var(--accent-red);">${Icons.close}</button></div>
+                            </div>
+                        </div>`).join('')}
                     </section>`;
                 }).join('')}
             </div>
@@ -89,7 +95,7 @@ export class DaysView extends Component {
         this.container.querySelector('#add-btn').onclick = () => this.modal.open(state.products, (product, grams, meal) => store.addMealEntry(product, grams, meal));
         this.container.querySelectorAll('.del-btn').forEach(btn => { btn.onclick = (e) => store.deleteMealEntry(e.currentTarget.dataset.id); });
         this.container.querySelectorAll('.edit-btn').forEach(btn => { btn.onclick = (e) => this.openEntryEditor(meals.find(item => String(item.id) === String(e.currentTarget.dataset.id))); });
-        this.container.querySelectorAll('.toggle-meal').forEach(btn => { btn.onclick = () => { const mealId = btn.dataset.meal; this.collapsedMeals[mealId] = !this.collapsedMeals[mealId]; store.toast(this.collapsedMeals[mealId] ? 'Sekcja zwinięta.' : 'Sekcja rozwinięta.'); this.update(store.state); }; });
+        this.container.querySelectorAll('.toggle-meal').forEach(btn => { btn.onclick = () => { const mealId = btn.dataset.meal; this.collapsedMeals[mealId] = !this.collapsedMeals[mealId]; this.update(store.state); }; });
         this.container.querySelectorAll('.copy-meal').forEach(btn => { btn.onclick = () => this.openCopyDialog(btn.dataset.meal); });
         this.container.querySelectorAll('.close-dialog').forEach(el => { el.onclick = () => this.closeDialog(); });
         const saveEdit = this.container.querySelector('#save-edit');

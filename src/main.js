@@ -5,6 +5,9 @@ import { YouView } from './views/YouView.js';
 import { WeekView } from './views/WeekView.js';
 import { store } from './core/Store.js';
 import { GitHubDataService } from './services/GitHubDataService.js';
+import { Icons } from './core/Icons.js';
+
+const PROFILE_AVATARS = ['profile1', 'profile2', 'profile3', 'profile4'];
 
 class App {
     constructor() {
@@ -22,128 +25,134 @@ class App {
         await store.initProfile(selectedProfile);
         this.hideLoading();
         this.route('days');
-        store.toast(`Aktywny profil: ${selectedProfile}`);
+        const current = (await GitHubDataService.loadProfiles()).find(p => p.id === selectedProfile);
+        store.toast(`Aktywny profil: ${current?.name || selectedProfile}`);
+    }
+
+    normalizeProfile(raw, index = 0) {
+        return {
+            id: raw.id,
+            name: raw.name || raw.id,
+            avatar: PROFILE_AVATARS.includes(raw.avatar) ? raw.avatar : PROFILE_AVATARS[index % PROFILE_AVATARS.length]
+        };
+    }
+
+    normalizeId(value) {
+        return value.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
     }
 
     async openProfilePicker() {
-        let profiles = await this.loadProfiles();
+        let profiles = (await GitHubDataService.loadProfiles()).map((p, i) => this.normalizeProfile(p, i));
+        if (!profiles.length) profiles = [this.normalizeProfile({ id: 'default', name: 'Domyślny' })];
         let managing = false;
-        let creating = false;
+        let editor = null;
 
         return new Promise((resolve) => {
             const layer = document.getElementById('modal-layer');
 
-            const render = () => {
-                const cards = profiles.map((profile, idx) => {
-                    const avatar = Icons[profile.avatar || AVATARS[idx % AVATARS.length]];
-                    return `<button class="profile-card" data-id="${profile.id}"><span class="profile-avatar">${avatar}</span><span class="profile-name">${profile.name}</span>${managing && profile.id !== 'default' ? `<span class="profile-delete" data-delete="${profile.id}">${Icons.close}</span>` : ''}</button>`;
-                }).join('');
+            const saveAndRender = async () => {
+                await GitHubDataService.saveProfiles(profiles);
+                render();
+            };
 
+            const renderEditor = () => {
+                if (!editor) return '';
+                const profile = editor.id ? profiles.find(p => p.id === editor.id) : { name: '', avatar: PROFILE_AVATARS[0] };
+                const selectedAvatar = editor.avatar || profile?.avatar || PROFILE_AVATARS[0];
+                return `<div class="profile-editor">
+                    <h3>${editor.id ? 'Edytuj profil' : 'Nowy profil'}</h3>
+                    <input id="profile-name" class="input-field" placeholder="Nazwa profilu" value="${profile?.name || ''}">
+                    <div class="profile-avatar-grid">${PROFILE_AVATARS.map(avatar => `<button class="profile-avatar-pick ${selectedAvatar === avatar ? 'active' : ''}" data-avatar="${avatar}">${Icons[avatar]}</button>`).join('')}</div>
+                    <div class="profile-editor-actions"><button id="cancel-profile-editor" class="btn-muted">Anuluj</button><button id="save-profile-editor" class="btn-primary" disabled>Zapisz</button></div>
+                </div>`;
+            };
+
+            const render = () => {
                 layer.innerHTML = `
                     <div class="profile-picker-backdrop"></div>
                     <div class="profile-picker">
-                        <div class="profile-head"><h2>Wybierz profil</h2><button id="manage-profiles" class="chip-btn">${managing ? 'Gotowe' : 'Zarządzaj'}</button></div>
-                        <div class="profile-grid">${cards}</div>
-                        ${creating ? `<div class="profile-create-sheet"><input id="new-profile" class="input-field" placeholder="Nazwa profilu"><select id="avatar-select" class="input-field">${AVATARS.map((a,i)=>`<option value="${a}">Avatar ${i+1}</option>`).join('')}</select><div class="profile-create-actions"><button id="cancel-create" class="btn-muted">Anuluj</button><button id="confirm-create" class="btn-primary">Utwórz profil</button></div></div>` : `<button id="show-create" class="btn-muted" style="width:100%; margin-top:12px;">+ Dodaj profil</button>`}
+                        <div class="profile-head"><h2>Wybierz profil</h2><button id="manage-profiles" class="chip-btn">${managing ? 'Zakończ' : 'Zarządzaj'}</button></div>
+                        <div class="profile-grid">${profiles.map(profile => `<button class="profile-card" data-id="${profile.id}"><span class="profile-avatar">${Icons[profile.avatar]}</span><span class="profile-name">${profile.name}</span>${managing ? `<span class="profile-tools"><span class="profile-tool" data-edit="${profile.id}">${Icons.edit}</span>${profile.id !== 'default' ? `<span class="profile-tool danger" data-delete="${profile.id}">${Icons.close}</span>` : ''}</span>` : ''}</button>`).join('')}</div>
+                        ${editor ? renderEditor() : `<button id="show-create" class="btn-muted profile-add-btn">${Icons.plus}<span>Dodaj profil</span></button>`}
                     </div>`;
 
                 layer.querySelectorAll('.profile-card').forEach((btn) => {
                     btn.onclick = (event) => {
-                        if (event.target.closest('[data-delete]') || managing) return;
+                        if (event.target.closest('[data-edit]') || event.target.closest('[data-delete]')) return;
+                        if (managing) return;
                         layer.innerHTML = '';
                         resolve(btn.dataset.id);
                     };
                 });
 
-                layer.querySelectorAll('[data-delete]').forEach((btn) => {
+                layer.querySelector('#manage-profiles').onclick = () => {
+                    managing = !managing;
+                    editor = null;
+                    render();
+                };
+
+                const show = layer.querySelector('#show-create');
+                if (show) show.onclick = () => {
+                    editor = { id: null, avatar: PROFILE_AVATARS[0] };
+                    managing = true;
+                    render();
+                };
+
+                layer.querySelectorAll('[data-delete]').forEach(btn => {
                     btn.onclick = async () => {
-                        const id = btn.dataset.delete;
-                        profiles = profiles.filter((p) => p.id !== id);
-                        localStorage.removeItem(`db/profiles/${id}`);
-                        await GitHubDataService.deleteProfileData(id);
-                        await this.saveProfiles(profiles);
-                        store.toast('Usunięto profil.', 'warning');
+                        profiles = profiles.filter(p => p.id !== btn.dataset.delete);
+                        await saveAndRender();
+                    };
+                });
+
+                layer.querySelectorAll('[data-edit]').forEach(btn => {
+                    btn.onclick = () => {
+                        const selected = profiles.find(p => p.id === btn.dataset.edit);
+                        editor = { id: selected.id, avatar: selected.avatar };
                         render();
                     };
                 });
 
-                layer.querySelector('#manage-profiles').onclick = () => { managing = !managing; render(); };
+                layer.querySelectorAll('.profile-avatar-pick').forEach(btn => {
+                    btn.onclick = () => {
+                        editor.avatar = btn.dataset.avatar;
+                        render();
+                    };
+                });
 
-                const show = layer.querySelector('#show-create');
-                if (show) show.onclick = () => { creating = true; managing = false; render(); };
-
-                const cancel = layer.querySelector('#cancel-create');
-                if (cancel) cancel.onclick = () => { creating = false; render(); };
-
-                const confirm = layer.querySelector('#confirm-create');
-                if (confirm) confirm.onclick = async () => {
-                    const input = layer.querySelector('#new-profile');
-                    const avatar = layer.querySelector('#avatar-select').value;
-                    const name = input.value.trim();
-                    if (!name) return;
-                    const id = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
-                    if (!id) return;
-                    if (profiles.some((p) => p.id === id)) {
-                        store.toast('Profil o tej nazwie już istnieje.', 'warning');
-                        return;
-                    }
-                    profiles = [...profiles, { id, name, avatar }];
-                    await this.saveProfiles(profiles);
-                    layer.innerHTML = '';
-                    resolve(id);
+                const cancel = layer.querySelector('#cancel-profile-editor');
+                if (cancel) cancel.onclick = () => {
+                    editor = null;
+                    render();
                 };
+
+                const profileName = layer.querySelector('#profile-name');
+                const saveBtn = layer.querySelector('#save-profile-editor');
+                if (profileName && saveBtn) {
+                    const setSaveState = () => {
+                        const name = profileName.value.trim();
+                        const id = this.normalizeId(name);
+                        const idTaken = profiles.some(p => p.id === id && p.id !== editor.id);
+                        saveBtn.disabled = !name || !id || idTaken;
+                    };
+                    profileName.oninput = setSaveState;
+                    setSaveState();
+                    saveBtn.onclick = async () => {
+                        const name = profileName.value.trim();
+                        const id = this.normalizeId(name);
+                        if (!name || !id) return;
+                        if (editor.id) {
+                            profiles = profiles.map(p => (p.id === editor.id ? { ...p, name, avatar: editor.avatar } : p));
+                        } else {
+                            profiles = [...profiles, { id, name, avatar: editor.avatar }];
+                        }
+                        editor = null;
+                        await saveAndRender();
+                    };
+                }
             };
 
             render();
-        });
-    }
-
-    showLoading(label) {
-        const layer = document.getElementById('modal-layer');
-        layer.innerHTML = `<div class="loading-screen"><div class="loader-orb"></div><div class="loading-label">${label}</div></div>`;
-    }
-
-    hideLoading() {
-        const layer = document.getElementById('modal-layer');
-        if (layer.querySelector('.loading-screen')) layer.innerHTML = '';
-    }
-
-    bindToasts() {
-        const holder = document.createElement('div');
-        holder.className = 'toast-holder';
-        document.body.appendChild(holder);
-        store.onToast(({ message, type }) => {
-            const toast = document.createElement('div');
-            toast.className = `toast toast-${type}`;
-            toast.textContent = message;
-            holder.appendChild(toast);
-            setTimeout(() => toast.classList.add('show'), 20);
-            setTimeout(() => {
-                toast.classList.remove('show');
-                setTimeout(() => toast.remove(), 280);
-            }, 2300);
-        });
-    }
-
-    async openProfilePicker() {
-        const profiles = await GitHubDataService.loadProfiles();
-        return new Promise((resolve) => {
-            const layer = document.getElementById('modal-layer');
-            const buttons = profiles.map((profile) => `<button class="profile-tile" data-id="${profile.id}">${profile.name}</button>`).join('');
-            layer.innerHTML = `<div class="profile-picker-backdrop"></div><div class="profile-picker"><h2>Wybierz profil</h2><p>Każdy profil ma osobną bazę produktów i wpisów.</p><div class="profile-list">${buttons}</div><div class="profile-create"><input id="new-profile" class="input-field" placeholder="Nowy profil"><button id="add-profile" class="btn-primary">Dodaj</button></div></div>`;
-            const close = (profileId) => { layer.innerHTML = ''; resolve(profileId); };
-            layer.querySelectorAll('.profile-tile').forEach((btn) => {
-                btn.onclick = () => close(btn.dataset.id);
-            });
-            layer.querySelector('#add-profile').onclick = async () => {
-                const input = layer.querySelector('#new-profile');
-                const name = input.value.trim();
-                if (!name) return;
-                const id = name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
-                const next = [...profiles, { id, name }];
-                await GitHubDataService.saveProfiles(next);
-                close(id);
-            };
         });
     }
 
