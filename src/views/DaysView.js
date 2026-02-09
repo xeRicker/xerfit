@@ -62,7 +62,7 @@ export class DaysView extends Component {
             <div id="day-strip-container" style="position: sticky; top: 0; z-index: 10;"></div>
             <div id="dashboard-container"></div>
             <div style="padding: 0 16px 10px;">
-                <div class="section-title-row"><h3>Posiłki dnia</h3></div>
+                <div class="section-title-row"><h3>Jadłospis dnia</h3></div>
                 ${MEALS.map(group => {
                     const entries = meals.filter(m => (m.meal || 'breakfast') === group.id);
                     const collapsed = Boolean(this.collapsedMeals[group.id]);
@@ -71,8 +71,8 @@ export class DaysView extends Component {
                             <div class="meal-label"><span class="meal-label-icon">${group.icon}</span><span>${group.title}</span></div>
                             <div class="meal-head-actions"><button class="copy-meal btn-icon" data-meal="${group.id}" title="Kopiuj">${Icons.calendar}</button><button class="toggle-meal btn-icon" data-meal="${group.id}" title="Zwiń">${collapsed ? Icons.expand : Icons.collapse}</button></div>
                         </div>
-                        ${collapsed ? '' : entries.length === 0 ? `<div class="meal-empty"><span>Brak produktów</span></div>` : entries.map((m, idx) => `<div class="list-item meal-entry" style="animation-delay:${idx * 40}ms; border-left:3px solid ${m.color || '#2596be'};">
-                            <div class="meal-entry-top"><div class="meal-entry-main"><span class="meal-entry-icon" style="color:${m.color || '#2596be'};">${this.iconFor(m)}</span><div style="min-width:0;"><div class="entry-title">${m.name}</div><div class="entry-sub">${m.grams}g · <span class="meal-kcal">${Math.round(m.cal)} kcal</span></div></div></div><div class="entry-actions entry-actions-right"><button class="edit-btn btn-icon" data-id="${m.id}">${Icons.edit}</button><button class="del-btn btn-icon btn-danger" data-id="${m.id}">${Icons.close}</button></div></div>
+                        ${collapsed ? '' : entries.length === 0 ? `<div class="meal-empty"><span>Brak produktów</span></div>` : entries.map((m, idx) => `<div class="list-item meal-entry food-entry" style="animation-delay:${idx * 40}ms; border-left:3px solid ${m.color || '#FF6A00'};">
+                            <div class="meal-entry-top"><div class="meal-entry-main"><span class="meal-entry-icon" style="color:${m.color || '#FF6A00'};">${this.iconFor(m)}</span><div style="min-width:0;"><div class="entry-title">${m.name}</div><div class="entry-sub">${m.grams}g · <span class="meal-kcal">${Math.round(m.cal)} kcal</span></div></div></div><div class="entry-actions entry-actions-right"><button class="edit-btn btn-icon" data-id="${m.id}">${Icons.edit}</button><button class="del-btn btn-icon btn-danger" data-id="${m.id}">${Icons.close}</button></div></div>
                             <div class="macro-stack macro-stack-bottom"><span class="macro-pill macro-pill-strong"><span class="macro-icon protein">${Icons.protein}</span>${Math.round(m.p)}</span><span class="macro-pill macro-pill-strong"><span class="macro-icon fat">${Icons.fat}</span>${Math.round(m.f)}</span><span class="macro-pill macro-pill-strong"><span class="macro-icon carbs">${Icons.carbs}</span>${Math.round(m.c)}</span></div>
                         </div>`).join('')}
                     </section>`;

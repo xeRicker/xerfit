@@ -8,7 +8,7 @@ export class Dashboard extends Component {
         const burnClass = totals.cal >= 1500 ? 'cal-bomb' : totals.cal >= 1000 ? 'cal-hot' : '';
 
         this.container.innerHTML = `
-            <div class="card" style="padding:18px; background: linear-gradient(160deg, rgba(14,35,20,0.95), rgba(11,20,14,0.95));">
+            <div class="card" style="padding:18px; background: var(--grad-liquid); box-shadow: var(--glow-main);">
                 <div style="display:grid; grid-template-columns: 1fr auto; gap:12px; align-items:center; margin-bottom:16px;">
                     <div>
                         <div style="display:flex; align-items:center; gap:8px; color: var(--text-sub); font-size:11px; text-transform:uppercase; letter-spacing:1px;">
@@ -23,8 +23,8 @@ export class Dashboard extends Component {
                             ${left >= 0 ? `Pozostało ${left} kcal` : `Przekroczenie o ${Math.abs(left)} kcal`}
                         </div>
                     </div>
-                    <div style="width:68px; height:68px; border-radius:50%; background:conic-gradient(var(--accent-main) ${progress}%, rgba(255,255,255,.1) 0); display:grid; place-items:center;">
-                        <div style="width:56px; height:56px; border-radius:50%; background: #111912; display:grid; place-items:center; font-size:12px; font-weight:700;">${Math.round(progress)}%</div>
+                    <div style="width:68px; height:68px; border-radius:50%; background:conic-gradient(var(--macro-cal) ${progress}%, rgba(255,255,255,.16) 0); display:grid; place-items:center; box-shadow:0 8px 24px rgba(255,106,0,.28);">
+                        <div style="width:56px; height:56px; border-radius:50%; background: var(--bg-elevated); display:grid; place-items:center; font-size:12px; font-weight:700;">${Math.round(progress)}%</div>
                     </div>
                 </div>
 

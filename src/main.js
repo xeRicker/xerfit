@@ -181,7 +181,8 @@ class App {
         if (!btn) return;
         const { hasPendingSync, isSyncing } = this.syncState;
         btn.disabled = isSyncing || !hasPendingSync;
-        btn.classList.toggle('is-collapsed', !hasPendingSync && !isSyncing);
+        btn.classList.toggle('is-pending', hasPendingSync && !isSyncing);
+        btn.classList.toggle('is-syncing', isSyncing);
         btn.innerHTML = isSyncing
             ? `${Icons.calendar}<span>Zapisywanie…</span>`
             : `${Icons.check}<span>${hasPendingSync ? 'Zapisz' : 'Wszystko zapisane'}</span>`;
