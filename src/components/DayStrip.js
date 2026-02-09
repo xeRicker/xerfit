@@ -2,7 +2,7 @@ import { Component } from '../core/Component.js';
 import { store } from '../core/Store.js';
 import { Icons } from '../core/Icons.js';
 
-const toDateKey = (date) => date.toISOString().split('T')[0];
+const toDateKey = (date) => date.toLocaleDateString('en-CA');
 
 export class DayStrip extends Component {
     constructor(container) {
