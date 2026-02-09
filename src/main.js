@@ -166,7 +166,7 @@ class App {
         const btn = document.createElement('button');
         btn.id = 'github-sync-btn';
         btn.className = 'btn-primary sync-github-btn';
-        btn.innerHTML = `${Icons.check}<span>Zapisz do GitHub</span>`;
+        btn.innerHTML = `${Icons.check}<span>Zapisz</span>`;
         btn.onclick = () => store.syncToGitHub();
         app.appendChild(btn);
         this.syncUnsub = store.onSyncState((syncState) => {
@@ -181,9 +181,10 @@ class App {
         if (!btn) return;
         const { hasPendingSync, isSyncing } = this.syncState;
         btn.disabled = isSyncing || !hasPendingSync;
+        btn.classList.toggle('is-collapsed', !hasPendingSync && !isSyncing);
         btn.innerHTML = isSyncing
             ? `${Icons.calendar}<span>Zapisywanie…</span>`
-            : `${Icons.check}<span>${hasPendingSync ? 'Zapisz do GitHub' : 'Wszystko zapisane'}</span>`;
+            : `${Icons.check}<span>${hasPendingSync ? 'Zapisz' : 'Wszystko zapisane'}</span>`;
     }
     showLoading(label) {
         const layer = document.getElementById('modal-layer');
@@ -202,7 +203,7 @@ class App {
         store.onToast(({ message, type }) => {
             const toast = document.createElement('div');
             toast.className = `toast toast-${type}`;
-            toast.textContent = message;
+            toast.innerHTML = `<span class="toast-icon">${type === 'warning' ? Icons.warning : Icons.check}</span><span>${message}</span>`;
             holder.appendChild(toast);
             setTimeout(() => toast.classList.add('show'), 20);
             setTimeout(() => {

@@ -27,14 +27,11 @@ export class WeekView extends Component {
 
     renderEntry(entry) {
         return `<div class="list-item meal-entry week-entry" style="margin-bottom: 8px; border-left:4px solid ${entry.color || '#2596be'};">
-            <div class="meal-entry-main"><span class="meal-entry-icon" style="color:${entry.color || '#2596be'};">${Icons[entry.icon] || Icons.leaf}</span><div style="min-width:0;"><div class="entry-title">${entry.name}</div><div class="entry-sub">${Math.round(entry.grams)}g · <span class="meal-kcal">${Math.round(entry.cal)} kcal</span></div></div></div>
-            <div class="meal-entry-side">
-                <div class="macro-stack"><span class="macro-pill macro-pill-strong"><span class="macro-icon protein">${Icons.protein}</span>${Math.round(entry.p)}</span><span class="macro-pill macro-pill-strong"><span class="macro-icon fat">${Icons.fat}</span>${Math.round(entry.f)}</span><span class="macro-pill macro-pill-strong"><span class="macro-icon carbs">${Icons.carbs}</span>${Math.round(entry.c)}</span></div>
-                <div class="entry-actions">${this.editEntryId === String(entry.id)
+            <div class="meal-entry-top"><div class="meal-entry-main"><span class="meal-entry-icon" style="color:${entry.color || '#2596be'};">${Icons[entry.icon] || Icons.leaf}</span><div style="min-width:0;"><div class="entry-title">${entry.name}</div><div class="entry-sub">${Math.round(entry.grams)}g · <span class="meal-kcal">${Math.round(entry.cal)} kcal</span></div></div></div><div class="entry-actions entry-actions-right">${this.editEntryId === String(entry.id)
         ? `<input type="number" class="input-field edit-inline" data-id="${entry.id}" value="${Math.round(this.editValue || entry.grams)}" style="width:74px;padding:6px;text-align:right;"> <button class="save-inline btn-icon" data-id="${entry.id}">${Icons.check}</button> <button class="cancel-inline btn-icon" style="color:var(--text-sub);">${Icons.close}</button>`
         : `<button class="edit-day-entry btn-icon" data-id="${entry.id}" data-grams="${Math.round(entry.grams)}">${Icons.edit}</button><button class="del-day-entry btn-icon btn-danger" data-id="${entry.id}">${Icons.close}</button>`}
-                </div>
-            </div>
+            </div></div>
+            <div class="macro-stack macro-stack-bottom"><span class="macro-pill macro-pill-strong"><span class="macro-icon protein">${Icons.protein}</span>${Math.round(entry.p)}</span><span class="macro-pill macro-pill-strong"><span class="macro-icon fat">${Icons.fat}</span>${Math.round(entry.f)}</span><span class="macro-pill macro-pill-strong"><span class="macro-icon carbs">${Icons.carbs}</span>${Math.round(entry.c)}</span></div>
         </div>`;
     }
 
@@ -55,7 +52,6 @@ export class WeekView extends Component {
         const average = Math.round(dayStats.reduce((sum, day) => sum + day.cal, 0) / 7);
         const selected = dayStats.find((d) => d.key === this.selectedDate) || dayStats[0];
         const maxDayCal = Math.max(1, ...dayStats.map(d => Math.round(d.cal)));
-        const avgBottom = Math.min(96, Math.max(14, Math.round((average / maxDayCal) * 100)));
 
         this.container.innerHTML = `
             <header style="padding: 14px 20px 12px;"><h1 style="font-size: 24px; font-weight: 800;">Tygodniowe kalorie</h1></header>
@@ -72,9 +68,8 @@ export class WeekView extends Component {
                             const gradient = `linear-gradient(to top, var(--macro-carb) 0% ${cShare}%, var(--macro-fat) ${cShare}% ${cShare + fShare}%, var(--macro-protein) ${cShare + fShare}% 100%)`;
                             return `<button class="week-chart-bar ${this.selectedDate === day.key ? 'active' : ''}" data-date="${day.key}"><span class="week-bar-date">${day.date.toLocaleDateString('pl-PL', { day: '2-digit', month: '2-digit' })}</span><div class="fill" style="height:${h}%; background:${gradient};"></div><span class="week-bar-kcal">${Math.round(day.cal)} kcal</span></button>`;
                         }).join('')}
-                        <div class="week-chart-average" style="bottom:${avgBottom}%;"><span>Średnia · ${average} kcal</span></div>
                     </div>
-                    <div style="display:flex; gap:12px; margin-top:8px;"><span class="macro-pill"><span style="width:12px;height:12px;background:var(--macro-protein);border-radius:3px;"></span>Białko</span><span class="macro-pill"><span style="width:12px;height:12px;background:var(--macro-fat);border-radius:3px;"></span>Tłuszcze</span><span class="macro-pill"><span style="width:12px;height:12px;background:var(--macro-carb);border-radius:3px;"></span>Węgle</span></div>
+                    <div class="week-legend-row"><span class="macro-pill"><span style="width:12px;height:12px;background:var(--macro-protein);border-radius:3px;"></span>Białko</span><span class="macro-pill"><span style="width:12px;height:12px;background:var(--macro-fat);border-radius:3px;"></span>Tłuszcze</span><span class="macro-pill"><span style="width:12px;height:12px;background:var(--macro-carb);border-radius:3px;"></span>Węgle</span><span class="week-average-pill">Średnia · ${average} kcal</span></div>
                 </div>
                 <div class="card" style="margin: 0 0 16px 0;">
                     <h3 style="margin-bottom:10px; text-transform: capitalize;">${new Date(selected.key).toLocaleDateString('pl-PL', { weekday: 'long', day: 'numeric', month: 'long' })}</h3>
