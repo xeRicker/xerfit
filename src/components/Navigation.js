@@ -15,8 +15,8 @@ export class Navigation extends Component {
 
     render() {
         const tabs = [
-            { id: 'days', icon: Icons.days, label: 'Dzień' },
-            { id: 'week', icon: Icons.week, label: 'Tydzień' },
+            { id: 'days', icon: Icons.days, label: 'Jadłospis' },
+            { id: 'week', icon: Icons.week, label: 'Podsumowanie' },
             { id: 'products', icon: Icons.products, label: 'Produkty' },
             { id: 'you', icon: Icons.user, label: 'Ty' }
         ];
