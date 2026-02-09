@@ -2,41 +2,32 @@ import { Component } from '../core/Component.js';
 import { store } from '../core/Store.js';
 import { Icons } from '../core/Icons.js';
 
-const toDateKey = (date) => {
-    const y = date.getUTCFullYear();
-    const m = String(date.getUTCMonth() + 1).padStart(2, '0');
-    const d = String(date.getUTCDate()).padStart(2, '0');
-    return `${y}-${m}-${d}`;
-};
-
-const parseDateKey = (key) => {
-    const [y, m, d] = key.split('-').map(Number);
-    return new Date(Date.UTC(y, m - 1, d, 12, 0, 0));
-};
+const toDateKey = (date) => date.toISOString().split('T')[0];
 
 export class DayStrip extends Component {
     constructor(container) {
         super(container);
+        this.anchorDate = new Date();
     }
 
     getDays(centerDate) {
         return Array.from({ length: 7 }).map((_, index) => {
             const next = new Date(centerDate);
-            next.setUTCDate(centerDate.getUTCDate() + index - 3);
+            next.setDate(centerDate.getDate() + index - 3);
             return next;
         });
     }
 
     shiftDay(offset, state) {
-        const selected = parseDateKey(state.currentDate);
-        selected.setUTCDate(selected.getUTCDate() + offset);
+        const selected = new Date(`${state.currentDate}T00:00:00`);
+        selected.setDate(selected.getDate() + offset);
         store.setDate(toDateKey(selected));
     }
 
     render(state) {
-        const current = parseDateKey(state.currentDate);
+        const current = new Date(`${state.currentDate}T00:00:00`);
         const days = this.getDays(current);
-        const label = current.toLocaleDateString('pl-PL', { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'UTC' });
+        const label = current.toLocaleDateString('pl-PL', { weekday: 'long', day: 'numeric', month: 'long' });
 
         this.container.innerHTML = `
             <div class="day-strip-wrap">
@@ -53,7 +44,7 @@ export class DayStrip extends Component {
                         const key = toDateKey(date);
                         const dayCal = (state.logs[key] || []).reduce((sum, e) => sum + e.cal, 0);
                         const pct = Math.min(100, Math.round((dayCal / Math.max(1, state.user.targetCal || 1)) * 100));
-                        return `<button class="day-pill ${key === state.currentDate ? 'active' : ''}" data-date="${key}"><span class="day-name">${date.toLocaleDateString('pl-PL', { weekday: 'short', timeZone: 'UTC' })}</span><span class="day-num">${date.toLocaleDateString('pl-PL', { day: 'numeric', timeZone: 'UTC' })}</span><div class="day-cal-track"><div class="day-cal-fill" style="width:${pct}%;"></div></div></button>`;
+                        return `<button class="day-pill ${key === state.currentDate ? 'active' : ''}" data-date="${key}"><span class="day-name">${date.toLocaleDateString('pl-PL', { weekday: 'short' })}</span><span class="day-num">${date.getDate()}</span><div class="day-cal-track"><div class="day-cal-fill" style="width:${pct}%;"></div></div></button>`;
                     }).join('')}
                 </div>
             </div>`;
