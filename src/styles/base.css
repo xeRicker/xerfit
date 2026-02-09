@@ -7,13 +7,16 @@
 }
 
 body {
-    background: radial-gradient(circle at 20% -20%, rgba(37, 150, 190, 0.2), transparent 42%), var(--bg-app);
+    background:
+        radial-gradient(circle at 15% -10%, rgba(255, 106, 0, 0.2), transparent 42%),
+        radial-gradient(circle at 90% 0%, rgba(10, 132, 255, 0.12), transparent 32%),
+        var(--bg-app);
     color: var(--text-main);
     overflow: hidden;
     height: 100dvh;
     min-height: -webkit-fill-available;
     width: 100vw;
-    font-size: 14px;
+    font-size: 15px;
 }
 
 input, button, select, textarea {
@@ -22,47 +25,49 @@ input, button, select, textarea {
     outline: none;
 }
 
-button { background: transparent; cursor: pointer; }
+button { background: transparent; cursor: pointer; transition: transform .2s var(--ease-fluid), opacity .2s var(--ease-fluid); }
+button:active:not(:disabled) { transform: scale(.97); opacity: .9; }
 
 #app {
     display: flex;
     flex-direction: column;
     height: 100%;
+    max-width: 430px;
+    margin: 0 auto;
+    position: relative;
 }
 
 #top-brand {
     position: fixed;
     top: 0;
-    left: 0;
-    right: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: min(430px, 100vw);
     z-index: 110;
-    background: rgba(4, 8, 12, 0.96);
+    background: var(--bg-glass);
+    backdrop-filter: blur(40px) saturate(180%);
     border-bottom: 1px solid var(--line-soft);
     padding: calc(var(--safe-top) + 8px) 16px 10px;
     text-align: center;
 }
 
 .brand-title {
-    font-family: var(--font-head);
-    font-size: 30px;
-    font-weight: 800;
-    font-style: italic;
-    letter-spacing: 1.6px;
-    color: var(--accent-main);
-    text-shadow: 0 0 14px rgba(37, 150, 190, 0.35);
+    font-size: 28px;
+    font-weight: 900;
+    letter-spacing: 0.02em;
+    color: var(--text-main);
     line-height: 1;
 }
 
 .brand-alpha {
-    font-family: var(--font-head);
     display: inline-block;
-    margin-top: 2px;
-    padding: 2px 8px;
+    margin-top: 4px;
+    padding: 2px 10px;
     border-radius: 999px;
-    border: 1px solid var(--line-strong);
-    color: var(--accent-cyan);
+    border: 1px solid rgba(255, 106, 0, 0.35);
+    color: var(--accent-main);
     font-size: 11px;
-    letter-spacing: 1.1px;
+    letter-spacing: 0.08em;
     font-weight: 700;
 }
 
@@ -72,12 +77,13 @@ button { background: transparent; cursor: pointer; }
     overflow-x: hidden;
     overscroll-behavior-y: contain;
     padding-top: calc(var(--safe-top) + 76px);
-    padding-bottom: calc(84px + var(--safe-bottom));
+    padding-bottom: calc(88px + var(--safe-bottom));
 }
 
-h1, h2, h3 {
-    font-family: var(--font-head);
-    font-style: italic;
+.view-container::-webkit-scrollbar,
+*::-webkit-scrollbar {
+    width: 0;
+    height: 0;
 }
 
 h1, h2, h3, p, span, div { overflow-wrap: anywhere; word-break: break-word; }
