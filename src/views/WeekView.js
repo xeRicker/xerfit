@@ -26,8 +26,8 @@ export class WeekView extends Component {
     }
 
     renderEntry(entry) {
-        return `<div class="list-item meal-entry week-entry" style="margin-bottom: 8px; border-left:4px solid ${entry.color || '#2596be'};">
-            <div class="meal-entry-top"><div class="meal-entry-main"><span class="meal-entry-icon" style="color:${entry.color || '#2596be'};">${Icons[entry.icon] || Icons.leaf}</span><div style="min-width:0;"><div class="entry-title">${entry.name}</div><div class="entry-sub">${Math.round(entry.grams)}g · <span class="meal-kcal">${Math.round(entry.cal)} kcal</span></div></div></div><div class="entry-actions entry-actions-right">${this.editEntryId === String(entry.id)
+        return `<div class="list-item meal-entry week-entry food-entry" style="margin-bottom: 8px; border-left:4px solid ${entry.color || '#FF6A00'};">
+            <div class="meal-entry-top"><div class="meal-entry-main"><span class="meal-entry-icon" style="color:${entry.color || '#FF6A00'};">${Icons[entry.icon] || Icons.leaf}</span><div style="min-width:0;"><div class="entry-title">${entry.name}</div><div class="entry-sub">${Math.round(entry.grams)}g · <span class="meal-kcal">${Math.round(entry.cal)} kcal</span></div></div></div><div class="entry-actions entry-actions-right">${this.editEntryId === String(entry.id)
         ? `<input type="number" class="input-field edit-inline" data-id="${entry.id}" value="${Math.round(this.editValue || entry.grams)}" style="width:74px;padding:6px;text-align:right;"> <button class="save-inline btn-icon" data-id="${entry.id}">${Icons.check}</button> <button class="cancel-inline btn-icon" style="color:var(--text-sub);">${Icons.close}</button>`
         : `<button class="edit-day-entry btn-icon" data-id="${entry.id}" data-grams="${Math.round(entry.grams)}">${Icons.edit}</button><button class="del-day-entry btn-icon btn-danger" data-id="${entry.id}">${Icons.close}</button>`}
             </div></div>
@@ -54,7 +54,7 @@ export class WeekView extends Component {
         const maxDayCal = Math.max(1, ...dayStats.map(d => Math.round(d.cal)));
 
         this.container.innerHTML = `
-            <header style="padding: 14px 20px 12px;"><h1 style="font-size: 24px; font-weight: 800;">Tygodniowe kalorie</h1></header>
+            <header style="padding: 14px 20px 12px;"><h1 style="font-size: 24px; font-weight: 800;">Podsumowanie</h1></header>
             <div style="padding: 0 16px;">
                 <div class="card" style="margin: 0 0 12px 0;">
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 12px; gap: 8px;"><button id="week-prev" class="icon-nav-btn">${Icons.chevronLeft}</button><strong style="text-align:center;">${weekDays[0].toLocaleDateString('pl-PL')} - ${weekDays[6].toLocaleDateString('pl-PL')}</strong><button id="week-next" class="icon-nav-btn">${Icons.chevronRight}</button></div>
