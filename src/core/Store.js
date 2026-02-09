@@ -26,8 +26,11 @@ class Store {
     constructor() {
         this.subscribers = [];
         this.toastSubscribers = [];
+        this.syncSubscribers = [];
         this.currentProfileId = null;
-        this.state = this.normalizeDb({ user: defaultUser, products: defaultProducts, logs: {}, currentDate: new Date().toISOString().split('T')[0] });
+        this.isSyncing = false;
+        this.hasPendingSync = false;
+        this.state = this.normalizeDb({ user: defaultUser, products: defaultProducts, logs: {}, currentDate: new Date().toLocaleDateString('en-CA') });
     }
 
     normalizeDb(raw = {}) {
@@ -42,7 +45,7 @@ class Store {
             user: { ...defaultUser, ...(raw.user || {}) },
             products,
             logs: raw.logs || {},
-            currentDate: raw.currentDate || new Date().toISOString().split('T')[0]
+            currentDate: raw.currentDate || new Date().toLocaleDateString('en-CA')
         };
     }
 
@@ -55,6 +58,17 @@ class Store {
     onToast(cb) {
         this.toastSubscribers.push(cb);
         return () => this.toastSubscribers = this.toastSubscribers.filter(sub => sub !== cb);
+    }
+
+    onSyncState(cb) {
+        this.syncSubscribers.push(cb);
+        cb({ hasPendingSync: this.hasPendingSync, isSyncing: this.isSyncing });
+        return () => this.syncSubscribers = this.syncSubscribers.filter(sub => sub !== cb);
+    }
+
+    emitSyncState() {
+        const state = { hasPendingSync: this.hasPendingSync, isSyncing: this.isSyncing };
+        this.syncSubscribers.forEach(cb => cb(state));
     }
 
     notify() { this.subscribers.forEach(cb => cb(this.state)); }
@@ -79,8 +93,31 @@ class Store {
     async persist(message = '', type = 'success') {
         if (!this.currentProfileId) return;
         StorageService.save(`db/profiles/${this.currentProfileId}`, this.state);
-        await GitHubDataService.saveProfileData(this.currentProfileId, this.state);
+        this.hasPendingSync = true;
+        this.emitSyncState();
         if (message) this.toast(message, type);
+    }
+
+    async syncToGitHub() {
+        if (!this.currentProfileId) return;
+        if (this.isSyncing) return;
+        if (!this.hasPendingSync) {
+            this.toast('Brak zmian do zapisania w GitHub.', 'warning');
+            return;
+        }
+
+        this.isSyncing = true;
+        this.emitSyncState();
+        try {
+            await GitHubDataService.saveProfileData(this.currentProfileId, this.state);
+            this.hasPendingSync = false;
+            this.toast('Zapisano dane do GitHub.');
+        } catch {
+            this.toast('Nie udało się zapisać do GitHub.', 'warning');
+        } finally {
+            this.isSyncing = false;
+            this.emitSyncState();
+        }
     }
 
     setDate(dateStr) {

@@ -53,18 +53,21 @@ select.input-field {
     padding-right: 32px;
 }
 
-.btn-primary { background: var(--grad-primary); color:#0f1602; padding:14px; border-radius:16px; width:100%; font-weight:800; font-size:15px; box-shadow:var(--glow-main); transition: transform .2s var(--ease-fluid), opacity .2s; }
+.btn-primary { background: var(--grad-primary); color:#0f1602; padding:12px 14px; border-radius:14px; width:100%; font-weight:800; font-size:14px; min-height:44px; display:inline-flex; align-items:center; justify-content:center; gap:8px; box-shadow:var(--glow-main); transition: transform .2s var(--ease-fluid), opacity .2s; }
 .btn-primary:disabled { opacity:.45; box-shadow:none; cursor:not-allowed; }
-.btn-muted { background: rgba(125, 140, 120, 0.28); color: var(--text-sub); border:1px solid var(--line-soft); padding:12px; border-radius:14px; }
+.btn-muted { background: rgba(125, 140, 120, 0.28); color: var(--text-sub); border:1px solid var(--line-soft); padding:12px; border-radius:14px; min-height:44px; display:inline-flex; align-items:center; justify-content:center; gap:8px; }
 .btn-muted:disabled { opacity:.45; }
-.btn-icon { width:32px; height:32px; border-radius:10px; border:1px solid var(--line-soft); color:var(--accent-cyan); display:grid; place-items:center; flex-shrink:0; }
-.btn-icon svg { width:16px; height:16px; }
+.btn-icon { width:34px; height:34px; border-radius:10px; border:1px solid var(--line-soft); color:var(--accent-cyan); display:grid; place-items:center; flex-shrink:0; background:rgba(6,10,8,.65); }
+.btn-icon svg { width:15px; height:15px; }
+.btn-danger { color: var(--accent-red); border-color: rgba(255,111,130,.45); }
+.btn-icon.is-active { color: var(--accent-main); border-color: var(--line-strong); }
 
 .icon-nav-btn { width:42px; height:42px; border-radius:12px; border:1px solid var(--line-soft); display:grid; place-items:center; color:var(--accent-main); background: rgba(255,255,255,.02); }
 .icon-nav-btn:disabled { color: var(--text-dim); background: rgba(120,120,120,.2); cursor:not-allowed; }
 .icon-nav-btn svg { width:18px; height:18px; }
 
-.btn-float { position:fixed; bottom: calc(86px + var(--safe-bottom)); right:20px; width:58px; height:58px; border-radius:18px; display:grid; place-items:center; background:var(--grad-primary); color:#0f1602; box-shadow: var(--glow-main); z-index:90; }
+.btn-float { position:fixed; bottom: calc(86px + var(--safe-bottom)); right:20px; width:52px; height:52px; border-radius:16px; display:grid; place-items:center; background:var(--grad-primary); color:#0f1602; box-shadow: var(--glow-main); z-index:90; }
+.btn-float svg{width:20px;height:20px;}
 
 .list-item { display:flex; justify-content:space-between; align-items:flex-start; gap:8px; padding:14px 16px; margin-bottom:8px; background: var(--bg-surface); border:1px solid var(--line-soft); border-radius:16px; min-width:0; }
 .entry-title, .entry-sub { overflow-wrap:anywhere; }
@@ -87,15 +90,28 @@ select.input-field {
 .week-entry { align-items:center; }
 .week-entry-actions { display:flex; align-items:center; justify-content:center; gap:8px; }
 
+
+.meal-entry-main { display:flex; align-items:center; gap:10px; flex:1; min-width:0; }
+.meal-entry-icon { width:20px; height:20px; }
+.entry-title { font-weight: 650; font-size: 15px; }
+.entry-sub { font-size: 12px; color: var(--text-sub); margin-top: 2px; }
+.meal-kcal { color: var(--accent-main); font-weight: 700; }
+.macro-icon { width:14px; height:14px; }
+.macro-icon.protein { color: var(--macro-protein); }
+.macro-icon.fat { color: var(--macro-fat); }
+.macro-icon.carbs { color: var(--macro-carb); }
 .modal-sheet { position:fixed; bottom:0; left:0; width:100%; background: linear-gradient(165deg, #162016, #0b130b); border-top:1px solid var(--line-soft); border-radius:30px 30px 0 0; padding:20px; padding-bottom: calc(20px + var(--safe-bottom)); transform: translateY(100%); transition: transform .3s var(--ease-fluid); z-index:200; }
 .modal-sheet.open { transform:translateY(0); }
 .backdrop { position:fixed; inset:0; background: rgba(0,0,0,.62); opacity:0; pointer-events:none; transition: opacity .3s; backdrop-filter: blur(6px); z-index:199; }
 .backdrop.open { opacity:1; pointer-events:auto; }
 
-.week-chart { display:grid; grid-template-columns: repeat(7,1fr); gap:6px; align-items:end; height:130px; position:relative; padding-top:20px; overflow:hidden; }
-.week-chart-average { position:absolute; left:0; right:0; border-top:1px dashed rgba(142,216,239,.65); font-size:10px; color:var(--accent-cyan); text-align:right; padding-right:4px; transform: translateY(50%); }
-.week-chart-bar { height:100%; display:flex; flex-direction:column; justify-content:end; gap:4px; align-items:center; color:var(--text-sub); font-size:10px; }
+.week-chart { display:grid; grid-template-columns: repeat(7,1fr); gap:6px; align-items:end; height:176px; position:relative; padding:34px 0 22px; overflow:hidden; }
+.week-chart-average { position:absolute; left:0; right:0; border-top:1px dashed rgba(142,216,239,.65); font-size:10px; color:var(--accent-cyan); transform: translateY(50%); }
+.week-chart-average span { background:rgba(4,8,12,.94); padding:0 6px; position:absolute; left:0; top:-8px; }
+.week-chart-bar { height:100%; display:flex; flex-direction:column; justify-content:end; gap:5px; align-items:center; color:var(--text-sub); font-size:10px; }
 .week-chart-bar .fill { width:100%; border-radius:10px 10px 4px 4px; border:1px solid rgba(184,255,44,.35); min-height:10px; overflow:hidden; }
+.week-bar-date { color: var(--text-dim); }
+.week-bar-kcal { font-weight: 700; color: var(--text-main); }
 .week-chart-bar.active .fill { box-shadow: 0 0 10px rgba(184,255,44,.35); }
 
 .products-toolbar { margin: 0 0 16px 0; padding: 14px; display:grid; gap:10px; }
@@ -122,17 +138,18 @@ select.input-field {
 .profile-picker-backdrop { position: fixed; inset:0; background: rgba(3,8,11,.92); z-index:299; }
 .profile-picker { position: fixed; z-index:300; left: 12px; right: 12px; top: 50%; transform: translateY(-50%); background: var(--grad-surface); border:1px solid var(--line-strong); border-radius:22px; padding:18px; }
 .profile-head { display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:12px; }
-.chip-btn { border:1px solid var(--line-soft); color:var(--text-sub); border-radius:999px; padding:8px 12px; font-size:12px; }
+.chip-btn { border-radius:999px; padding:8px 12px; font-size:12px; width:auto; min-height:36px; }
 .profile-grid { display:grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap:10px; }
 .profile-card { position:relative; border:1px solid var(--line-soft); border-radius:16px; min-height:112px; padding:10px; background: rgba(11,20,12,.9); display:grid; gap:6px; justify-items:center; align-content:center; color: var(--text-main); }
 .profile-avatar { width:54px; height:54px; border-radius:16px; overflow:hidden; display:grid; place-items:center; }
 .profile-avatar svg { width:54px; height:54px; }
 .profile-name { font-size:13px; font-weight:700; }
 .profile-tools { position:absolute; top:8px; right:8px; display:flex; gap:6px; }
-.profile-tool { width:24px; height:24px; border:1px solid var(--line-soft); border-radius:8px; display:grid; place-items:center; color:var(--accent-cyan); }
+.profile-tool { width:26px; height:26px; border:1px solid var(--line-soft); border-radius:8px; display:grid; place-items:center; color:var(--accent-cyan); background:rgba(6,10,8,.7); }
 .profile-tool.danger { color: var(--accent-red); }
 .profile-tool svg { width:13px; height:13px; }
-.profile-add-btn { margin-top:12px; width:100%; display:flex; align-items:center; justify-content:center; gap:8px; }
+.profile-add-btn { margin-top:12px; }
+.profile-add-btn svg { width:16px; height:16px; }
 .profile-editor { margin-top:12px; display:grid; gap:8px; }
 .profile-avatar-grid { display:grid; grid-template-columns: repeat(4, 1fr); gap:8px; }
 .profile-avatar-pick { border:1px solid var(--line-soft); border-radius:12px; height:58px; display:grid; place-items:center; }
@@ -148,3 +165,15 @@ select.input-field {
 @keyframes spin {
     to { transform: rotate(360deg); }
 }
+
+
+.sync-github-btn {
+    position: fixed;
+    top: calc(var(--safe-top) + 88px);
+    right: 14px;
+    z-index: 130;
+    width: auto;
+    padding: 10px 14px;
+    border-radius: 999px;
+}
+.sync-github-btn svg { width:14px; height:14px; }

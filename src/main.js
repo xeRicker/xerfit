@@ -14,8 +14,11 @@ class App {
         this.outlet = document.getElementById('router-outlet');
         this.nav = new Navigation(document.getElementById('bottom-nav'), (tab) => this.route(tab));
         this.currentView = null;
+        this.syncState = { hasPendingSync: false, isSyncing: false };
+        this.syncUnsub = null;
         this.nav.render();
         this.bindToasts();
+        this.bindSyncButton();
         this.start();
     }
 
@@ -27,6 +30,7 @@ class App {
         this.route('days');
         const current = (await GitHubDataService.loadProfiles()).find(p => p.id === selectedProfile);
         store.toast(`Aktywny profil: ${current?.name || selectedProfile}`);
+        this.renderSyncButton();
     }
 
     normalizeProfile(raw, index = 0) {
@@ -71,9 +75,9 @@ class App {
                 layer.innerHTML = `
                     <div class="profile-picker-backdrop"></div>
                     <div class="profile-picker">
-                        <div class="profile-head"><h2>Wybierz profil</h2><button id="manage-profiles" class="chip-btn">${managing ? 'Zakończ' : 'Zarządzaj'}</button></div>
-                        <div class="profile-grid">${profiles.map(profile => `<button class="profile-card" data-id="${profile.id}"><span class="profile-avatar">${Icons[profile.avatar]}</span><span class="profile-name">${profile.name}</span>${managing ? `<span class="profile-tools"><span class="profile-tool" data-edit="${profile.id}">${Icons.edit}</span>${profile.id !== 'default' ? `<span class="profile-tool danger" data-delete="${profile.id}">${Icons.close}</span>` : ''}</span>` : ''}</button>`).join('')}</div>
-                        ${editor ? renderEditor() : `<button id="show-create" class="btn-muted profile-add-btn">${Icons.plus}<span>Dodaj profil</span></button>`}
+                        <div class="profile-head"><h2>Wybierz profil</h2><button id="manage-profiles" class="btn-muted chip-btn">${managing ? 'Zakończ' : 'Zarządzaj'}</button></div>
+                        <div class="profile-grid">${profiles.map(profile => `<button class="profile-card" data-id="${profile.id}"><span class="profile-avatar">${Icons[profile.avatar]}</span><span class="profile-name">${profile.name}</span>${managing ? `<span class="profile-tools"><button class="profile-tool" data-edit="${profile.id}" title="Edytuj">${Icons.edit}</button>${profile.id !== 'default' ? `<button class="profile-tool danger" data-delete="${profile.id}" title="Usuń">${Icons.close}</button>` : ''}</span>` : ''}</button>`).join('')}</div>
+                        ${editor ? renderEditor() : `<button id="show-create" class="btn-primary profile-add-btn">${Icons.plus}<span>Dodaj profil</span></button>`}
                     </div>`;
 
                 layer.querySelectorAll('.profile-card').forEach((btn) => {
@@ -156,6 +160,31 @@ class App {
         });
     }
 
+
+    bindSyncButton() {
+        const app = document.getElementById('app');
+        const btn = document.createElement('button');
+        btn.id = 'github-sync-btn';
+        btn.className = 'btn-primary sync-github-btn';
+        btn.innerHTML = `${Icons.check}<span>Zapisz do GitHub</span>`;
+        btn.onclick = () => store.syncToGitHub();
+        app.appendChild(btn);
+        this.syncUnsub = store.onSyncState((syncState) => {
+            this.syncState = syncState;
+            this.renderSyncButton();
+        });
+        this.renderSyncButton();
+    }
+
+    renderSyncButton() {
+        const btn = document.getElementById('github-sync-btn');
+        if (!btn) return;
+        const { hasPendingSync, isSyncing } = this.syncState;
+        btn.disabled = isSyncing || !hasPendingSync;
+        btn.innerHTML = isSyncing
+            ? `${Icons.calendar}<span>Zapisywanie…</span>`
+            : `${Icons.check}<span>${hasPendingSync ? 'Zapisz do GitHub' : 'Wszystko zapisane'}</span>`;
+    }
     showLoading(label) {
         const layer = document.getElementById('modal-layer');
         layer.innerHTML = `<div class="loading-screen"><div class="loader-orb"></div><div class="loading-label">${label}</div></div>`;

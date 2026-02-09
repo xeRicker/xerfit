@@ -2,7 +2,7 @@ import { Component } from '../core/Component.js';
 import { store } from '../core/Store.js';
 import { Icons } from '../core/Icons.js';
 
-const toDateKey = (date) => date.toISOString().split('T')[0];
+const toDateKey = (date) => date.toLocaleDateString('en-CA');
 const MEALS = ['breakfast', 'lunch', 'dinner'];
 const MEAL_LABELS = { breakfast: 'Śniadanie', lunch: 'Obiad', dinner: 'Kolacja' };
 const MEAL_ICONS = { breakfast: Icons.breakfast, lunch: Icons.lunch, dinner: Icons.dinner };
@@ -26,13 +26,13 @@ export class WeekView extends Component {
     }
 
     renderEntry(entry) {
-        return `<div class="list-item meal-entry" style="margin-bottom: 8px; border-left:4px solid ${entry.color || '#2596be'};">
-            <div style="display:flex; align-items:center; gap:10px; flex:1; min-width:0;"><span style="width:20px; height:20px; color:${entry.color || '#2596be'};">${Icons[entry.icon] || Icons.leaf}</span><div style="min-width:0;"><div class="entry-title" style="font-weight: 600; font-size: 15px;">${entry.name}</div><div class="entry-sub" style="font-size: 12px; color: var(--text-sub); margin-top: 2px;">${Math.round(entry.grams)}g · <span style="color: var(--accent-main);">${Math.round(entry.cal)} kcal</span></div></div></div>
+        return `<div class="list-item meal-entry week-entry" style="margin-bottom: 8px; border-left:4px solid ${entry.color || '#2596be'};">
+            <div class="meal-entry-main"><span class="meal-entry-icon" style="color:${entry.color || '#2596be'};">${Icons[entry.icon] || Icons.leaf}</span><div style="min-width:0;"><div class="entry-title">${entry.name}</div><div class="entry-sub">${Math.round(entry.grams)}g · <span class="meal-kcal">${Math.round(entry.cal)} kcal</span></div></div></div>
             <div class="meal-entry-side">
-                <div class="macro-stack"><span class="macro-pill macro-pill-strong"><span style="width:14px;height:14px;color:var(--macro-protein);">${Icons.protein}</span>${Math.round(entry.p)}</span><span class="macro-pill macro-pill-strong"><span style="width:14px;height:14px;color:var(--macro-fat);">${Icons.fat}</span>${Math.round(entry.f)}</span><span class="macro-pill macro-pill-strong"><span style="width:14px;height:14px;color:var(--macro-carb);">${Icons.carbs}</span>${Math.round(entry.c)}</span></div>
+                <div class="macro-stack"><span class="macro-pill macro-pill-strong"><span class="macro-icon protein">${Icons.protein}</span>${Math.round(entry.p)}</span><span class="macro-pill macro-pill-strong"><span class="macro-icon fat">${Icons.fat}</span>${Math.round(entry.f)}</span><span class="macro-pill macro-pill-strong"><span class="macro-icon carbs">${Icons.carbs}</span>${Math.round(entry.c)}</span></div>
                 <div class="entry-actions">${this.editEntryId === String(entry.id)
-        ? `<input type="number" class="input-field edit-inline" data-id="${entry.id}" value="${Math.round(this.editValue || entry.grams)}" style="width:74px;padding:6px;text-align:right;"> <button class="save-inline btn-icon" data-id="${entry.id}" style="color:var(--accent-main);">${Icons.check}</button> <button class="cancel-inline btn-icon" style="color:var(--text-sub);">${Icons.close}</button>`
-        : `<button class="edit-day-entry btn-icon" data-id="${entry.id}" data-grams="${Math.round(entry.grams)}" style="color:var(--accent-cyan);">${Icons.edit}</button><button class="del-day-entry btn-icon" data-id="${entry.id}" style="color:var(--accent-red);">${Icons.close}</button>`}
+        ? `<input type="number" class="input-field edit-inline" data-id="${entry.id}" value="${Math.round(this.editValue || entry.grams)}" style="width:74px;padding:6px;text-align:right;"> <button class="save-inline btn-icon" data-id="${entry.id}">${Icons.check}</button> <button class="cancel-inline btn-icon" style="color:var(--text-sub);">${Icons.close}</button>`
+        : `<button class="edit-day-entry btn-icon" data-id="${entry.id}" data-grams="${Math.round(entry.grams)}">${Icons.edit}</button><button class="del-day-entry btn-icon btn-danger" data-id="${entry.id}">${Icons.close}</button>`}
                 </div>
             </div>
         </div>`;
@@ -55,7 +55,7 @@ export class WeekView extends Component {
         const average = Math.round(dayStats.reduce((sum, day) => sum + day.cal, 0) / 7);
         const selected = dayStats.find((d) => d.key === this.selectedDate) || dayStats[0];
         const maxDayCal = Math.max(1, ...dayStats.map(d => Math.round(d.cal)));
-        const avgBottom = Math.min(82, Math.max(12, Math.round((average / maxDayCal) * 100)));
+        const avgBottom = Math.min(96, Math.max(14, Math.round((average / maxDayCal) * 100)));
 
         this.container.innerHTML = `
             <header style="padding: 14px 20px 12px;"><h1 style="font-size: 24px; font-weight: 800;">Tygodniowe kalorie</h1></header>
@@ -70,9 +70,9 @@ export class WeekView extends Component {
                             const fShare = Math.round(((day.f * 9) / totalMacro) * 100);
                             const cShare = Math.max(0, 100 - pShare - fShare);
                             const gradient = `linear-gradient(to top, var(--macro-carb) 0% ${cShare}%, var(--macro-fat) ${cShare}% ${cShare + fShare}%, var(--macro-protein) ${cShare + fShare}% 100%)`;
-                            return `<button class="week-chart-bar ${this.selectedDate === day.key ? 'active' : ''}" data-date="${day.key}"><div class="fill" style="height:${h}%; background:${gradient};"></div><span>${Math.round(day.cal)}</span><span style="font-size:10px; color:var(--text-dim);">${day.date.toLocaleDateString('pl-PL', { day: '2-digit', month: '2-digit' })}</span></button>`;
+                            return `<button class="week-chart-bar ${this.selectedDate === day.key ? 'active' : ''}" data-date="${day.key}"><span class="week-bar-date">${day.date.toLocaleDateString('pl-PL', { day: '2-digit', month: '2-digit' })}</span><div class="fill" style="height:${h}%; background:${gradient};"></div><span class="week-bar-kcal">${Math.round(day.cal)} kcal</span></button>`;
                         }).join('')}
-                        <div class="week-chart-average" style="bottom:${avgBottom}%;"><span style="background:rgba(4,8,12,.9); padding-left:6px;">Średnia · ${average} kcal</span></div>
+                        <div class="week-chart-average" style="bottom:${avgBottom}%;"><span>Średnia · ${average} kcal</span></div>
                     </div>
                     <div style="display:flex; gap:12px; margin-top:8px;"><span class="macro-pill"><span style="width:12px;height:12px;background:var(--macro-protein);border-radius:3px;"></span>Białko</span><span class="macro-pill"><span style="width:12px;height:12px;background:var(--macro-fat);border-radius:3px;"></span>Tłuszcze</span><span class="macro-pill"><span style="width:12px;height:12px;background:var(--macro-carb);border-radius:3px;"></span>Węgle</span></div>
                 </div>
@@ -80,7 +80,7 @@ export class WeekView extends Component {
                     <h3 style="margin-bottom:10px; text-transform: capitalize;">${new Date(selected.key).toLocaleDateString('pl-PL', { weekday: 'long', day: 'numeric', month: 'long' })}</h3>
                     ${MEALS.map(meal => {
                         const entries = selected.meals.filter(m => (m.meal || 'breakfast') === meal);
-                        return `<div style="margin-bottom:10px;"><div class="meal-label meal-label-week"><span class="meal-label-icon">${MEAL_ICONS[meal]}</span><span>${MEAL_LABELS[meal]}</span></div>${entries.length ? entries.map(entry => `<div class="list-item week-entry" style="margin-bottom: 8px; border-left:4px solid ${entry.color || '#2596be'};"><div><div style="font-weight:700;">${entry.name}</div><div style="font-size:12px; color:var(--text-sub);">${entry.grams}g · B${Math.round(entry.p)} T${Math.round(entry.f)} W${Math.round(entry.c)}</div></div><div class="week-entry-actions"><span style="color:var(--accent-main); font-weight:700;">${Math.round(entry.cal)} kcal</span>${this.editEntryId === String(entry.id) ? `<input type="number" class="input-field edit-inline" data-id="${entry.id}" value="${Math.round(this.editValue || entry.grams)}" style="width:74px;padding:6px;text-align:right;"> <button class="save-inline btn-icon" data-id="${entry.id}" style="color:var(--accent-main);">${Icons.check}</button> <button class="cancel-inline btn-icon" style="color:var(--text-sub);">${Icons.close}</button>` : `<button class="edit-day-entry btn-icon" data-id="${entry.id}" data-grams="${Math.round(entry.grams)}" style="color:var(--accent-cyan);">${Icons.edit}</button><button class="del-day-entry btn-icon" data-id="${entry.id}" style="color:var(--accent-red);">${Icons.close}</button>`}</div></div>`).join('') : `<div class="meal-empty"><span class="meal-label-icon">${MEAL_ICONS[meal]}</span><span>Brak produktów</span></div>`}</div>`;
+                        return `<div style="margin-bottom:10px;"><div class="meal-label meal-label-week"><span class="meal-label-icon">${MEAL_ICONS[meal]}</span><span>${MEAL_LABELS[meal]}</span></div>${entries.length ? entries.map(entry => this.renderEntry(entry)).join('') : `<div class="meal-empty"><span>Brak produktów</span></div>`}</div>`;
                     }).join('')}
                 </div>
             </div><div style="height: 96px;"></div>`;
