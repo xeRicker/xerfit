@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { Suspense, useState, useEffect } from "react";
 import { useDiaryStore } from "@/lib/store";
 import { Plus, Save, ChefHat, Check, Utensils, Coffee, Apple, Carrot, Beef, Fish, Croissant, Pizza, Sandwich, IceCream, X } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { MacroIcon } from "@/components/MacroIcon";
 
 const ICONS = {
@@ -19,9 +19,10 @@ const COLORS = [
     "bg-rose-500"
 ];
 
-export default function AddPage() {
+function AddProductForm() {
   const { addProduct, updateProduct, editingProduct, setEditingProduct, selectionMode } = useDiaryStore();
   const router = useRouter();
+  const searchParams = useSearchParams();
   
   const [form, setForm] = useState({
     name: "",
@@ -35,6 +36,13 @@ export default function AddPage() {
   const [success, setSuccess] = useState(false);
 
   useEffect(() => {
+    const name = searchParams.get('name');
+    const calories = searchParams.get('calories');
+    const protein = searchParams.get('protein');
+    const fat = searchParams.get('fat');
+    const carbs = searchParams.get('carbs');
+    const brand = searchParams.get('brand');
+
     if (editingProduct) {
         setForm({
             name: editingProduct.name,
@@ -45,6 +53,17 @@ export default function AddPage() {
             icon: editingProduct.icon || "ChefHat",
             color: editingProduct.color || "bg-orange-500"
         });
+    } else if (name || calories) {
+        // Pre-fill from scan
+        setForm({
+            name: brand ? `${brand} - ${name}` : (name || ""),
+            calories: calories || "",
+            protein: protein || "",
+            fat: fat || "",
+            carbs: carbs || "",
+            icon: "ChefHat",
+            color: "bg-orange-500"
+        });
     } else {
         setForm({
             name: "", calories: "", protein: "", fat: "", carbs: "",
@@ -53,7 +72,7 @@ export default function AddPage() {
     }
 
     return () => setEditingProduct(null); // Cleanup on unmount
-  }, [editingProduct, setEditingProduct]);
+  }, [editingProduct, setEditingProduct, searchParams]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -255,4 +274,16 @@ export default function AddPage() {
       </form>
     </main>
   );
+}
+
+export default function AddPage() {
+    return (
+        <Suspense fallback={
+            <div className="min-h-screen flex items-center justify-center bg-background">
+                <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+            </div>
+        }>
+            <AddProductForm />
+        </Suspense>
+    );
 }

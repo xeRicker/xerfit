@@ -1,12 +1,13 @@
 "use client";
 
 import { useDiaryStore, Product } from "@/lib/store";
-import { Plus, Search, Scale, Pencil, ArrowUpDown, Trash2, X } from "lucide-react";
+import { Plus, Search, Scale, Pencil, ArrowUpDown, Trash2, X, Barcode, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { MacroIcon } from "@/components/MacroIcon";
+import { BarcodeScanner } from "@/components/BarcodeScanner";
 
 type SortOption = 'name' | 'calories' | 'protein' | 'fat' | 'carbs';
 
@@ -17,6 +18,8 @@ export default function MealsPage() {
   const [weight, setWeight] = useState("100");
   const [sortBy, setSortBy] = useState<SortOption>('name');
   const [sortOpen, setSortOpen] = useState(false);
+  const [isScanning, setIsScanning] = useState(false);
+  const [isFetching, setIsFetching] = useState(false);
   const router = useRouter();
 
   const filtered = products
@@ -25,6 +28,36 @@ export default function MealsPage() {
         if (sortBy === 'name') return (a.name || '').localeCompare(b.name || '');
         return (b[sortBy] as number || 0) - (a[sortBy] as number || 0);
     });
+
+  const handleScan = async (barcode: string) => {
+    setIsScanning(false);
+    setIsFetching(true);
+    
+    try {
+        const response = await fetch(`https://world.openfoodfacts.org/api/v2/product/${barcode}.json`);
+        const data = await response.json();
+
+        if (data.status === 1) {
+            const p = data.product;
+            const params = new URLSearchParams({
+                name: p.product_name || "",
+                calories: (p.nutriments?.["energy-kcal_100g"] || p.nutriments?.["energy-kcal"] || 0).toString(),
+                protein: (p.nutriments?.proteins_100g || 0).toString(),
+                fat: (p.nutriments?.fat_100g || 0).toString(),
+                carbs: (p.nutriments?.carbohydrates_100g || 0).toString(),
+                brand: p.brands || ""
+            });
+            router.push(`/add?${params.toString()}`);
+        } else {
+            alert("Nie znaleziono produktu w bazie Open Food Facts.");
+        }
+    } catch (err) {
+        console.error("OFF Fetch Error:", err);
+        alert("Błąd podczas pobierania danych z bazy Open Food Facts.");
+    } finally {
+        setIsFetching(false);
+    }
+  };
 
   const handleAdd = () => {
     if (!selectedProduct || !selectionMode.category) return;
@@ -90,6 +123,12 @@ export default function MealsPage() {
         <h1 className="text-3xl font-black tracking-tight text-primary">Baza Produktów</h1>
         
         <div className="flex items-center gap-2">
+            <button 
+                onClick={() => setIsScanning(true)}
+                className="p-3 glass text-primary rounded-xl active:scale-95 transition-transform"
+            >
+                <Barcode size={20} />
+            </button>
             <button 
                 onClick={() => router.push('/add')}
                 className="p-3 bg-primary text-white rounded-xl active:scale-95 transition-transform shadow-lg shadow-primary/20"
@@ -224,6 +263,34 @@ export default function MealsPage() {
             ))
         )}
       </div>
+
+      <AnimatePresence>
+        {isScanning && (
+            <BarcodeScanner 
+                onClose={() => setIsScanning(false)} 
+                onScan={handleScan} 
+            />
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {isFetching && (
+            <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="fixed inset-0 z-[110] bg-black/60 backdrop-blur-md flex flex-col items-center justify-center gap-4"
+            >
+                <div className="w-16 h-16 rounded-3xl bg-primary/20 flex items-center justify-center">
+                    <Loader2 className="text-primary animate-spin" size={32} />
+                </div>
+                <div className="flex flex-col items-center gap-1">
+                    <span className="text-sm font-black text-white uppercase tracking-widest">Pobieranie danych</span>
+                    <span className="text-[10px] font-bold text-white/50 uppercase tracking-tighter">Open Food Facts API</span>
+                </div>
+            </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Add Modal */}
       <AnimatePresence>
