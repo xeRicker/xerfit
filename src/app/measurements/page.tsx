@@ -4,9 +4,10 @@ import { useDiaryStore, Measurement } from "@/lib/store";
 import { useState, useMemo } from "react";
 import { format } from "date-fns";
 import { motion, AnimatePresence } from "framer-motion";
-import { Ruler, Weight, Save, Trash2, TrendingUp, Plus, X, ChevronRight, Scale, BicepsFlexed, Shirt, Activity } from "lucide-react";
+import { Ruler, Save, Trash2, TrendingUp, Plus, X, Scale, BicepsFlexed, Shirt, Activity } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { pl } from "date-fns/locale";
+import { LucideIcon } from "lucide-react";
 
 export default function MeasurementsPage() {
     const { measurements, addMeasurement, deleteMeasurement, activeProfileId } = useDiaryStore();
@@ -20,7 +21,6 @@ export default function MeasurementsPage() {
     [measurements, activeProfileId]);
 
     const latest = profileMeasurements[0];
-    const previous = profileMeasurements[1];
 
     // Prepare chart data (reverse to chronological order)
     const chartData = useMemo(() => 
@@ -38,7 +38,7 @@ export default function MeasurementsPage() {
             </div>
 
             {/* Weight Trend Chart */}
-            <TrendChart data={chartData} color="#FF6A00" label="Waga (kg)" />
+            <TrendChart data={chartData} color="#FF6A00" />
 
             {/* Compact Latest Summary */}
             {latest && (
@@ -118,7 +118,7 @@ export default function MeasurementsPage() {
     );
 }
 
-function CompactStat({ val, icon: Icon, label }: { val?: number, icon: any, label: string }) {
+function CompactStat({ val, icon: Icon, label }: { val?: number, icon: LucideIcon, label: string }) {
     if (!val) return (
         <div className="flex flex-col items-center justify-center p-2 rounded-xl bg-black/10 opacity-30">
             <Icon size={12} />
@@ -144,7 +144,7 @@ function DataBadge({ val, label }: { val?: number, label: string }) {
     );
 }
 
-function TrendChart({ data, color, label }: { data: { date: string, value: number }[], color: string, label: string }) {
+function TrendChart({ data, color }: { data: { date: string, value: number }[], color: string }) {
     if (data.length < 2) return null;
 
     const values = data.map(d => d.value);
@@ -306,24 +306,62 @@ function MeasurementForm({ onClose, onSave }: { onClose: () => void, onSave: (m:
     );
 }
 
-function Input({ label, value, onChange, icon: Icon, autoFocus, required }: any) {
+interface InputProps {
+
+    label: string;
+
+    value: string | number;
+
+    onChange: (val: string) => void;
+
+    icon?: LucideIcon;
+
+    autoFocus?: boolean;
+
+    required?: boolean;
+
+}
+
+
+
+function Input({ label, value, onChange, icon: Icon, autoFocus, required }: InputProps) {
+
     return (
+
         <div className="flex flex-col gap-1">
+
             <label className="text-[10px] font-bold uppercase text-muted-foreground ml-1 flex items-center gap-1">
+
                 {Icon && <Icon size={10} />}
+
                 {label}
+
             </label>
+
             <input 
+
                 type="number" 
+
                 value={value}
+
                 onChange={e => onChange(e.target.value)}
+
                 className={cn(
+
                     "bg-black/20 rounded-xl p-4 font-bold text-lg outline-none focus:ring-2 focus:ring-primary/50",
+
                     required && !value && "ring-1 ring-red-500/50"
+
                 )}
+
                 autoFocus={autoFocus}
+
                 placeholder="0"
+
             />
+
         </div>
+
     );
+
 }

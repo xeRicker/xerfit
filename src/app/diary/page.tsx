@@ -1,7 +1,7 @@
 "use client";
 
 import { useDiaryStore } from "@/lib/store";
-import { format, subDays, eachDayOfInterval, addDays, startOfWeek, endOfWeek, isSameWeek, isAfter, startOfDay } from "date-fns";
+import { format, subDays, eachDayOfInterval, addDays, startOfWeek, endOfWeek, isSameWeek } from "date-fns";
 import { pl } from "date-fns/locale";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";

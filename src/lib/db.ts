@@ -11,11 +11,11 @@ const pool = mysql.createPool({
   queueLimit: 0,
 });
 
-export async function query(sql: string, params: any[] = []) {
+export async function query(sql: string, params: (string | number | boolean | null)[] = []) {
   try {
     const [results] = await pool.execute(sql, params);
-    return results;
-  } catch (error: any) {
+    return results as unknown[]; 
+  } catch (error) {
     console.error('Database query error:', error);
     throw error;
   }
