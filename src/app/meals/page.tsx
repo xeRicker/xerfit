@@ -7,7 +7,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { MacroIcon } from "@/components/MacroIcon";
-import { FloatingButton } from "@/components/FloatingButton";
 
 type SortOption = 'name' | 'calories' | 'protein' | 'fat' | 'carbs';
 
@@ -90,42 +89,50 @@ export default function MealsPage() {
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-black tracking-tight text-primary">Baza Produktów</h1>
         
-        <div className="relative">
+        <div className="flex items-center gap-2">
             <button 
-                onClick={() => setSortOpen(!sortOpen)}
-                className="p-3 glass rounded-xl text-muted-foreground active:scale-95 transition-transform"
+                onClick={() => router.push('/add')}
+                className="p-3 bg-primary text-white rounded-xl active:scale-95 transition-transform shadow-lg shadow-primary/20"
             >
-                <ArrowUpDown size={20} />
+                <Plus size={20} />
             </button>
-            <AnimatePresence>
-                {sortOpen && (
-                    <motion.div
-                        initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                        exit={{ opacity: 0, scale: 0.95 }}
-                        className="absolute right-0 top-12 w-40 glass bg-[#1C1C1E] rounded-xl p-1 z-50 flex flex-col shadow-xl"
-                    >
-                        {[
-                            { id: 'name', label: 'Nazwa' },
-                            { id: 'calories', label: 'Kalorie' },
-                            { id: 'protein', label: 'Białko' },
-                            { id: 'fat', label: 'Tłuszcz' },
-                            { id: 'carbs', label: 'Węgle' }
-                        ].map((opt) => (
-                            <button
-                                key={opt.id}
-                                onClick={() => { setSortBy(opt.id as SortOption); setSortOpen(false); }}
-                                className={cn(
-                                    "px-3 py-2 text-sm font-bold text-left rounded-lg transition-colors",
-                                    sortBy === opt.id ? "bg-primary text-white" : "text-muted-foreground hover:bg-white/5"
-                                )}
-                            >
-                                {opt.label}
-                            </button>
-                        ))}
-                    </motion.div>
-                )}
-            </AnimatePresence>
+            <div className="relative">
+                <button 
+                    onClick={() => setSortOpen(!sortOpen)}
+                    className="p-3 glass rounded-xl text-muted-foreground active:scale-95 transition-transform"
+                >
+                    <ArrowUpDown size={20} />
+                </button>
+                <AnimatePresence>
+                    {sortOpen && (
+                        <motion.div
+                            initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                            animate={{ opacity: 1, y: 0, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.95 }}
+                            className="absolute right-0 top-12 w-40 glass bg-[#1C1C1E] rounded-xl p-1 z-50 flex flex-col shadow-xl"
+                        >
+                            {[
+                                { id: 'name', label: 'Nazwa' },
+                                { id: 'calories', label: 'Kalorie' },
+                                { id: 'protein', label: 'Białko' },
+                                { id: 'fat', label: 'Tłuszcz' },
+                                { id: 'carbs', label: 'Węgle' }
+                            ].map((opt) => (
+                                <button
+                                    key={opt.id}
+                                    onClick={() => { setSortBy(opt.id as SortOption); setSortOpen(false); }}
+                                    className={cn(
+                                        "px-3 py-2 text-sm font-bold text-left rounded-lg transition-colors",
+                                        sortBy === opt.id ? "bg-primary text-white" : "text-muted-foreground hover:bg-white/5"
+                                    )}
+                                >
+                                    {opt.label}
+                                </button>
+                            ))}
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+            </div>
         </div>
       </div>
       
@@ -217,9 +224,6 @@ export default function MealsPage() {
             ))
         )}
       </div>
-
-      {/* FAB for New Product */}
-      <FloatingButton href="/add" icon={Plus} />
 
       {/* Add Modal */}
       <AnimatePresence>

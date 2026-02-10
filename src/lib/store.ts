@@ -59,6 +59,7 @@ export interface Measurement {
   id: string;
   profileId: string;
   date: string;
+  timestamp: number;
   weight: number;
   chest?: number;
   biceps?: number;
@@ -112,7 +113,8 @@ interface DiaryState {
   updateEntry: (id: string, weight: number) => void;
 
   // Measurement Actions
-  addMeasurement: (measurement: Omit<Measurement, 'id' | 'profileId'>) => void;
+  addMeasurement: (measurement: Omit<Measurement, 'id' | 'profileId' | 'timestamp'>) => void;
+  updateMeasurement: (id: string, measurement: Partial<Measurement>) => void;
   deleteMeasurement: (id: string) => void;
 }
 
@@ -318,8 +320,14 @@ export const useDiaryStore = create<DiaryState>((set) => ({
     measurements: [...state.measurements, {
       ...measurement,
       id: Math.random().toString(36).substring(7),
-      profileId: state.activeProfileId
+      profileId: state.activeProfileId,
+      timestamp: Date.now()
     }],
+    unsavedChanges: true
+  })),
+
+  updateMeasurement: (id, updatedData) => set((state) => ({
+    measurements: state.measurements.map(m => m.id === id ? { ...m, ...updatedData } : m),
     unsavedChanges: true
   })),
 

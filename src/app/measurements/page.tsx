@@ -10,14 +10,15 @@ import { pl } from "date-fns/locale";
 import { LucideIcon } from "lucide-react";
 
 export default function MeasurementsPage() {
-    const { measurements, addMeasurement, deleteMeasurement, activeProfileId } = useDiaryStore();
+    const { measurements, addMeasurement, updateMeasurement, deleteMeasurement, activeProfileId } = useDiaryStore();
     const [isAdding, setIsAdding] = useState(false);
+    const [editingId, setEditingId] = useState<string | null>(null);
 
-    // Filter measurements for active profile and sort by date descending
+    // Filter measurements for active profile and sort by timestamp descending
     const profileMeasurements = useMemo(() => 
         measurements
             .filter(m => m.profileId === activeProfileId)
-            .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()),
+            .sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0)),
     [measurements, activeProfileId]);
 
     const latest = profileMeasurements[0];
@@ -29,6 +30,11 @@ export default function MeasurementsPage() {
             value: m.weight
         })), 
     [profileMeasurements]);
+
+    const handleEdit = (m: Measurement) => {
+        setEditingId(m.id);
+        setIsAdding(true);
+    };
 
     return (
         <main className="p-5 flex flex-col gap-6 max-w-md mx-auto pt-12 min-h-screen pb-32">
@@ -42,7 +48,7 @@ export default function MeasurementsPage() {
 
             {/* Compact Latest Summary */}
             {latest && (
-                <div className="glass p-5 rounded-3xl flex flex-col gap-4 relative overflow-hidden">
+                <div className="glass p-5 rounded-3xl flex flex-col gap-4 relative overflow-hidden active:scale-[0.98] transition-transform cursor-pointer" onClick={() => handleEdit(latest)}>
                      <div className="flex items-center justify-between">
                         <span className="text-[10px] font-bold uppercase text-muted-foreground tracking-widest">Ostatni pomiar: {format(new Date(latest.date), 'd MMM', { locale: pl })}</span>
                         <div className="flex items-center gap-1 text-primary">
@@ -63,7 +69,7 @@ export default function MeasurementsPage() {
 
             {/* Add Button */}
             <button 
-                onClick={() => setIsAdding(true)}
+                onClick={() => { setEditingId(null); setIsAdding(true); }}
                 className="w-full py-4 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center gap-2 font-bold text-primary active:scale-95 transition-transform hover:bg-white/10"
             >
                 <Plus size={20} /> Dodaj nowy pomiar
@@ -76,7 +82,8 @@ export default function MeasurementsPage() {
                     <motion.div 
                         key={m.id}
                         layoutId={m.id}
-                        className="glass p-3 rounded-2xl flex items-center justify-between"
+                        className="glass p-3 rounded-2xl flex items-center justify-between active:scale-[0.99] transition-transform cursor-pointer"
+                        onClick={() => handleEdit(m)}
                     >
                         <div className="flex items-center gap-3">
                             <div className="flex flex-col items-center justify-center w-10 h-10 bg-black/20 rounded-xl">
@@ -94,7 +101,7 @@ export default function MeasurementsPage() {
                         </div>
 
                         <button 
-                            onClick={() => deleteMeasurement(m.id)}
+                            onClick={(e) => { e.stopPropagation(); deleteMeasurement(m.id); }}
                             className="p-2 text-muted-foreground/50 hover:text-red-500 transition-colors"
                         >
                             <Trash2 size={16} />
@@ -108,10 +115,20 @@ export default function MeasurementsPage() {
                 )}
             </div>
 
-            {/* Add Modal */}
+            {/* Add/Edit Modal */}
             <AnimatePresence>
                 {isAdding && (
-                    <MeasurementForm onClose={() => setIsAdding(false)} onSave={addMeasurement} />
+                    <MeasurementForm 
+                        onClose={() => { setIsAdding(false); setEditingId(null); }} 
+                        onSave={(data) => {
+                            if (editingId) {
+                                updateMeasurement(editingId, data);
+                            } else {
+                                addMeasurement(data);
+                            }
+                        }}
+                        initialData={editingId ? measurements.find(m => m.id === editingId) : undefined}
+                    />
                 )}
             </AnimatePresence>
         </main>
@@ -226,15 +243,15 @@ function TrendChart({ data, color }: { data: { date: string, value: number }[], 
     );
 }
 
-function MeasurementForm({ onClose, onSave }: { onClose: () => void, onSave: (m: Omit<Measurement, 'id' | 'profileId'>) => void }) {
+function MeasurementForm({ onClose, onSave, initialData }: { onClose: () => void, onSave: (m: Omit<Measurement, 'id' | 'profileId' | 'timestamp'>) => void, initialData?: Measurement }) {
     const [form, setForm] = useState({
-        date: format(new Date(), 'yyyy-MM-dd'),
-        weight: '',
-        chest: '',
-        biceps: '',
-        waist: '',
-        thigh: '',
-        calf: ''
+        date: initialData?.date || format(new Date(), 'yyyy-MM-dd'),
+        weight: initialData?.weight.toString() || '',
+        chest: initialData?.chest?.toString() || '',
+        biceps: initialData?.biceps?.toString() || '',
+        waist: initialData?.waist?.toString() || '',
+        thigh: initialData?.thigh?.toString() || '',
+        calf: initialData?.calf?.toString() || ''
     });
 
     const handleSubmit = () => {
@@ -269,7 +286,7 @@ function MeasurementForm({ onClose, onSave }: { onClose: () => void, onSave: (m:
             >
                 <div className="max-w-md mx-auto flex flex-col gap-6">
                     <div className="flex justify-between items-start">
-                        <h2 className="text-2xl font-bold">Nowy Pomiar</h2>
+                        <h2 className="text-2xl font-bold">{initialData ? 'Edytuj Pomiar' : 'Nowy Pomiar'}</h2>
                         <button onClick={onClose} className="p-2 bg-white/5 rounded-full text-muted-foreground"><X size={20}/></button>
                     </div>
 

@@ -1,12 +1,13 @@
 "use client";
 
 import { useDiaryStore } from "@/lib/store";
-import { format, subDays, eachDayOfInterval, addDays, startOfWeek, endOfWeek, isSameWeek } from "date-fns";
+import { format, subDays, eachDayOfInterval, addDays, startOfWeek, endOfWeek, isSameWeek, parseISO } from "date-fns";
 import { pl } from "date-fns/locale";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
-import { BarChart3, TrendingUp, Lightbulb, Target, Brain, Dumbbell, Droplets, Apple, Utensils, Heart, ChevronLeft, ChevronRight } from "lucide-react";
+import { BarChart3, TrendingUp, Lightbulb, Target, Brain, Dumbbell, Droplets, Apple, Utensils, Heart, ChevronLeft, ChevronRight, X } from "lucide-react";
 import { useState, useMemo } from "react";
+import { CalendarModal } from "@/components/CalendarModal";
 
 const TRIVIA = [
     { 
@@ -60,8 +61,9 @@ const TRIVIA = [
 ];
 
 export default function DiaryPage() {
-  const { entries, profiles, activeProfileId } = useDiaryStore();
+  const { entries, profiles, activeProfileId, setDate } = useDiaryStore();
   const [currentWeekStart, setCurrentWeekStart] = useState(() => startOfWeek(new Date(), { weekStartsOn: 1 }));
+  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
 
   const activeProfile = profiles.find(p => p.id === activeProfileId) || profiles[0];
   const target = activeProfile.targets;
@@ -74,7 +76,6 @@ export default function DiaryPage() {
 
       const stats = days.map(day => {
         const dayStr = format(day, 'yyyy-MM-dd');
-        // Strict string comparison to ensure matches
         const dayEntries = entries.filter(e => e.date === dayStr && e.profileId === activeProfileId);
         
         return {
@@ -96,8 +97,6 @@ export default function DiaryPage() {
         daysWithData: acc.daysWithData + (curr.hasData ? 1 : 0)
       }), { cals: 0, p: 0, f: 0, c: 0, daysWithData: 0 });
 
-      // Calculate averages based on days with data, defaulting to 1 to avoid division by zero
-      // If no data in week, we show 0
       const divisor = Math.max(1, totals.daysWithData);
 
       return {
@@ -114,7 +113,6 @@ export default function DiaryPage() {
   const today = new Date();
   const dailyTrivia = TRIVIA[Math.floor((today.getDate() + today.getMonth() * 31) % TRIVIA.length)];
 
-  // Insights logic
   const insights = [];
   if (avgs.p > 0 && avgs.p < target.protein * 0.9) insights.push("Spożywasz za mało białka. Dodaj więcej chudego mięsa, roślin strączkowych lub odżywki białkowej.");
   if (avgs.c > target.carbs * 1.1) insights.push("Przekraczasz limit węglowodanów. Spróbuj ograniczyć cukry proste i zwiększ spożycie błonnika.");
@@ -132,15 +130,21 @@ export default function DiaryPage() {
     <main className="p-5 flex flex-col gap-6 max-w-md mx-auto pt-12 min-h-screen pb-32">
       <div className="flex flex-col">
         <h1 className="text-3xl font-black tracking-tight text-primary">Twój Dziennik</h1>
-        <p className="text-muted-foreground text-sm font-medium uppercase tracking-widest mt-1">Podsumowanie & Edukacja</p>
+        <p className="text-muted-foreground text-sm font-medium uppercase tracking-widest mt-1">Analiza & Progres</p>
       </div>
 
        {/* Week Navigation */}
        <div className="flex items-center justify-between glass p-2 rounded-2xl">
             <button onClick={() => navigateWeek('prev')} className="p-2 glass rounded-xl active:scale-95 transition-transform"><ChevronLeft size={20}/></button>
-            <span className="text-sm font-bold uppercase tracking-widest text-muted-foreground">
-                {format(currentWeekStart, 'd MMM', { locale: pl })} - {format(endOfWeek(currentWeekStart, { weekStartsOn: 1 }), 'd MMM', { locale: pl })}
-            </span>
+            <button 
+                onClick={() => setIsCalendarOpen(true)}
+                className="flex flex-col items-center px-4 py-1 rounded-xl active:bg-white/5 transition-colors"
+            >
+                <span className="text-sm font-bold uppercase tracking-widest text-muted-foreground">
+                    {format(currentWeekStart, 'd MMM', { locale: pl })} - {format(endOfWeek(currentWeekStart, { weekStartsOn: 1 }), 'd MMM', { locale: pl })}
+                </span>
+                <span className="text-[10px] font-bold text-primary uppercase tracking-tighter">Otwórz Kalendarz</span>
+            </button>
             <button 
                 onClick={() => navigateWeek('next')} 
                 disabled={isCurrentWeek}
@@ -150,40 +154,36 @@ export default function DiaryPage() {
             </button>
        </div>
 
-      {/* Weekly Calorie Chart */}
+      {/* Weekly Macros Chart (Replaced Calorie Chart) */}
       <div className="glass p-6 rounded-[32px] flex flex-col gap-6">
         <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 text-muted-foreground text-[11px] font-bold uppercase tracking-wider">
                 <BarChart3 size={14} className="text-primary" />
-                Kalorie (Średnia z wpisów)
+                Dystrybucja Makroskładników
             </div>
-            <span className="text-xs font-bold text-muted-foreground">Śr. {avgs.cals} kcal</span>
         </div>
 
-        <div className="flex justify-between items-end h-32 gap-2">
+        <div className="flex justify-between items-end h-40 gap-3">
             {weeklyStats.map((stat, i) => {
-                const pct = Math.min((stat.cals / target.calories) * 100, 100);
-                const isOver = stat.cals > target.calories + 100;
-                const isUnder = stat.cals < target.calories - 300;
-                const isEmpty = stat.cals === 0;
+                const totalMacros = stat.p + stat.f + stat.c || 1;
+                const pPct = (stat.p / totalMacros) * 100;
+                const fPct = (stat.f / totalMacros) * 100;
+                const cPct = (stat.c / totalMacros) * 100;
+                const isEmpty = !stat.hasData;
                 const isToday = stat.date === format(new Date(), 'yyyy-MM-dd');
 
                 return (
-                    <div key={stat.date} className="flex flex-col items-center gap-2 flex-1">
-                        <div className="w-full relative flex items-end justify-center h-full rounded-2xl bg-white/5 overflow-hidden">
-                            {/* Background bar for context */}
-                            <div className="absolute inset-x-1 bottom-0 h-full bg-white/5 rounded-t-sm" />
-                            
-                            <motion.div 
-                                initial={{ height: 0 }}
-                                animate={{ height: isEmpty ? 4 : `${pct}%` }}
-                                transition={{ delay: i * 0.05, duration: 0.8, type: "spring" }}
-                                className={cn(
-                                    "w-full absolute bottom-0 rounded-t-sm mx-0.5",
-                                    isEmpty ? "bg-white/5" : isOver ? "bg-error" : isUnder ? "bg-amber-500" : "bg-primary",
-                                    isToday && !isEmpty && "shadow-[0_0_15px_rgba(255,106,0,0.5)] z-10"
-                                )}
-                            />
+                    <div key={stat.date} className="flex flex-col items-center gap-2 flex-1 h-full">
+                        <div className="w-full relative flex flex-col items-center justify-end h-full rounded-2xl bg-white/5 overflow-hidden">
+                            {!isEmpty ? (
+                                <>
+                                    <motion.div initial={{ height: 0 }} animate={{ height: `${pPct}%` }} transition={{ delay: i * 0.03 }} className="w-full bg-protein" />
+                                    <motion.div initial={{ height: 0 }} animate={{ height: `${fPct}%` }} transition={{ delay: i * 0.03 + 0.1 }} className="w-full bg-fat" />
+                                    <motion.div initial={{ height: 0 }} animate={{ height: `${cPct}%` }} transition={{ delay: i * 0.03 + 0.2 }} className="w-full bg-carbs" />
+                                </>
+                            ) : (
+                                <div className="w-1 h-1 bg-white/10 rounded-full mb-2" />
+                            )}
                         </div>
                         <span className={cn(
                             "text-[9px] font-bold uppercase",
@@ -195,6 +195,31 @@ export default function DiaryPage() {
                 );
             })}
         </div>
+        <div className="flex justify-around pt-2 border-t border-white/5">
+            <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-protein"/> <span className="text-[10px] font-bold text-muted-foreground uppercase">Białko</span></div>
+            <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-fat"/> <span className="text-[10px] font-bold text-muted-foreground uppercase">Tłuszcze</span></div>
+            <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-carbs"/> <span className="text-[10px] font-bold text-muted-foreground uppercase">Węgle</span></div>
+        </div>
+      </div>
+
+      {/* Weekly Averages Summary */}
+      <div className="grid grid-cols-4 gap-2">
+            <div className="glass p-3 rounded-2xl flex flex-col items-center justify-center gap-1">
+                <span className="text-[9px] font-black text-muted-foreground uppercase">Śr. kcal</span>
+                <span className="text-sm font-black text-primary">{avgs.cals}</span>
+            </div>
+            <div className="glass p-3 rounded-2xl flex flex-col items-center justify-center gap-1">
+                <span className="text-[9px] font-black text-muted-foreground uppercase">Śr. B</span>
+                <span className="text-sm font-black text-protein">{avgs.p}g</span>
+            </div>
+            <div className="glass p-3 rounded-2xl flex flex-col items-center justify-center gap-1">
+                <span className="text-[9px] font-black text-muted-foreground uppercase">Śr. T</span>
+                <span className="text-sm font-black text-fat">{avgs.f}g</span>
+            </div>
+            <div className="glass p-3 rounded-2xl flex flex-col items-center justify-center gap-1">
+                <span className="text-[9px] font-black text-muted-foreground uppercase">Śr. W</span>
+                <span className="text-sm font-black text-carbs">{avgs.c}g</span>
+            </div>
       </div>
 
       {/* Macro Averages Chart */}
@@ -246,6 +271,22 @@ export default function DiaryPage() {
                 </div>
             </motion.div>
       </div>
+
+      <AnimatePresence>
+        {isCalendarOpen && (
+            <CalendarModal 
+                onClose={() => setIsCalendarOpen(false)} 
+                currentDate={format(currentWeekStart, 'yyyy-MM-dd')} 
+                onSelect={(d) => { 
+                    setCurrentWeekStart(startOfWeek(parseISO(d), { weekStartsOn: 1 })); 
+                    setIsCalendarOpen(false); 
+                }}
+                entries={entries}
+                targets={activeProfile.targets}
+                profileId={activeProfileId}
+            />
+        )}
+      </AnimatePresence>
 
     </main>
   );

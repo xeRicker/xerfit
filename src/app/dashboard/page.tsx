@@ -4,11 +4,12 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Flame, AlertCircle, ChevronLeft, ChevronRight, Edit2, Trash2, RotateCcw, Scale, X, Plus, Coffee, Utensils, Moon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useDiaryStore, MealEntry, MealCategory } from "@/lib/store";
-import { format, addDays, subDays, parseISO, isSameDay } from "date-fns";
+import { format, addDays, subDays, parseISO, isSameDay, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, startOfWeek, endOfWeek } from "date-fns";
 import { pl } from "date-fns/locale";
 import { MacroIcon } from "@/components/MacroIcon";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
+import { CalendarModal } from "@/components/CalendarModal";
 
 const CATEGORIES: { id: MealCategory, label: string, icon: React.ElementType }[] = [
     { id: 'breakfast', label: 'Śniadanie', icon: Coffee },
@@ -23,8 +24,7 @@ export default function DashboardPage() {
   const activeProfile = profiles.find(p => p.id === activeProfileId) || profiles[0];
   const [editingEntry, setEditingEntry] = useState<MealEntry | null>(null);
   const [newWeight, setNewWeight] = useState("");
-
-
+  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
 
   const dayEntries = entries.filter(e => e.date === currentDate && e.profileId === activeProfileId);
   
@@ -47,8 +47,6 @@ export default function DashboardPage() {
     const newDate = dir === 'prev' ? subDays(curr, 1) : addDays(curr, 1);
     setDate(format(newDate, 'yyyy-MM-dd'));
   };
-
-  const isToday = isSameDay(parseISO(currentDate), new Date());
 
   const handleAddClick = (category: MealCategory) => {
     setSelectionMode(true, category);
@@ -74,32 +72,33 @@ export default function DashboardPage() {
 
   return (
     <main className="p-5 flex flex-col gap-6 max-w-md mx-auto min-h-screen pb-32">
-      {/* Header */}
-      <header className="pt-8 flex flex-col gap-1">
-        <div className="flex items-center justify-between">
-            <button onClick={() => navigateDate('prev')} className="p-2 glass rounded-full active:scale-90 transition-transform">
-                <ChevronLeft size={20} className="text-muted-foreground" />
-            </button>
-            <div className="flex flex-col items-center">
-                <span className="text-muted-foreground text-sm font-medium uppercase tracking-widest">
-                    {format(parseISO(currentDate), 'eeee, d MMMM', { locale: pl })}
+      {/* Header with Navigation aligned to Diary style */}
+      <header className="pt-8 flex flex-col gap-4">
+        <div className="flex flex-col">
+            <h1 className="text-3xl font-black tracking-tight">Cześć, {activeProfile.name}!</h1>
+            <p className="text-muted-foreground text-sm font-medium uppercase tracking-widest mt-1">Podsumowanie dnia</p>
+        </div>
+
+        <div className="flex items-center justify-between glass p-2 rounded-2xl">
+            <button onClick={() => navigateDate('prev')} className="p-2 glass rounded-xl active:scale-95 transition-transform"><ChevronLeft size={20}/></button>
+            <button 
+                onClick={() => setIsCalendarOpen(true)}
+                className="flex flex-col items-center px-4 py-1 rounded-xl active:bg-white/5 transition-colors"
+            >
+                <span className="text-sm font-bold uppercase tracking-widest text-primary">
+                    {format(parseISO(currentDate), 'eeee', { locale: pl })}
                 </span>
-                {!isToday && (
-                    <button 
-                        onClick={() => setDate(format(new Date(), 'yyyy-MM-dd'))}
-                        className="flex items-center gap-1 text-[10px] font-bold text-primary uppercase mt-1 px-2 py-0.5 rounded-full bg-primary/10"
-                    >
-                        <RotateCcw size={10} /> Wróć do dziś
-                    </button>
-                )}
-            </div>
-            <button onClick={() => navigateDate('next')} className="p-2 glass rounded-full active:scale-90 transition-transform">
-                <ChevronRight size={20} className="text-muted-foreground" />
+                <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+                    {format(parseISO(currentDate), 'd MMMM yyyy', { locale: pl })}
+                </span>
+            </button>
+            <button 
+                onClick={() => navigateDate('next')} 
+                className="p-2 glass rounded-xl active:scale-95 transition-transform"
+            >
+                <ChevronRight size={20}/>
             </button>
         </div>
-        <h1 className="text-3xl font-black tracking-tight text-center mt-2">
-            Cześć, {activeProfile.name}!
-        </h1>
       </header>
 
       {/* Main Calorie Card */}
@@ -323,6 +322,17 @@ export default function DashboardPage() {
                     </div>
                 </motion.div>
             </>
+        )}
+
+        {isCalendarOpen && (
+            <CalendarModal 
+                onClose={() => setIsCalendarOpen(false)} 
+                currentDate={currentDate} 
+                onSelect={(d) => { setDate(d); setIsCalendarOpen(false); }}
+                entries={entries}
+                targets={activeProfile.targets}
+                profileId={activeProfileId}
+            />
         )}
       </AnimatePresence>
 
