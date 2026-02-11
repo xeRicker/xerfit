@@ -23,8 +23,24 @@ export default function MeasurementsPage() {
         return measurements
             .filter(m => m.profileId === activeProfileId)
             .sort((a, b) => {
-                const dateA = new Date(a.date).getTime();
-                const dateB = new Date(b.date).getTime();
+                const getDate = (d: string) => {
+                    // Try standard date parsing first
+                    let time = new Date(d).getTime();
+                    if (!isNaN(time)) return time;
+                    
+                    // Try parsing DD.MM.YYYY format common in Poland
+                    const parts = d.split('.');
+                    if (parts.length === 3) {
+                        // parts[0] = day, parts[1] = month, parts[2] = year
+                        // New Date(year, monthIndex, day)
+                        time = new Date(parseInt(parts[2]), parseInt(parts[1]) - 1, parseInt(parts[0])).getTime();
+                        if (!isNaN(time)) return time;
+                    }
+                    return 0; // Fallback for invalid dates
+                };
+
+                const dateA = getDate(a.date);
+                const dateB = getDate(b.date);
                 return sortOrder === 'desc' ? dateB - dateA : dateA - dateB;
             });
     }, [measurements, activeProfileId, sortOrder]);
@@ -170,13 +186,15 @@ export default function MeasurementsPage() {
                             if (editingId) {
                                 updateMeasurement(editingId, data);
                             } else {
-                                addMeasurement({ ...data, timestamp: new Date(data.date).getTime() });
+                                const { timestamp, ...rest } = data;
+                                addMeasurement(rest);
                             }
                         }}
                         initialData={editingId ? measurements.find(m => m.id === editingId) : undefined}
                     />
                 )}
             </AnimatePresence>
+
         </main>
     );
 }
