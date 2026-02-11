@@ -375,6 +375,15 @@ function MeasurementForm({ onClose, onSave, initialData }: { onClose: () => void
     );
 }
 
+interface InputProps {
+    label: string;
+    value: string;
+    onChange: (value: string) => void;
+    icon?: LucideIcon;
+    autoFocus?: boolean;
+    required?: boolean;
+}
+
 function Input({ label, value, onChange, icon: Icon, autoFocus, required }: InputProps) {
     return (
         <div className="flex flex-col gap-1">
