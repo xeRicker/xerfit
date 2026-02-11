@@ -170,7 +170,7 @@ export function BarcodeScanner({ onClose, onScan }: BarcodeScannerProps) {
                 <div className="flex flex-col mt-4">
                     <h2 className="text-xl font-black text-white tracking-tight">Skaner</h2>
                     <p className="text-xs text-white/50 font-bold uppercase tracking-widest flex items-center gap-1">
-                        <Info size={10} /> v3.0 (Manual)
+                        Szukam kodu...
                     </p>
                 </div>
                 <button 
@@ -218,24 +218,23 @@ export function BarcodeScanner({ onClose, onScan }: BarcodeScannerProps) {
                         </div>
                     )}
                     
-                    {/* Scanner overlay guide */}
+                    {/* Scanner overlay guide & Animation */}
                     {!isLoading && !error && (
-                        <div className="absolute inset-0 border-2 border-white/30 m-12 rounded-2xl pointer-events-none">
-                            <div className="absolute top-0 left-0 w-4 h-4 border-t-4 border-l-4 border-primary -mt-1 -ml-1 rounded-tl-lg"></div>
-                            <div className="absolute top-0 right-0 w-4 h-4 border-t-4 border-r-4 border-primary -mt-1 -mr-1 rounded-tr-lg"></div>
-                            <div className="absolute bottom-0 left-0 w-4 h-4 border-b-4 border-l-4 border-primary -mb-1 -ml-1 rounded-bl-lg"></div>
-                            <div className="absolute bottom-0 right-0 w-4 h-4 border-b-4 border-r-4 border-primary -mb-1 -mr-1 rounded-br-lg"></div>
+                        <div className="absolute inset-0 border-2 border-white/30 m-12 rounded-2xl pointer-events-none overflow-hidden relative">
+                            <div className="absolute top-0 left-0 w-4 h-4 border-t-4 border-l-4 border-primary -mt-1 -ml-1 rounded-tl-lg z-20"></div>
+                            <div className="absolute top-0 right-0 w-4 h-4 border-t-4 border-r-4 border-primary -mt-1 -mr-1 rounded-tr-lg z-20"></div>
+                            <div className="absolute bottom-0 left-0 w-4 h-4 border-b-4 border-l-4 border-primary -mb-1 -ml-1 rounded-bl-lg z-20"></div>
+                            <div className="absolute bottom-0 right-0 w-4 h-4 border-b-4 border-r-4 border-primary -mb-1 -mr-1 rounded-br-lg z-20"></div>
+                            
+                            {/* Laser Animation */}
+                            <motion.div 
+                                initial={{ top: 0 }}
+                                animate={{ top: "100%" }}
+                                transition={{ repeat: Infinity, duration: 2, ease: "linear" }}
+                                className="absolute left-0 right-0 h-0.5 bg-red-500/80 shadow-[0_0_15px_rgba(255,0,0,0.8)] z-10"
+                            />
                         </div>
                     )}
-                </div>
-            </div>
-
-            <div className="px-6 pb-[calc(env(safe-area-inset-bottom)+32px)]">
-                <div className="bg-white/5 rounded-2xl p-4 font-mono text-[9px] text-white/40 flex flex-col gap-1 max-h-32 overflow-y-auto">
-                    <p className="font-bold text-white/60 mb-1 border-b border-white/5 pb-1 uppercase tracking-tighter">Debug Log:</p>
-                    {logs.map((log, i) => (
-                        <div key={i} className="truncate">{log}</div>
-                    ))}
                 </div>
             </div>
         </motion.div>

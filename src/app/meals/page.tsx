@@ -1,13 +1,14 @@
 "use client";
 
 import { useDiaryStore, Product } from "@/lib/store";
-import { Plus, Search, Scale, Pencil, ArrowUpDown, Trash2, X, Barcode, Loader2 } from "lucide-react";
+import { Plus, Search, Scale, Pencil, ArrowUpDown, Trash2, X, Barcode, Loader2, ScanBarcode } from "lucide-react";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { MacroIcon } from "@/components/MacroIcon";
 import dynamic from 'next/dynamic';
+import * as LucideIcons from "lucide-react";
 
 const BarcodeScanner = dynamic(() => import('@/components/BarcodeScanner').then(mod => mod.BarcodeScanner), {
   ssr: false,
@@ -73,6 +74,8 @@ export default function MealsPage() {
         date: currentDate,
         productId: selectedProduct.id,
         name: selectedProduct.name,
+        brand: selectedProduct.brand,
+        is_scanned: selectedProduct.is_scanned,
         weight: w,
         calories: selectedProduct.calories * ratio,
         protein: selectedProduct.protein * ratio,
@@ -218,54 +221,71 @@ export default function MealsPage() {
                 )}
             </div>
         ) : (
-            filtered.map((p) => (
-                <motion.div 
-                    key={p.id}
-                    layoutId={`product-${p.id}`}
-                    onClick={() => selectionMode.active ? setSelectedProduct(p) : null}
-                    className={cn(
-                        "glass p-4 rounded-2xl flex items-center gap-4 transition-all",
-                        selectionMode.active ? "active:scale-[0.98] cursor-pointer ring-1 ring-primary/20" : "cursor-default"
-                    )}
-                >
-                    <div className={cn("w-12 h-12 rounded-full flex items-center justify-center text-white shrink-0 shadow-lg", p.color || "bg-primary")}>
-                         <span className="font-bold text-lg">{p.name[0]}</span>
-                    </div>
-                    
-                    <div className="flex flex-col gap-1 flex-1 min-w-0">
-                        <span className="font-semibold text-lg truncate">{p.name}</span>
-                        <div className="flex gap-3 text-xs text-muted-foreground font-medium items-center">
-                            <span className="flex items-center gap-1 text-primary"><MacroIcon type="calories" size={10} colored /> {p.calories}</span>
-                            <span className="flex items-center gap-1 text-protein"><MacroIcon type="protein" size={10} colored /> {p.protein}</span>
-                            <span className="flex items-center gap-1 text-fat"><MacroIcon type="fat" size={10} colored /> {p.fat}</span>
-                            <span className="flex items-center gap-1 text-carbs"><MacroIcon type="carbs" size={10} colored /> {p.carbs}</span>
+            filtered.map((p) => {
+                const Icon = (LucideIcons as any)[p.icon || 'ChefHat'] || LucideIcons.ChefHat;
+                const isCustomColor = p.color && !p.color.startsWith('bg-');
+                
+                return (
+                    <motion.div 
+                        key={p.id}
+                        layoutId={`product-${p.id}`}
+                        onClick={() => selectionMode.active ? setSelectedProduct(p) : null}
+                        className={cn(
+                            "glass p-4 rounded-2xl flex items-center gap-4 transition-all",
+                            selectionMode.active ? "active:scale-[0.98] cursor-pointer ring-1 ring-primary/20" : "cursor-default"
+                        )}
+                    >
+                        <div 
+                            className={cn(
+                                "w-12 h-12 rounded-full flex items-center justify-center text-white shrink-0 shadow-lg",
+                                !isCustomColor && (p.color || "bg-primary")
+                            )}
+                            style={isCustomColor ? { backgroundColor: p.color } : {}}
+                        >
+                             <Icon size={20} />
                         </div>
-                    </div>
-                    
-                    {!selectionMode.active && (
-                        <div className="flex items-center gap-2">
-                            <button 
-                                onClick={(e) => handleEdit(e, p)}
-                                className="p-2 rounded-full bg-white/5 text-muted-foreground hover:bg-white/10 hover:text-white transition-colors"
-                            >
-                                <Pencil size={18} />
-                            </button>
-                            <button 
-                                onClick={(e) => handleDeleteProduct(e, p.id)}
-                                className="p-2 rounded-full bg-red-500/10 text-red-500/50 hover:bg-red-500/20 hover:text-red-500 transition-colors"
-                            >
-                                <Trash2 size={18} />
-                            </button>
+                        
+                        <div className="flex flex-col gap-1 flex-1 min-w-0">
+                            <div className="flex flex-col">
+                                <span className="font-semibold text-lg truncate flex items-center gap-2">
+                                    {p.name}
+                                    {p.is_scanned && <ScanBarcode size={14} className="text-muted-foreground/50" />}
+                                </span>
+                                {p.brand && <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">{p.brand}</span>}
+                            </div>
+                            <div className="flex gap-3 text-xs text-muted-foreground font-medium items-center mt-1">
+                                <span className="flex items-center gap-1 text-primary"><MacroIcon type="calories" size={10} colored /> {p.calories}</span>
+                                <span className="flex items-center gap-1 text-protein"><MacroIcon type="protein" size={10} colored /> {p.protein}</span>
+                                <span className="flex items-center gap-1 text-fat"><MacroIcon type="fat" size={10} colored /> {p.fat}</span>
+                                <span className="flex items-center gap-1 text-carbs"><MacroIcon type="carbs" size={10} colored /> {p.carbs}</span>
+                            </div>
                         </div>
-                    )}
+                        
+                        {!selectionMode.active && (
+                            <div className="flex items-center gap-2">
+                                <button 
+                                    onClick={(e) => handleEdit(e, p)}
+                                    className="p-2 rounded-full bg-white/5 text-muted-foreground hover:bg-white/10 hover:text-white transition-colors"
+                                >
+                                    <Pencil size={18} />
+                                </button>
+                                <button 
+                                    onClick={(e) => handleDeleteProduct(e, p.id)}
+                                    className="p-2 rounded-full bg-red-500/10 text-red-500/50 hover:bg-red-500/20 hover:text-red-500 transition-colors"
+                                >
+                                    <Trash2 size={18} />
+                                </button>
+                            </div>
+                        )}
 
-                    {selectionMode.active && (
-                        <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary">
-                            <Plus size={20} />
-                        </div>
-                    )}
-                </motion.div>
-            ))
+                        {selectionMode.active && (
+                            <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+                                <Plus size={20} />
+                            </div>
+                        )}
+                    </motion.div>
+                );
+            })
         )}
       </div>
 

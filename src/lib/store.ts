@@ -5,6 +5,8 @@ import { fetchAllData, syncProfiles, syncProducts, syncEntries, syncSettings, sy
 export interface Product {
   id: string;
   name: string;
+  brand?: string;
+  is_scanned?: boolean;
   calories: number; // per 100g
   protein: number;
   fat: number;
@@ -22,6 +24,8 @@ export interface MealEntry {
   date: string; // YYYY-MM-DD
   productId: string;
   name: string;
+  brand?: string;
+  is_scanned?: boolean;
   calories: number;
   protein: number;
   fat: number;

@@ -130,7 +130,6 @@ export default function DiaryPage() {
     <main className="p-5 flex flex-col gap-6 max-w-md mx-auto pt-12 min-h-screen pb-32">
       <div className="flex flex-col">
         <h1 className="text-3xl font-black tracking-tight text-primary">Twój Dziennik</h1>
-        <p className="text-muted-foreground text-sm font-medium uppercase tracking-widest mt-1">Analiza & Progres</p>
       </div>
 
        {/* Week Navigation */}

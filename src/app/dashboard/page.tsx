@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { Flame, AlertCircle, ChevronLeft, ChevronRight, Edit2, Trash2, RotateCcw, Scale, X, Plus, Coffee, Utensils, Moon } from "lucide-react";
+import { Flame, AlertCircle, ChevronLeft, ChevronRight, Edit2, Trash2, RotateCcw, Scale, X, Plus, Coffee, Utensils, Moon, ScanBarcode } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useDiaryStore, MealEntry, MealCategory } from "@/lib/store";
 import { format, addDays, subDays, parseISO, isSameDay, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, startOfWeek, endOfWeek } from "date-fns";
@@ -247,8 +247,14 @@ export default function DashboardPage() {
                                 className="glass p-4 rounded-2xl flex items-center justify-between active:scale-[0.98] transition-transform cursor-pointer"
                             >
                                 <div className="flex flex-col gap-1">
-                                    <span className="font-semibold">{meal.name}</span>
-                                    <div className="flex gap-3 text-[10px] uppercase font-bold text-muted-foreground">
+                                    <div className="flex flex-col">
+                                        <span className="font-semibold flex items-center gap-2">
+                                            {meal.name}
+                                            {meal.is_scanned && <ScanBarcode size={14} className="text-muted-foreground/50" />}
+                                        </span>
+                                        {meal.brand && <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">{meal.brand}</span>}
+                                    </div>
+                                    <div className="flex gap-3 text-[10px] uppercase font-bold text-muted-foreground mt-1">
                                         <span className="flex items-center gap-1 text-protein"><MacroIcon type="protein" size={10} colored />{Math.round(meal.protein)}g</span>
                                         <span className="flex items-center gap-1 text-fat"><MacroIcon type="fat" size={10} colored />{Math.round(meal.fat)}g</span>
                                         <span className="flex items-center gap-1 text-carbs"><MacroIcon type="carbs" size={10} colored />{Math.round(meal.carbs)}g</span>

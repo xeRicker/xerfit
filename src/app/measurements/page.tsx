@@ -56,12 +56,29 @@ export default function MeasurementsPage() {
 
     const latest = sortedMeasurements[0];
 
-    const chartData = useMemo(() => 
-        [...sortedMeasurements].reverse().map(m => ({
+    // Chart data should always be chronological (oldest to newest) regardless of list sorting
+    const chartData = useMemo(() => {
+        const chronological = [...measurements]
+            .filter(m => m.profileId === activeProfileId)
+            .sort((a, b) => {
+                const getDate = (d: string) => {
+                    let time = new Date(d).getTime();
+                    if (!isNaN(time)) return time;
+                    const parts = d.split('.');
+                    if (parts.length === 3) {
+                        time = new Date(parseInt(parts[2]), parseInt(parts[1]) - 1, parseInt(parts[0])).getTime();
+                        if (!isNaN(time)) return time;
+                    }
+                    return 0;
+                };
+                return getDate(a.date) - getDate(b.date);
+            });
+
+        return chronological.map(m => ({
             date: m.date,
             value: m.weight
-        })).slice(-30), // show last 30 entries in chart
-    [sortedMeasurements]);
+        })).slice(-30); // show last 30 entries
+    }, [measurements, activeProfileId]);
 
     const handleEdit = (m: Measurement) => {
         setEditingId(m.id);
@@ -77,7 +94,6 @@ export default function MeasurementsPage() {
         <main className="p-5 flex flex-col gap-6 max-w-md mx-auto pt-12 min-h-screen pb-32">
             <div className="flex flex-col">
                 <h1 className="text-3xl font-black tracking-tight text-primary">Pomiary Ciała</h1>
-                <p className="text-muted-foreground text-sm font-medium uppercase tracking-widest mt-1">Śledź swój progres</p>
             </div>
 
             <TrendChart data={chartData} color="#FF6A00" />
