@@ -1,16 +1,14 @@
 "use client";
 
-import { Suspense, useState, useEffect, useMemo } from "react";
+import { Suspense, useState, useEffect, useMemo, useRef } from "react";
 import { useDiaryStore } from "@/lib/store";
-import { Plus, Save, X, Search, ChevronRight, Palette, Grid, Check } from "lucide-react";
+import { Plus, Save, X, Search, ChevronRight, Palette, Grid, Check, Pencil } from "lucide-react";
 import * as LucideIcons from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useRouter, useSearchParams } from "next/navigation";
 import { MacroIcon } from "@/components/MacroIcon";
 import { motion, AnimatePresence } from "framer-motion";
 
-// Curated list of relevant icons to avoid rendering 1000+ icons at once if not needed,
-// but for a "catalog" feel we can include a lot.
 const ICON_NAMES = [
     "ChefHat", "Utensils", "Coffee", "Apple", "Carrot", "Beef", "Fish", "Croissant", "Pizza", "Sandwich", "IceCream",
     "Banana", "Beer", "Cake", "Candy", "Cigarette", "Citrus", "Cookie", "CupSoda", "Donut", "Drumstick", "Egg", "EggFried",
@@ -19,13 +17,14 @@ const ICON_NAMES = [
 ];
 
 const PRESET_COLORS = [
-    "bg-red-500", "bg-orange-500", "bg-yellow-500", "bg-green-500", "bg-blue-500", "bg-purple-500"
+    "bg-red-500", "bg-orange-500", "bg-yellow-500", "bg-green-500", "bg-blue-500"
 ];
 
 function AddProductForm() {
   const { addProduct, updateProduct, editingProduct, setEditingProduct, selectionMode } = useDiaryStore();
   const router = useRouter();
   const searchParams = useSearchParams();
+  const colorInputRef = useRef<HTMLInputElement>(null);
   
   const [form, setForm] = useState({
     name: "",
@@ -39,7 +38,6 @@ function AddProductForm() {
   });
   const [success, setSuccess] = useState(false);
   const [isIconPickerOpen, setIsIconPickerOpen] = useState(false);
-  const [isColorPickerOpen, setIsColorPickerOpen] = useState(false);
 
   useEffect(() => {
     const name = searchParams.get('name');
@@ -144,14 +142,14 @@ function AddProductForm() {
                     type="button"
                     onClick={() => setIsIconPickerOpen(true)}
                     className={cn(
-                        "w-20 h-20 rounded-3xl flex items-center justify-center shadow-lg transition-all active:scale-95 shrink-0",
+                        "w-20 h-20 rounded-3xl flex items-center justify-center shadow-lg transition-all active:scale-95 shrink-0 relative overflow-hidden group",
                         !isCustomColor && form.color
                     )}
                     style={isCustomColor ? { backgroundColor: form.color } : {}}
                 >
-                    <SelectedIcon size={40} className="text-white drop-shadow-md" />
-                    <div className="absolute -bottom-2 -right-2 bg-white text-black p-1.5 rounded-full shadow-sm">
-                        <Grid size={12} />
+                    <SelectedIcon size={40} className="text-white drop-shadow-md z-10" />
+                    <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center z-20">
+                         <Pencil size={20} className="text-white" />
                     </div>
                 </button>
                 
@@ -164,7 +162,7 @@ function AddProductForm() {
                             value={form.name}
                             onChange={handleInput}
                             placeholder="np. Jajko"
-                            className="w-full bg-transparent text-2xl font-black outline-none placeholder:text-muted-foreground/30 border-b border-white/10 focus:border-primary transition-colors pb-1"
+                            className="w-full bg-transparent text-lg font-bold outline-none placeholder:text-muted-foreground/30 border-b border-white/10 focus:border-primary transition-colors pb-1"
                             autoFocus={!editingProduct}
                         />
                     </div>
@@ -177,7 +175,7 @@ function AddProductForm() {
                             value={form.brand}
                             onChange={handleInput}
                             placeholder="np. Biedronka"
-                            className="w-full bg-transparent text-base font-bold outline-none placeholder:text-muted-foreground/30 border-b border-white/10 focus:border-primary transition-colors pb-1 text-white/80"
+                            className="w-full bg-transparent text-lg font-bold outline-none placeholder:text-muted-foreground/30 border-b border-white/10 focus:border-primary transition-colors pb-1 text-white/80"
                         />
                     </div>
                 </div>
@@ -200,15 +198,19 @@ function AddProductForm() {
                         />
                     ))}
                     <div className="w-px h-6 bg-white/10 mx-1" />
+                    
+                    {/* Custom Color Picker */}
                     <div className="relative">
                         <input 
+                            ref={colorInputRef}
                             type="color"
                             value={isCustomColor ? form.color : "#FF6A00"}
                             onChange={(e) => setForm(f => ({ ...f, color: e.target.value }))}
-                            className="absolute inset-0 opacity-0 w-full h-full cursor-pointer"
+                            className="absolute inset-0 w-full h-full opacity-0 pointer-events-none"
                         />
                         <button 
                             type="button"
+                            onClick={() => colorInputRef.current?.click()}
                             className={cn(
                                 "w-10 h-10 rounded-full shrink-0 transition-all border-2 flex items-center justify-center bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500",
                                 isCustomColor ? "border-white scale-110 shadow-lg" : "border-transparent opacity-60 hover:opacity-100"

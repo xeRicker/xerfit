@@ -291,30 +291,36 @@ function StatsEditor({ profile, onSave }: StatsEditorProps) {
 
     return (
         <div className="flex flex-col gap-6">
-             {/* Current Targets Card */}
-            <div className="glass p-6 rounded-[32px] flex flex-col gap-4 border-primary/20 bg-primary/5">
-                <div className="flex items-center gap-2 text-muted-foreground text-[11px] font-bold uppercase tracking-wider">
-                    <Target size={14} className="text-primary" />
-                    Obliczone Cele
+            {/* Current Targets Card (Compact) */}
+            <div className="glass p-4 rounded-3xl flex items-center justify-between border-primary/20 bg-primary/5 relative overflow-hidden">
+                <div className="absolute top-0 right-0 p-3 opacity-10 pointer-events-none">
+                    <Target size={80} className="text-primary" />
                 </div>
-                <div className="grid grid-cols-2 gap-4">
-                    <div>
-                        <span className="text-4xl font-black text-white">{profile.targets.calories}</span>
-                        <span className="text-sm font-bold text-muted-foreground ml-1">kcal</span>
+                
+                <div className="flex flex-col gap-1 z-10">
+                    <span className="text-[10px] font-black uppercase text-primary tracking-widest flex items-center gap-1">
+                        <Target size={10} /> Twój Cel
+                    </span>
+                    <div className="flex items-baseline gap-1">
+                        <span className="text-3xl font-black text-white tracking-tighter">{profile.targets.calories}</span>
+                        <span className="text-xs font-bold text-muted-foreground uppercase">kcal</span>
                     </div>
-                    <div className="flex flex-col gap-1 text-xs font-bold text-muted-foreground">
-                        <div className="flex items-center justify-between">
-                            <span className="flex items-center gap-1"><MacroIcon type="protein" size={12} colored /> B:</span>
-                            <span className="text-protein font-bold text-sm">{profile.targets.protein}g</span>
-                        </div>
-                        <div className="flex items-center justify-between">
-                            <span className="flex items-center gap-1"><MacroIcon type="fat" size={12} colored /> T:</span>
-                            <span className="text-fat font-bold text-sm">{profile.targets.fat}g</span>
-                        </div>
-                        <div className="flex items-center justify-between">
-                            <span className="flex items-center gap-1"><MacroIcon type="carbs" size={12} colored /> W:</span>
-                            <span className="text-carbs font-bold text-sm">{profile.targets.carbs}g</span>
-                        </div>
+                </div>
+
+                <div className="flex gap-4 z-10 bg-black/20 p-2 rounded-2xl backdrop-blur-sm border border-white/5">
+                    <div className="flex flex-col items-center gap-0.5">
+                        <span className="text-[10px] font-bold text-muted-foreground uppercase">B</span>
+                        <span className="text-sm font-black text-protein">{profile.targets.protein}</span>
+                    </div>
+                    <div className="w-px h-8 bg-white/10" />
+                    <div className="flex flex-col items-center gap-0.5">
+                        <span className="text-[10px] font-bold text-muted-foreground uppercase">T</span>
+                        <span className="text-sm font-black text-fat">{profile.targets.fat}</span>
+                    </div>
+                    <div className="w-px h-8 bg-white/10" />
+                    <div className="flex flex-col items-center gap-0.5">
+                        <span className="text-[10px] font-bold text-muted-foreground uppercase">W</span>
+                        <span className="text-sm font-black text-carbs">{profile.targets.carbs}</span>
                     </div>
                 </div>
             </div>

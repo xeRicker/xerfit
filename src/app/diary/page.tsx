@@ -5,60 +5,9 @@ import { format, subDays, eachDayOfInterval, addDays, startOfWeek, endOfWeek, is
 import { pl } from "date-fns/locale";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
-import { BarChart3, TrendingUp, Lightbulb, Target, Brain, Dumbbell, Droplets, Apple, Utensils, Heart, ChevronLeft, ChevronRight, X } from "lucide-react";
+import { BarChart3, TrendingUp, Lightbulb, Target, Brain, Dumbbell, Droplets, Apple, Utensils, Heart, ChevronLeft, ChevronRight, X, AlertTriangle, CheckCircle2 } from "lucide-react";
 import { useState, useMemo } from "react";
 import { CalendarModal } from "@/components/CalendarModal";
-
-const TRIVIA = [
-    { 
-        t: "Białko to fundament", 
-        d: "Spożywanie 1.6g-2.2g białka na kg masy ciała jest kluczowe dla budowy mięśni. Rozkładaj białko równomiernie w ciągu dnia.", 
-        i: Brain,
-        c: "text-protein"
-    },
-    { 
-        t: "Węglowodany to paliwo", 
-        d: "Nie bój się węgli przed treningiem — to one dają Ci energię do bicia rekordów. Wybieraj złożone węglowodany, jak kasze, bataty, pełnoziarniste produkty.", 
-        i: Dumbbell,
-        c: "text-carbs"
-    },
-    { 
-        t: "Tłuszcze a hormony", 
-        d: "Zdrowe tłuszcze są niezbędne do prawidłowej produkcji hormonów i regeneracji. Należą do nich awokado, orzechy, nasiona, tłuste ryby.", 
-        i: Target,
-        c: "text-fat"
-    },
-    { 
-        t: "Sen to regeneracja", 
-        d: "Mięśnie nie rosną na siłowni, tylko podczas snu. Dbaj o 7-9 godzin wysokiej jakości odpoczynku każdej nocy.", 
-        i: Lightbulb,
-        c: "text-primary"
-    },
-    {
-        t: "Pij wodę!",
-        d: "Odpowiednie nawodnienie to podstawa metabolizmu, transportu składników odżywczych i efektywności treningu. Pij co najmniej 2-3 litry wody dziennie.",
-        i: Droplets,
-        c: "text-blue-500"
-    },
-    {
-        t: "Nie zapominaj o warzywach",
-        d: "Warzywa i owoce to źródło witamin, minerałów i błonnika, wspierające trawienie i ogólne zdrowie. Staraj się jeść co najmniej 5 porcji dziennie.",
-        i: Apple,
-        c: "text-green-500"
-    },
-    {
-        t: "Regularność posiłków",
-        d: "Utrzymuj stały rytm posiłków, aby stabilizować poziom cukru we krwi i unikać napadów głodu. Planowanie jest kluczem!",
-        i: Utensils,
-        c: "text-orange-500"
-    },
-    {
-        t: "Słuchaj swojego ciała",
-        d: "Twoje ciało wysyła sygnały. Naucz się je rozpoznawać, czy to głód, sytość, czy zmęczenie. Indywidualne podejście jest najlepsze.",
-        i: Heart,
-        c: "text-red-500"
-    }
-];
 
 export default function DiaryPage() {
   const { entries, profiles, activeProfileId, setDate } = useDiaryStore();
@@ -110,15 +59,42 @@ export default function DiaryPage() {
       };
   }, [currentWeekStart, entries, activeProfileId]);
 
-  const today = new Date();
-  const dailyTrivia = TRIVIA[Math.floor((today.getDate() + today.getMonth() * 31) % TRIVIA.length)];
+  // Enhanced AI Insights Logic
+  const insights = useMemo(() => {
+      const tips = [];
+      
+      // Protein Analysis
+      if (avgs.p > 0) {
+          if (avgs.p < target.protein * 0.8) {
+              tips.push({ t: "Niski poziom białka", d: "Twoja średnia podaż białka jest poniżej celu. To może utrudnić regenerację mięśni.", type: 'warning' });
+          } else if (avgs.p > target.protein * 0.9 && avgs.p < target.protein * 1.1) {
+              tips.push({ t: "Idealne białko", d: "Świetnie trzymasz poziom białka! Twoje mięśnie mają z czego rosnąć.", type: 'success' });
+          }
+      }
 
-  const insights = [];
-  if (avgs.p > 0 && avgs.p < target.protein * 0.9) insights.push("Spożywasz za mało białka. Dodaj więcej chudego mięsa, roślin strączkowych lub odżywki białkowej.");
-  if (avgs.c > target.carbs * 1.1) insights.push("Przekraczasz limit węglowodanów. Spróbuj ograniczyć cukry proste i zwiększ spożycie błonnika.");
-  if (avgs.cals > 0 && avgs.cals < target.calories * 0.8) insights.push("Jesteś w dużym deficycie kalorycznym. Pamiętaj, aby dostarczać wystarczająco energii!");
-  if (avgs.cals > target.calories * 1.2) insights.push("Znacznie przekraczasz swoje zapotrzebowanie kaloryczne. Zwróć uwagę na wielkość porcji.");
-  if (avgs.f > 0 && avgs.f < target.fat * 0.8) insights.push("Twoja podaż tłuszczów jest zbyt niska. Zadbaj o zdrowe tłuszcze dla zdrowia hormonalnego.");
+      // Calories Analysis
+      if (avgs.cals > 0) {
+          const diff = avgs.cals - target.calories;
+          if (diff < -500) {
+              tips.push({ t: "Duży deficyt", d: "Jesz znacznie mniej niż zakłada cel. Uważaj na spadek energii i utratę mięśni.", type: 'warning' });
+          } else if (diff > 500) {
+              tips.push({ t: "Nadwyżka kaloryczna", d: "Jesz więcej niż planowano. Jeśli nie robisz masy, może to prowadzić do odkładania tłuszczu.", type: 'warning' });
+          } else if (Math.abs(diff) < 200) {
+              tips.push({ t: "W punkt z kaloriami", d: "Trzymasz kalorie perfekcyjnie blisko celu. Tak trzymaj!", type: 'success' });
+          }
+      }
+
+      // Combinations
+      if (avgs.c > target.carbs * 1.2 && avgs.f > target.fat * 1.2) {
+           tips.push({ t: "Wysokie Węgle i Tłuszcze", d: "Łączenie dużej ilości tłuszczu z węglowodanami sprzyja odkładaniu zapasów. Spróbuj ograniczyć jedno z nich.", type: 'info' });
+      }
+
+      if (avgs.p > target.protein && avgs.cals < target.calories) {
+          tips.push({ t: "Świetna redukcja", d: "Wysokie białko przy deficycie to najlepszy sposób na spalanie tłuszczu przy zachowaniu mięśni.", type: 'success' });
+      }
+
+      return tips;
+  }, [avgs, target]);
 
   const navigateWeek = (dir: 'prev' | 'next') => {
     setCurrentWeekStart(prev => dir === 'prev' ? subDays(prev, 7) : addDays(prev, 7));
@@ -129,7 +105,7 @@ export default function DiaryPage() {
   return (
     <main className="p-5 flex flex-col gap-6 max-w-md mx-auto pt-12 min-h-screen pb-32">
       <div className="flex flex-col">
-        <h1 className="text-3xl font-black tracking-tight text-primary">Twój Dziennik</h1>
+        <h1 className="text-3xl font-black tracking-tight text-primary">Dziennik</h1>
       </div>
 
        {/* Week Navigation */}
@@ -153,7 +129,7 @@ export default function DiaryPage() {
             </button>
        </div>
 
-      {/* Weekly Macros Chart (Replaced Calorie Chart) */}
+      {/* Weekly Macros Chart */}
       <div className="glass p-6 rounded-[32px] flex flex-col gap-6">
         <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 text-muted-foreground text-[11px] font-bold uppercase tracking-wider">
@@ -244,32 +220,23 @@ export default function DiaryPage() {
               </div>
               <ul className="flex flex-col gap-3">
                 {insights.map((ins, i) => (
-                    <li key={i} className="text-sm font-medium text-white/90 flex gap-3">
-                        <span className="text-primary mt-1">•</span>
-                        {ins}
+                    <li key={i} className="flex gap-3">
+                        <div className={cn(
+                            "mt-0.5 w-1.5 h-1.5 rounded-full shrink-0",
+                            ins.type === 'warning' ? "bg-red-500" : ins.type === 'success' ? "bg-green-500" : "bg-blue-500"
+                        )} />
+                        <div className="flex flex-col gap-1">
+                            <span className={cn(
+                                "text-xs font-bold",
+                                ins.type === 'warning' ? "text-red-500" : ins.type === 'success' ? "text-green-500" : "text-blue-500"
+                            )}>{ins.t}</span>
+                            <span className="text-xs font-medium text-white/80 leading-relaxed">{ins.d}</span>
+                        </div>
                     </li>
                 ))}
               </ul>
           </div>
       )}
-
-      {/* Dynamic Trivia */}
-      <div className="grid grid-cols-1 gap-3">
-            <motion.div 
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.1 }}
-                className="glass p-5 rounded-3xl flex gap-4 items-start"
-            >
-                <div className={cn("p-3 rounded-2xl bg-white/5", dailyTrivia.c)}>
-                    <dailyTrivia.i size={20} />
-                </div>
-                <div className="flex flex-col gap-1">
-                    <h4 className="font-bold text-white">{dailyTrivia.t}</h4>
-                    <p className="text-xs text-muted-foreground leading-relaxed">{dailyTrivia.d}</p>
-                </div>
-            </motion.div>
-      </div>
 
       <AnimatePresence>
         {isCalendarOpen && (

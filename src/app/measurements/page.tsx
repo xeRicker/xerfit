@@ -54,10 +54,17 @@ export default function MeasurementsPage() {
 
     const totalPages = Math.ceil(sortedMeasurements.length / ITEMS_PER_PAGE);
 
-    const latest = sortedMeasurements[0];
+    // Latest measurement should always be the most recent by date, regardless of list sorting
+    const latest = useMemo(() => {
+        const chronological = [...measurements]
+            .filter(m => m.profileId === activeProfileId)
+            .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+        return chronological[chronological.length - 1];
+    }, [measurements, activeProfileId]);
 
     // Chart data should always be chronological (oldest to newest) regardless of list sorting
     const chartData = useMemo(() => {
+        // ... existing chart logic
         const chronological = [...measurements]
             .filter(m => m.profileId === activeProfileId)
             .sort((a, b) => {
@@ -151,11 +158,11 @@ export default function MeasurementsPage() {
                             <span className="font-black text-white text-lg">{m.weight}<span className="text-xs text-muted-foreground ml-0.5">kg</span></span>
                         </div>
                         
-                        <div className="flex items-center gap-3 overflow-x-auto scrollbar-hide mask-gradient-r">
-                            <DataBadge val={m.waist} label="Pas" />
-                            <DataBadge val={m.chest} label="Klata" />
-                            <DataBadge val={m.biceps} label="Bic" />
-                            <DataBadge val={m.thigh} label="Udo" />
+                        <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide mask-gradient-r max-w-[180px]">
+                            <ListStat val={m.waist} icon={Shirt} />
+                            <ListStat val={m.chest} icon={Activity} />
+                            <ListStat val={m.biceps} icon={BicepsFlexed} />
+                            <ListStat val={m.thigh} icon={Ruler} />
                         </div>
 
                         <button 
@@ -231,12 +238,12 @@ function CompactStat({ val, icon: Icon, label }: { val?: number, icon: LucideIco
     );
 }
 
-function DataBadge({ val, label }: { val?: number, label: string }) {
+function ListStat({ val, icon: Icon }: { val?: number, icon: LucideIcon }) {
     if (!val) return null;
     return (
-        <div className="flex flex-col items-center px-2 border-r border-white/5 last:border-0 min-w-[40px]">
-            <span className="text-xs font-bold text-white">{val}</span>
-            <span className="text-[8px] text-muted-foreground uppercase">{label}</span>
+        <div className="flex flex-col items-center justify-center p-1.5 rounded-lg bg-black/20 min-w-[32px]">
+            <Icon size={10} className="text-muted-foreground mb-0.5" />
+            <span className="text-[10px] font-black text-white leading-none">{val}</span>
         </div>
     );
 }

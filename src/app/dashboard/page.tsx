@@ -244,7 +244,7 @@ export default function DashboardPage() {
                                 key={meal.id}
                                 layoutId={meal.id}
                                 onClick={() => handleEditClick(meal)}
-                                className="glass p-4 rounded-2xl flex items-center justify-between active:scale-[0.98] transition-transform cursor-pointer"
+                                className="glass p-4 rounded-2xl flex items-center justify-between active:scale-[0.98] transition-transform cursor-pointer group"
                             >
                                 <div className="flex flex-col gap-1">
                                     <div className="flex flex-col">
@@ -261,9 +261,12 @@ export default function DashboardPage() {
                                         <span className="text-white/60 ml-1">{meal.weight}g</span>
                                     </div>
                                 </div>
-                                <div className="flex flex-col items-end">
-                                    <span className="text-lg font-bold text-primary">{Math.round(meal.calories)}</span>
-                                    <span className="text-[10px] font-bold text-muted-foreground uppercase">kcal</span>
+                                <div className="flex items-center gap-3">
+                                    <div className="flex flex-col items-end">
+                                        <span className="text-lg font-bold text-primary">{Math.round(meal.calories)}</span>
+                                        <span className="text-[10px] font-bold text-muted-foreground uppercase">kcal</span>
+                                    </div>
+                                    <ChevronRight size={18} className="text-white/10 group-hover:text-white/30 transition-colors" />
                                 </div>
                             </motion.div>
                         ))}

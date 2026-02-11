@@ -15,7 +15,7 @@ const BarcodeScanner = dynamic(() => import('@/components/BarcodeScanner').then(
   loading: () => null
 });
 
-type SortOption = 'name' | 'calories' | 'protein' | 'fat' | 'carbs';
+type SortOption = 'name' | 'calories' | 'protein' | 'fat' | 'carbs' | 'scanned';
 
 export default function MealsPage() {
   const { products, addEntry, currentDate, setEditingProduct, selectionMode, setSelectionMode, deleteProduct } = useDiaryStore();
@@ -32,6 +32,7 @@ export default function MealsPage() {
     .filter(p => p.name && p.name.toLowerCase().includes(search.toLowerCase()))
     .sort((a, b) => {
         if (sortBy === 'name') return (a.name || '').localeCompare(b.name || '');
+        if (sortBy === 'scanned') return (b.is_scanned ? 1 : 0) - (a.is_scanned ? 1 : 0);
         return (b[sortBy] as number || 0) - (a[sortBy] as number || 0);
     });
 
@@ -163,7 +164,8 @@ export default function MealsPage() {
                                 { id: 'calories', label: 'Kalorie' },
                                 { id: 'protein', label: 'Białko' },
                                 { id: 'fat', label: 'Tłuszcz' },
-                                { id: 'carbs', label: 'Węgle' }
+                                { id: 'carbs', label: 'Węgle' },
+                                { id: 'scanned', label: 'Zeskanowane' }
                             ].map((opt) => (
                                 <button
                                     key={opt.id}
