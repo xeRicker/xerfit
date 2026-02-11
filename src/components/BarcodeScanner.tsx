@@ -55,13 +55,26 @@ export function BarcodeScanner({ onClose, onScan }: BarcodeScannerProps) {
                 
                 streamRef.current = stream;
 
-                // Check for torch support
                 const track = stream.getVideoTracks()[0];
                 if (track) {
                     const capabilities = track.getCapabilities();
-                    // @ts-ignore - torch is not in standard types yet
+                    
+                    // Torch Support
+                    // @ts-ignore
                     if (capabilities.torch) {
                         setHasTorch(true);
+                    }
+
+                    // Zoom Support (Auto-zoom to 2x or max)
+                    // @ts-ignore
+                    if (capabilities.zoom) {
+                        // @ts-ignore
+                        const maxZoom = capabilities.zoom.max;
+                        // @ts-ignore
+                        const minZoom = capabilities.zoom.min;
+                        const targetZoom = Math.min(Math.max(2.0, minZoom), maxZoom); 
+                        // @ts-ignore
+                        track.applyConstraints({ advanced: [{ zoom: targetZoom }] }).catch(() => {});
                     }
                 }
 
@@ -264,10 +277,10 @@ export function BarcodeScanner({ onClose, onScan }: BarcodeScannerProps) {
                                 <div className="absolute bottom-0 right-0 w-4 h-4 border-b-4 border-r-4 border-primary -mb-1 -mr-1 rounded-br-lg z-20"></div>
                                 
                                 <motion.div 
-                                    initial={{ top: 0 }}
-                                    animate={{ top: "100%" }}
+                                    initial={{ top: 0, opacity: 0 }}
+                                    animate={{ top: "100%", opacity: [0, 1, 1, 0] }}
                                     transition={{ repeat: Infinity, duration: 2, ease: "linear" }}
-                                    className="absolute left-0 right-0 h-0.5 bg-red-500/80 shadow-[0_0_15px_rgba(255,0,0,0.8)] z-10"
+                                    className="absolute left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-red-500 to-transparent shadow-[0_0_15px_rgba(255,0,0,0.8)] z-10"
                                 />
                             </div>
                         )}

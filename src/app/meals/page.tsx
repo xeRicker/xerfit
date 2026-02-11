@@ -239,21 +239,21 @@ export default function MealsPage() {
                     >
                         <div 
                             className={cn(
-                                "w-12 h-12 rounded-full flex items-center justify-center text-white shrink-0 shadow-lg",
+                                "w-10 h-10 rounded-full flex items-center justify-center text-white shrink-0 shadow-lg",
                                 !isCustomColor && (p.color || "bg-primary")
                             )}
                             style={isCustomColor ? { backgroundColor: p.color } : {}}
                         >
-                             <Icon size={20} />
+                             <Icon size={18} />
                         </div>
                         
-                        <div className="flex flex-col gap-1 flex-1 min-w-0">
+                        <div className="flex flex-col gap-0.5 flex-1 min-w-0">
                             <div className="flex flex-col">
-                                <span className="font-semibold text-lg truncate flex items-center gap-2">
+                                <span className="font-semibold text-base truncate flex items-center gap-2">
                                     {p.name}
-                                    {p.is_scanned && <ScanBarcode size={14} className="text-muted-foreground/50" />}
+                                    {p.is_scanned && <ScanBarcode size={14} className="text-blue-400 shrink-0" />}
                                 </span>
-                                {p.brand && <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">{p.brand}</span>}
+                                {p.brand && <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider truncate">{p.brand}</span>}
                             </div>
                             <div className="flex gap-3 text-xs text-muted-foreground font-medium items-center mt-1">
                                 <span className="flex items-center gap-1 text-primary"><MacroIcon type="calories" size={10} colored /> {p.calories}</span>

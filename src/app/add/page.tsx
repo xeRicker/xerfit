@@ -17,7 +17,7 @@ const ICON_NAMES = [
 ];
 
 const PRESET_COLORS = [
-    "bg-red-500", "bg-orange-500", "bg-yellow-500", "bg-green-500", "bg-blue-500"
+    "bg-red-500", "bg-orange-500", "bg-green-500", "bg-blue-500"
 ];
 
 function AddProductForm() {
@@ -68,6 +68,13 @@ function AddProductForm() {
             carbs: carbs || "",
             icon: "ChefHat",
             color: "bg-orange-500"
+        });
+    } else {
+        // Randomize initial state
+        setForm({
+            name: "", brand: "", calories: "", protein: "", fat: "", carbs: "",
+            icon: ICON_NAMES[Math.floor(Math.random() * ICON_NAMES.length)],
+            color: PRESET_COLORS[Math.floor(Math.random() * PRESET_COLORS.length)]
         });
     }
 
@@ -184,7 +191,30 @@ function AddProductForm() {
             {/* Color Selection */}
             <div className="flex flex-col gap-2">
                 <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider ml-1">Kolor Ikony</label>
-                <div className="flex items-center gap-3 overflow-x-auto pb-2 scrollbar-hide">
+                <div className="flex items-center gap-3 overflow-x-auto pb-4 scrollbar-hide px-1">
+                    {/* Custom Color Picker First */}
+                    <div className="relative shrink-0">
+                        <input 
+                            ref={colorInputRef}
+                            type="color"
+                            value={isCustomColor ? form.color : "#FF6A00"}
+                            onChange={(e) => setForm(f => ({ ...f, color: e.target.value }))}
+                            className="absolute inset-0 w-full h-full opacity-0 pointer-events-none"
+                        />
+                        <button 
+                            type="button"
+                            onClick={() => colorInputRef.current?.click()}
+                            className={cn(
+                                "w-10 h-10 rounded-full transition-all border-2 flex items-center justify-center bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500",
+                                isCustomColor ? "border-white scale-110 shadow-lg" : "border-transparent opacity-60 hover:opacity-100"
+                            )}
+                        >
+                            <Palette size={18} className="text-white" />
+                        </button>
+                    </div>
+
+                    <div className="w-px h-6 bg-white/10 mx-1 shrink-0" />
+
                     {PRESET_COLORS.map(color => (
                         <button 
                             type="button"
@@ -197,37 +227,15 @@ function AddProductForm() {
                             )}
                         />
                     ))}
-                    <div className="w-px h-6 bg-white/10 mx-1" />
-                    
-                    {/* Custom Color Picker */}
-                    <div className="relative">
-                        <input 
-                            ref={colorInputRef}
-                            type="color"
-                            value={isCustomColor ? form.color : "#FF6A00"}
-                            onChange={(e) => setForm(f => ({ ...f, color: e.target.value }))}
-                            className="absolute inset-0 w-full h-full opacity-0 pointer-events-none"
-                        />
-                        <button 
-                            type="button"
-                            onClick={() => colorInputRef.current?.click()}
-                            className={cn(
-                                "w-10 h-10 rounded-full shrink-0 transition-all border-2 flex items-center justify-center bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500",
-                                isCustomColor ? "border-white scale-110 shadow-lg" : "border-transparent opacity-60 hover:opacity-100"
-                            )}
-                        >
-                            <Palette size={18} className="text-white" />
-                        </button>
-                    </div>
                 </div>
             </div>
         </div>
 
         {/* Macros */}
-        <div className="glass p-6 rounded-[32px] flex flex-col gap-6">
-            <div className="flex flex-col gap-2">
-                <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider ml-1 flex items-center gap-2">
-                    <MacroIcon type="calories" size={12} /> Kalorie (100g)
+        <div className="glass p-5 rounded-[32px] flex flex-col gap-4">
+            <div className="flex flex-col gap-1">
+                <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider ml-1 flex items-center gap-1">
+                    <MacroIcon type="calories" size={10} /> Kalorie (100g)
                 </label>
                 <input 
                     type="number" 
@@ -235,15 +243,15 @@ function AddProductForm() {
                     value={form.calories}
                     onChange={handleInput}
                     placeholder="0"
-                    className="w-full bg-black/20 border border-white/10 rounded-2xl px-4 py-4 text-3xl font-black outline-none focus:border-primary/50 transition-colors text-primary"
+                    className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-2 text-xl font-black outline-none focus:border-primary/50 transition-colors text-primary"
                     inputMode="decimal"
                 />
             </div>
 
             <div className="grid grid-cols-3 gap-3">
-                 <div className="flex flex-col gap-2">
-                    <label className="text-[10px] font-bold text-protein uppercase tracking-wider ml-1 flex items-center gap-1">
-                        <MacroIcon type="protein" size={10} /> B
+                 <div className="flex flex-col gap-1">
+                    <label className="text-[9px] font-bold text-protein uppercase tracking-wider ml-1 flex items-center gap-1">
+                        <MacroIcon type="protein" size={8} /> B
                     </label>
                     <input 
                         type="number" 
@@ -251,13 +259,13 @@ function AddProductForm() {
                         value={form.protein}
                         onChange={handleInput}
                         placeholder="0"
-                        className="w-full bg-black/20 border border-white/10 rounded-xl px-3 py-3 text-lg font-bold outline-none focus:border-protein/50 transition-colors"
+                        className="w-full bg-black/20 border border-white/10 rounded-lg px-3 py-2 text-sm font-bold outline-none focus:border-protein/50 transition-colors"
                         inputMode="decimal"
                     />
                 </div>
-                <div className="flex flex-col gap-2">
-                    <label className="text-[10px] font-bold text-fat uppercase tracking-wider ml-1 flex items-center gap-1">
-                        <MacroIcon type="fat" size={10} /> T
+                <div className="flex flex-col gap-1">
+                    <label className="text-[9px] font-bold text-fat uppercase tracking-wider ml-1 flex items-center gap-1">
+                        <MacroIcon type="fat" size={8} /> T
                     </label>
                     <input 
                         type="number" 
@@ -265,13 +273,13 @@ function AddProductForm() {
                         value={form.fat}
                         onChange={handleInput}
                         placeholder="0"
-                        className="w-full bg-black/20 border border-white/10 rounded-xl px-3 py-3 text-lg font-bold outline-none focus:border-fat/50 transition-colors"
+                        className="w-full bg-black/20 border border-white/10 rounded-lg px-3 py-2 text-sm font-bold outline-none focus:border-fat/50 transition-colors"
                         inputMode="decimal"
                     />
                 </div>
-                <div className="flex flex-col gap-2">
-                    <label className="text-[10px] font-bold text-carbs uppercase tracking-wider ml-1 flex items-center gap-1">
-                        <MacroIcon type="carbs" size={10} /> W
+                <div className="flex flex-col gap-1">
+                    <label className="text-[9px] font-bold text-carbs uppercase tracking-wider ml-1 flex items-center gap-1">
+                        <MacroIcon type="carbs" size={8} /> W
                     </label>
                     <input 
                         type="number" 
@@ -279,7 +287,7 @@ function AddProductForm() {
                         value={form.carbs}
                         onChange={handleInput}
                         placeholder="0"
-                        className="w-full bg-black/20 border border-white/10 rounded-xl px-3 py-3 text-lg font-bold outline-none focus:border-carbs/50 transition-colors"
+                        className="w-full bg-black/20 border border-white/10 rounded-lg px-3 py-2 text-sm font-bold outline-none focus:border-carbs/50 transition-colors"
                         inputMode="decimal"
                     />
                 </div>
