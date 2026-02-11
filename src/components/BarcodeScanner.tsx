@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
-import { Html5Qrcode } from "html5-qrcode";
 import { motion } from "framer-motion";
 import { X, Camera, RefreshCw, AlertCircle, Info } from "lucide-react";
 
@@ -14,7 +13,7 @@ export function BarcodeScanner({ onClose, onScan }: BarcodeScannerProps) {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [logs, setLogs] = useState<string[]>([]);
-    const scannerRef = useRef<Html5Qrcode | null>(null);
+    const scannerRef = useRef<any>(null);
     const mountedRef = useRef(false);
 
     const addLog = (msg: string) => {
@@ -24,12 +23,11 @@ export function BarcodeScanner({ onClose, onScan }: BarcodeScannerProps) {
     const stopScanner = async () => {
         if (scannerRef.current && scannerRef.current.isScanning) {
             try {
-                addLog("Stopping scanner...");
+                addLog("Stopping...");
                 await scannerRef.current.stop();
-                await scannerRef.current.clear();
-                addLog("Scanner stopped.");
+                addLog("Stopped.");
             } catch (err) {
-                addLog(`Stop error: ${err}`);
+                addLog(`Stop err: ${err}`);
             }
         }
     };
@@ -38,20 +36,23 @@ export function BarcodeScanner({ onClose, onScan }: BarcodeScannerProps) {
         try {
             setError(null);
             setIsLoading(true);
-            addLog("Initializing Html5Qrcode...");
+            addLog("Dynamic import starting...");
             
+            // DYNAMIC IMPORT OF THE LIBRARY
+            const { Html5Qrcode } = await import("html5-qrcode");
+            addLog("Library loaded.");
+
+            if (!mountedRef.current) return;
+
             const element = document.getElementById("reader");
             if (!element) {
-                addLog("Error: Element #reader not found");
+                addLog("DOM error: #reader not found");
                 return;
             }
 
-            // Cleanup previous instance if exists
-            await stopScanner();
-
             const html5QrCode = new Html5Qrcode("reader");
             scannerRef.current = html5QrCode;
-            addLog("Scanner instance created.");
+            addLog("Instance ready.");
 
             const config = { 
                 fps: 10, 
@@ -64,31 +65,28 @@ export function BarcodeScanner({ onClose, onScan }: BarcodeScannerProps) {
                 { facingMode: "environment" }, 
                 config, 
                 (decodedText) => {
-                    addLog(`Scanned: ${decodedText}`);
-                    html5QrCode.stop().then(() => {
-                        onScan(decodedText);
-                    }).catch(() => onScan(decodedText));
+                    addLog("MATCH!");
+                    html5QrCode.stop().then(() => onScan(decodedText)).catch(() => onScan(decodedText));
                 },
-                () => { /* frame error */ }
+                () => {}
             );
 
             addLog("Camera active.");
             setIsLoading(false);
         } catch (err: any) {
-            addLog(`CRITICAL ERROR: ${err?.message || err}`);
-            console.error("Scanner Start Error:", err);
-            setError(`Problem z aparatem: ${err?.message || "Nieznany błąd"}`);
+            addLog(`ERR: ${err?.message || "Check permissions/HTTPS"}`);
+            setError(`Błąd: ${err?.message || "Problem z dostępem do aparatu"}`);
             setIsLoading(false);
         }
     };
 
     useEffect(() => {
         mountedRef.current = true;
-        addLog("Component mounted.");
+        addLog("Init...");
         
         const timer = setTimeout(() => {
             if (mountedRef.current) startScanner();
-        }, 1000); // Increased delay for stability
+        }, 800);
 
         return () => {
             mountedRef.current = false;
@@ -106,9 +104,9 @@ export function BarcodeScanner({ onClose, onScan }: BarcodeScannerProps) {
         >
             <div className="p-6 flex justify-between items-center z-10">
                 <div className="flex flex-col">
-                    <h2 className="text-xl font-black text-white tracking-tight">Skaner Barcode</h2>
+                    <h2 className="text-xl font-black text-white tracking-tight">Skaner</h2>
                     <p className="text-xs text-white/50 font-bold uppercase tracking-widest flex items-center gap-1">
-                        <Info size={10} /> iOS Debug Mode
+                        <Info size={10} /> Safe Mode
                     </p>
                 </div>
                 <button 
@@ -146,21 +144,20 @@ export function BarcodeScanner({ onClose, onScan }: BarcodeScannerProps) {
                 </div>
             </div>
 
-            {/* Debug Logs for User */}
             <div className="px-6 pb-4">
                 <div className="bg-white/5 rounded-2xl p-4 font-mono text-[9px] text-white/40 flex flex-col gap-1">
-                    <p className="font-bold text-white/60 mb-1 border-b border-white/5 pb-1 uppercase tracking-tighter">System Log:</p>
+                    <p className="font-bold text-white/60 mb-1 border-b border-white/5 pb-1 uppercase tracking-tighter">Debug Log:</p>
                     {logs.map((log, i) => (
                         <div key={i} className="truncate">{log}</div>
                     ))}
-                    {logs.length === 0 && <p>Waiting for initialization...</p>}
+                    {logs.length === 0 && <p>Wating...</p>}
                 </div>
             </div>
 
             <div className="p-6 pt-0 flex flex-col items-center gap-4 z-10">
                 <div className="flex items-center gap-2 text-white/40 text-[10px] font-black uppercase tracking-widest">
                     <Camera size={14} />
-                    OFF API Integration
+                    OFF API
                 </div>
             </div>
         </motion.div>
