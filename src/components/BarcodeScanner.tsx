@@ -18,6 +18,9 @@ export function BarcodeScanner({ onClose, onScan }: BarcodeScannerProps) {
     const scannerId = useId().replace(/:/g, ""); 
     const elementId = `reader-${scannerId}`;
     
+    const scannerRef = useRef<any>(null);
+    const isScanningRef = useRef(false);
+    const shouldStopRef = useRef(false);
     const isMountedRef = useRef(true);
 
     const addLog = (msg: string) => {
