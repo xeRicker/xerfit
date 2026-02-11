@@ -4,36 +4,57 @@ import { useDiaryStore, Measurement } from "@/lib/store";
 import { useState, useMemo } from "react";
 import { format } from "date-fns";
 import { motion, AnimatePresence } from "framer-motion";
-import { Ruler, Save, Trash2, TrendingUp, Plus, X, Scale, BicepsFlexed, Shirt, Activity } from "lucide-react";
+import { Ruler, Save, Trash2, TrendingUp, Plus, X, Scale, BicepsFlexed, Shirt, Activity, ArrowDown, ArrowUp } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { pl } from "date-fns/locale";
 import { LucideIcon } from "lucide-react";
+
+const ITEMS_PER_PAGE = 10;
 
 export default function MeasurementsPage() {
     const { measurements, addMeasurement, updateMeasurement, deleteMeasurement, activeProfileId } = useDiaryStore();
     const [isAdding, setIsAdding] = useState(false);
     const [editingId, setEditingId] = useState<string | null>(null);
+    const [sortOrder, setSortOrder] = useState<'desc' | 'asc'>('desc');
+    const [currentPage, setCurrentPage] = useState(1);
 
-    // Filter measurements for active profile and sort by timestamp descending
-    const profileMeasurements = useMemo(() => 
-        measurements
+    // Memoize filtered and sorted measurements
+    const sortedMeasurements = useMemo(() => {
+        return measurements
             .filter(m => m.profileId === activeProfileId)
-            .sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0)),
-    [measurements, activeProfileId]);
+            .sort((a, b) => {
+                const dateA = new Date(a.date).getTime();
+                const dateB = new Date(b.date).getTime();
+                return sortOrder === 'desc' ? dateB - dateA : dateA - dateB;
+            });
+    }, [measurements, activeProfileId, sortOrder]);
 
-    const latest = profileMeasurements[0];
+    // Memoize paginated measurements
+    const paginatedMeasurements = useMemo(() => {
+        const start = (currentPage - 1) * ITEMS_PER_PAGE;
+        const end = start + ITEMS_PER_PAGE;
+        return sortedMeasurements.slice(start, end);
+    }, [sortedMeasurements, currentPage]);
 
-    // Prepare chart data (reverse to chronological order)
+    const totalPages = Math.ceil(sortedMeasurements.length / ITEMS_PER_PAGE);
+
+    const latest = sortedMeasurements[0];
+
     const chartData = useMemo(() => 
-        [...profileMeasurements].reverse().map(m => ({
+        [...sortedMeasurements].reverse().map(m => ({
             date: m.date,
             value: m.weight
-        })), 
-    [profileMeasurements]);
+        })).slice(-30), // show last 30 entries in chart
+    [sortedMeasurements]);
 
     const handleEdit = (m: Measurement) => {
         setEditingId(m.id);
         setIsAdding(true);
+    };
+
+    const handleSortToggle = () => {
+        setSortOrder(prev => prev === 'desc' ? 'asc' : 'desc');
+        setCurrentPage(1); // Reset to first page on sort change
     };
 
     return (
@@ -43,20 +64,17 @@ export default function MeasurementsPage() {
                 <p className="text-muted-foreground text-sm font-medium uppercase tracking-widest mt-1">Śledź swój progres</p>
             </div>
 
-            {/* Weight Trend Chart */}
             <TrendChart data={chartData} color="#FF6A00" />
 
-            {/* Compact Latest Summary */}
             {latest && (
                 <div className="glass p-5 rounded-3xl flex flex-col gap-4 relative overflow-hidden active:scale-[0.98] transition-transform cursor-pointer" onClick={() => handleEdit(latest)}>
                      <div className="flex items-center justify-between">
-                        <span className="text-[10px] font-bold uppercase text-muted-foreground tracking-widest">Ostatni pomiar: {format(new Date(latest.date), 'd MMM', { locale: pl })}</span>
+                        <span className="text-[10px] font-bold uppercase text-muted-foreground tracking-widest">Ostatni pomiar: {format(new Date(latest.date), 'd MMM yyyy', { locale: pl })}</span>
                         <div className="flex items-center gap-1 text-primary">
                             <Scale size={14} />
                             <span className="text-lg font-black">{latest.weight}kg</span>
                         </div>
                      </div>
-                     
                      <div className="grid grid-cols-5 gap-2">
                         <CompactStat val={latest.waist} icon={Shirt} label="Pas" />
                         <CompactStat val={latest.chest} icon={Activity} label="Klata" />
@@ -67,7 +85,6 @@ export default function MeasurementsPage() {
                 </div>
             )}
 
-            {/* Add Button */}
             <button 
                 onClick={() => { setEditingId(null); setIsAdding(true); }}
                 className="w-full py-4 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center gap-2 font-bold text-primary active:scale-95 transition-transform hover:bg-white/10"
@@ -75,13 +92,22 @@ export default function MeasurementsPage() {
                 <Plus size={20} /> Dodaj nowy pomiar
             </button>
 
-            {/* Compact History List */}
             <div className="flex flex-col gap-3">
-                <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-widest ml-2">Historia</h3>
-                {profileMeasurements.map((m) => (
+                <div className="flex justify-between items-center ml-2">
+                    <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-widest">Historia</h3>
+                    <button onClick={handleSortToggle} className="flex items-center gap-1 text-xs font-bold text-primary glass p-2 rounded-lg active:scale-95">
+                        {sortOrder === 'desc' ? <ArrowDown size={14}/> : <ArrowUp size={14} />}
+                        {sortOrder === 'desc' ? 'Najnowsze' : 'Najstarsze'}
+                    </button>
+                </div>
+
+                {paginatedMeasurements.length > 0 ? paginatedMeasurements.map((m) => (
                     <motion.div 
                         key={m.id}
                         layoutId={m.id}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
                         className="glass p-3 rounded-2xl flex items-center justify-between active:scale-[0.99] transition-transform cursor-pointer"
                         onClick={() => handleEdit(m)}
                     >
@@ -101,21 +127,41 @@ export default function MeasurementsPage() {
                         </div>
 
                         <button 
-                            onClick={(e) => { e.stopPropagation(); deleteMeasurement(m.id); }}
+                            onClick={(e) => { e.stopPropagation(); if(confirm('Na pewno usunąć ten pomiar?')) deleteMeasurement(m.id); }}
                             className="p-2 text-muted-foreground/50 hover:text-red-500 transition-colors"
                         >
                             <Trash2 size={16} />
                         </button>
                     </motion.div>
-                ))}
-                {profileMeasurements.length === 0 && (
+                )) : (
                      <div className="text-center py-8 text-muted-foreground text-sm opacity-50">
-                        Brak historii pomiarów
+                        Brak historii pomiarów dla tego profilu.
                     </div>
                 )}
             </div>
 
-            {/* Add/Edit Modal */}
+            {totalPages > 1 && (
+                <div className="flex justify-center items-center gap-4 mt-4">
+                    <button
+                        onClick={() => setCurrentPage(p => p - 1)}
+                        disabled={currentPage === 1}
+                        className="glass px-4 py-2 rounded-lg font-bold text-sm disabled:opacity-30 disabled:pointer-events-none active:scale-95"
+                    >
+                        Poprzednia
+                    </button>
+                    <span className="text-sm font-bold text-muted-foreground">
+                        {currentPage} / {totalPages}
+                    </span>
+                    <button
+                        onClick={() => setCurrentPage(p => p + 1)}
+                        disabled={currentPage === totalPages}
+                        className="glass px-4 py-2 rounded-lg font-bold text-sm disabled:opacity-30 disabled:pointer-events-none active:scale-95"
+                    >
+                        Następna
+                    </button>
+                </div>
+            )}
+
             <AnimatePresence>
                 {isAdding && (
                     <MeasurementForm 
@@ -124,7 +170,7 @@ export default function MeasurementsPage() {
                             if (editingId) {
                                 updateMeasurement(editingId, data);
                             } else {
-                                addMeasurement(data);
+                                addMeasurement({ ...data, timestamp: new Date(data.date).getTime() });
                             }
                         }}
                         initialData={editingId ? measurements.find(m => m.id === editingId) : undefined}
@@ -162,14 +208,18 @@ function DataBadge({ val, label }: { val?: number, label: string }) {
 }
 
 function TrendChart({ data, color }: { data: { date: string, value: number }[], color: string }) {
-    if (data.length < 2) return null;
+    if (data.length < 2) return (
+        <div className="glass p-6 rounded-[32px] h-48 flex flex-col items-center justify-center gap-2">
+            <TrendingUp size={24} className="text-muted-foreground/50" />
+            <span className="text-xs font-bold text-muted-foreground/50">Za mało danych do pokazania trendu</span>
+        </div>
+    );
 
     const values = data.map(d => d.value);
     const min = Math.min(...values);
     const max = Math.max(...values);
-    const range = max - min || 1; // Avoid division by zero
+    const range = max - min || 1;
 
-    // Normalize points to 0-100 range for SVG
     const points = values.map((v, i) => {
         const x = (i / (values.length - 1)) * 100;
         const y = 100 - ((v - min) / range) * 100;
@@ -184,28 +234,29 @@ function TrendChart({ data, color }: { data: { date: string, value: number }[], 
             <div className="flex items-center justify-between z-10">
                  <div className="flex items-center gap-2 text-muted-foreground text-[11px] font-bold uppercase tracking-wider">
                     <TrendingUp size={14} className="text-primary" />
-                    Trend Wagi
+                    Trend Wagi (ostatnie {data.length} pomiarów)
                 </div>
                 <div className={cn("flex items-center gap-1 text-sm font-bold", isUp ? "text-error" : "text-success")}>
                     {trend > 0 ? '+' : ''}{trend.toFixed(1)}kg
-                    <span className="text-[10px] text-muted-foreground font-medium uppercase ml-1">Lącznie</span>
+                    <span className="text-[10px] text-muted-foreground font-medium uppercase ml-1">Łącznie</span>
                 </div>
             </div>
 
             <div className="absolute inset-x-0 bottom-0 top-12 px-2 pb-2">
                 <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="w-full h-full overflow-visible">
-                     {/* Gradient Fill */}
                     <defs>
                         <linearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1">
                             <stop offset="0%" stopColor={color} stopOpacity="0.2" />
                             <stop offset="100%" stopColor={color} stopOpacity="0" />
                         </linearGradient>
                     </defs>
-                    <path 
-                        d={`M0,100 L0,${100 - ((values[0] - min) / range) * 100} ${points.replace(/,/g, ' ')} L100,100 Z`} 
+                    <motion.path 
+                        d={`M0,100 L${points.split(' ')[0]} ${points} L100,${points.split(' ').pop()?.split(',')[1]} L100,100 Z`}
                         fill="url(#chartGradient)" 
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ duration: 0.5 }}
                     />
-                    {/* Line */}
                     <motion.polyline 
                         points={points}
                         fill="none"
@@ -217,21 +268,6 @@ function TrendChart({ data, color }: { data: { date: string, value: number }[], 
                         animate={{ pathLength: 1 }}
                         transition={{ duration: 1.5, ease: "easeInOut" }}
                     />
-                    {/* Points */}
-                    {data.map((d, i) => {
-                         const x = (i / (values.length - 1)) * 100;
-                         const y = 100 - ((d.value - min) / range) * 100;
-                         return (
-                            <motion.circle 
-                                key={i}
-                                cx={x} cy={y} r="1.5"
-                                fill="white"
-                                initial={{ opacity: 0 }}
-                                animate={{ opacity: 1 }}
-                                transition={{ delay: 1 + i * 0.05 }}
-                            />
-                         );
-                    })}
                 </svg>
             </div>
             
@@ -243,7 +279,7 @@ function TrendChart({ data, color }: { data: { date: string, value: number }[], 
     );
 }
 
-function MeasurementForm({ onClose, onSave, initialData }: { onClose: () => void, onSave: (m: Omit<Measurement, 'id' | 'profileId' | 'timestamp'>) => void, initialData?: Measurement }) {
+function MeasurementForm({ onClose, onSave, initialData }: { onClose: () => void, onSave: (m: Omit<Measurement, 'id' | 'profileId'>) => void, initialData?: Measurement }) {
     const [form, setForm] = useState({
         date: initialData?.date || format(new Date(), 'yyyy-MM-dd'),
         weight: initialData?.weight.toString() || '',
@@ -259,6 +295,7 @@ function MeasurementForm({ onClose, onSave, initialData }: { onClose: () => void
         
         onSave({
             date: form.date,
+            timestamp: new Date(form.date).getTime(),
             weight: Number(form.weight),
             chest: form.chest ? Number(form.chest) : undefined,
             biceps: form.biceps ? Number(form.biceps) : undefined,
@@ -289,7 +326,6 @@ function MeasurementForm({ onClose, onSave, initialData }: { onClose: () => void
                         <h2 className="text-2xl font-bold">{initialData ? 'Edytuj Pomiar' : 'Nowy Pomiar'}</h2>
                         <button onClick={onClose} className="p-2 bg-white/5 rounded-full text-muted-foreground"><X size={20}/></button>
                     </div>
-
                     <div className="flex flex-col gap-4">
                         <div className="flex flex-col gap-1">
                             <label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">Data</label>
@@ -300,7 +336,6 @@ function MeasurementForm({ onClose, onSave, initialData }: { onClose: () => void
                                 className="bg-black/20 rounded-xl p-4 font-bold text-white outline-none focus:ring-2 focus:ring-primary/50"
                             />
                         </div>
-
                         <div className="grid grid-cols-2 gap-4">
                              <Input label="Waga (kg)" value={form.weight} onChange={v => setForm(f => ({...f, weight: v}))} autoFocus required />
                              <Input label="Pas (cm)" value={form.waist} onChange={v => setForm(f => ({...f, waist: v}))} icon={Shirt} />
@@ -310,7 +345,6 @@ function MeasurementForm({ onClose, onSave, initialData }: { onClose: () => void
                              <Input label="Łydka (cm)" value={form.calf} onChange={v => setForm(f => ({...f, calf: v}))} />
                         </div>
                     </div>
-
                     <button 
                         onClick={handleSubmit}
                         className="h-14 rounded-full bg-primary text-white font-bold text-lg shadow-lg shadow-primary/25 active:scale-95 transition-transform flex items-center justify-center gap-2"
@@ -323,62 +357,25 @@ function MeasurementForm({ onClose, onSave, initialData }: { onClose: () => void
     );
 }
 
-interface InputProps {
-
-    label: string;
-
-    value: string | number;
-
-    onChange: (val: string) => void;
-
-    icon?: LucideIcon;
-
-    autoFocus?: boolean;
-
-    required?: boolean;
-
-}
-
-
-
 function Input({ label, value, onChange, icon: Icon, autoFocus, required }: InputProps) {
-
     return (
-
         <div className="flex flex-col gap-1">
-
             <label className="text-[10px] font-bold uppercase text-muted-foreground ml-1 flex items-center gap-1">
-
                 {Icon && <Icon size={10} />}
-
                 {label}
-
             </label>
-
             <input 
-
                 type="number" 
-
                 value={value}
-
                 onChange={e => onChange(e.target.value)}
-
                 className={cn(
-
                     "bg-black/20 rounded-xl p-4 font-bold text-lg outline-none focus:ring-2 focus:ring-primary/50",
-
                     required && !value && "ring-1 ring-red-500/50"
-
                 )}
-
                 autoFocus={autoFocus}
-
                 placeholder="0"
-
+                inputMode="decimal"
             />
-
         </div>
-
     );
-
 }
