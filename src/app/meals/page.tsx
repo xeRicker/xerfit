@@ -7,7 +7,12 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { MacroIcon } from "@/components/MacroIcon";
-import { BarcodeScanner } from "@/components/BarcodeScanner";
+import dynamic from 'next/dynamic';
+
+const BarcodeScanner = dynamic(() => import('@/components/BarcodeScanner').then(mod => mod.BarcodeScanner), {
+  ssr: false,
+  loading: () => null
+});
 
 type SortOption = 'name' | 'calories' | 'protein' | 'fat' | 'carbs';
 
