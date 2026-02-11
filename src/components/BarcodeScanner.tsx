@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef, useId } from "react";
 import { motion } from "framer-motion";
-import { X, Camera, RefreshCw, AlertCircle, Info } from "lucide-react";
+import { X, RefreshCw, AlertCircle, Info } from "lucide-react";
 
 interface BarcodeScannerProps {
     onClose: () => void;
@@ -14,14 +14,15 @@ export function BarcodeScanner({ onClose, onScan }: BarcodeScannerProps) {
     const [error, setError] = useState<string | null>(null);
     const [logs, setLogs] = useState<string[]>([]);
     
-    // Unique ID for this instance to avoid DOM collisions
     const scannerId = useId().replace(/:/g, ""); 
-    const elementId = `reader-${scannerId}`;
+    const hiddenElementId = `hidden-reader-${scannerId}`;
     
-    const scannerRef = useRef<any>(null);
+    const videoRef = useRef<HTMLVideoElement>(null);
+    const canvasRef = useRef<HTMLCanvasElement>(null);
+    const scannerInstanceRef = useRef<any>(null);
     const isScanningRef = useRef(false);
-    const shouldStopRef = useRef(false);
     const isMountedRef = useRef(true);
+    const streamRef = useRef<MediaStream | null>(null);
 
     const addLog = (msg: string) => {
         console.log(`[Scanner] ${msg}`);
@@ -32,66 +33,47 @@ export function BarcodeScanner({ onClose, onScan }: BarcodeScannerProps) {
 
     useEffect(() => {
         isMountedRef.current = true;
-        let ignore = false;
-        
+        let scanInterval: NodeJS.Timeout;
+
         const initScanner = async () => {
             try {
-                addLog("Importing library...");
+                addLog("Initializing custom scanner...");
                 const { Html5Qrcode } = await import("html5-qrcode");
                 
-                if (ignore || !isMountedRef.current) return;
+                if (!isMountedRef.current) return;
                 
-                addLog("Library loaded.");
+                // Initialize Html5Qrcode with a hidden element (required by library)
+                // We won't use it for the live feed, just for decoding
+                scannerInstanceRef.current = new Html5Qrcode(hiddenElementId);
+
+                addLog("Requesting camera...");
                 
-                // Ensure element exists
-                const element = document.getElementById(elementId);
-                if (!element) {
-                    throw new Error("Scanner element not found");
-                }
-
-                // Create instance
-                const html5QrCode = new Html5Qrcode(elementId);
-                scannerRef.current = html5QrCode;
-
-                const config = { 
-                    fps: 10, 
-                    qrbox: { width: 250, height: 250 },
-                    aspectRatio: 1.0,
-                    disableFlip: false
-                };
-
-                addLog("Starting camera...");
-                
-                // Start scanning
-                await html5QrCode.start(
-                    { facingMode: "environment" }, 
-                    config, 
-                    (decodedText) => {
-                        if (ignore || !isMountedRef.current) return;
-                        addLog("Scanned!");
-                        
-                        // Stop immediately on success
-                        stopScanner().then(() => {
-                             if (isMountedRef.current) onScan(decodedText);
-                        });
+                // Manual getUserMedia for better control and stability
+                const stream = await navigator.mediaDevices.getUserMedia({
+                    video: {
+                        facingMode: "environment",
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 }
                     },
-                    (errorMessage) => {
-                        // ignore parse errors
-                    }
-                );
+                    audio: false
+                });
+                
+                streamRef.current = stream;
 
-                if (ignore || !isMountedRef.current || shouldStopRef.current) {
-                    addLog("Aborting start (unmounted).");
-                    await stopScanner();
-                    return;
+                if (videoRef.current) {
+                    videoRef.current.srcObject = stream;
+                    // Wait for video to be ready
+                    videoRef.current.onloadedmetadata = () => {
+                         if (videoRef.current) {
+                             videoRef.current.play().catch(e => addLog(`Play error: ${e}`));
+                             setIsLoading(false);
+                             addLog("Camera active.");
+                             startScanningLoop();
+                         }
+                    };
                 }
-
-                isScanningRef.current = true;
-                if (isMountedRef.current) setIsLoading(false);
-                addLog("Camera active.");
 
             } catch (err: any) {
-                if (ignore || !isMountedRef.current) return;
                 console.error("Scanner init error:", err);
                 if (isMountedRef.current) {
                     setError(err?.message || "Nie udało się uruchomić kamery.");
@@ -101,33 +83,81 @@ export function BarcodeScanner({ onClose, onScan }: BarcodeScannerProps) {
             }
         };
 
-        // Small delay to ensure DOM is ready and animations settled
-        const timer = setTimeout(initScanner, 500);
+        const startScanningLoop = () => {
+            if (!isMountedRef.current) return;
+            
+            isScanningRef.current = true;
+            
+            // Scan every 500ms
+            scanInterval = setInterval(async () => {
+                if (!isScanningRef.current || !videoRef.current || !canvasRef.current || !scannerInstanceRef.current) return;
+                
+                if (videoRef.current.readyState === videoRef.current.HAVE_ENOUGH_DATA) {
+                    try {
+                        const canvas = canvasRef.current;
+                        const video = videoRef.current;
+                        const ctx = canvas.getContext('2d', { willReadFrequently: true });
+                        
+                        if (!ctx) return;
+
+                        // Set canvas dimensions to match video
+                        canvas.width = video.videoWidth;
+                        canvas.height = video.videoHeight;
+
+                        // Draw current frame
+                        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+                        // Create a file/blob from the canvas
+                        canvas.toBlob(async (blob) => {
+                            if (!blob || !isScanningRef.current) return;
+                            
+                            const file = new File([blob], "frame.png", { type: "image/png" });
+                            
+                            try {
+                                // Use scanFile which is stable for static images
+                                const result = await scannerInstanceRef.current.scanFile(file, false);
+                                
+                                if (result) {
+                                    addLog(`Scanned: ${result}`);
+                                    isScanningRef.current = false;
+                                    clearInterval(scanInterval);
+                                    if (streamRef.current) {
+                                        streamRef.current.getTracks().forEach(track => track.stop());
+                                    }
+                                    onScan(result);
+                                }
+                            } catch (scanErr) {
+                                // No code found in this frame, ignore
+                            }
+                        }, 'image/png');
+
+                    } catch (err) {
+                        // Frame capture error, ignore
+                    }
+                }
+            }, 500);
+        };
+
+        initScanner();
 
         return () => {
-            ignore = true;
             isMountedRef.current = false;
-            shouldStopRef.current = true;
-            clearTimeout(timer);
-            stopScanner();
-        };
-    }, [elementId, onScan]);
-
-    const stopScanner = async () => {
-        if (scannerRef.current) {
-            try {
-                if (isScanningRef.current) {
-                    addLog("Stopping scanner...");
-                    await scannerRef.current.stop();
-                    isScanningRef.current = false;
-                    addLog("Scanner stopped.");
-                }
-                scannerRef.current.clear();
-            } catch (err) {
-                console.warn("Failed to stop scanner:", err);
+            isScanningRef.current = false;
+            clearInterval(scanInterval);
+            
+            if (streamRef.current) {
+                streamRef.current.getTracks().forEach(track => track.stop());
             }
-        }
-    };
+            
+            if (scannerInstanceRef.current) {
+                try {
+                    scannerInstanceRef.current.clear();
+                } catch (e) {
+                    // ignore
+                }
+            }
+        };
+    }, [hiddenElementId, onScan]);
 
     return (
         <motion.div 
@@ -140,7 +170,7 @@ export function BarcodeScanner({ onClose, onScan }: BarcodeScannerProps) {
                 <div className="flex flex-col mt-4">
                     <h2 className="text-xl font-black text-white tracking-tight">Skaner</h2>
                     <p className="text-xs text-white/50 font-bold uppercase tracking-widest flex items-center gap-1">
-                        <Info size={10} /> v2.1
+                        <Info size={10} /> v3.0 (Manual)
                     </p>
                 </div>
                 <button 
@@ -152,10 +182,22 @@ export function BarcodeScanner({ onClose, onScan }: BarcodeScannerProps) {
             </div>
 
             <div className="flex-1 relative flex items-center justify-center p-6">
-                <div 
-                    id={elementId}
-                    className="w-full max-w-sm aspect-square overflow-hidden rounded-[32px] border-2 border-white/20 relative bg-zinc-900 shadow-2xl shadow-black"
-                >
+                <div className="w-full max-w-sm aspect-square overflow-hidden rounded-[32px] border-2 border-white/20 relative bg-zinc-900 shadow-2xl shadow-black">
+                    {/* Native Video Element */}
+                    {!error && (
+                        <video
+                            ref={videoRef}
+                            className="w-full h-full object-cover"
+                            playsInline
+                            muted
+                            autoPlay
+                        />
+                    )}
+
+                    {/* Hidden elements for processing */}
+                    <div id={hiddenElementId} className="hidden"></div>
+                    <canvas ref={canvasRef} className="hidden"></canvas>
+
                     {error && (
                         <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-black/80 backdrop-blur-md z-10 p-8 text-center">
                             <AlertCircle className="text-error" size={40} />
@@ -170,9 +212,19 @@ export function BarcodeScanner({ onClose, onScan }: BarcodeScannerProps) {
                     )}
                     
                     {isLoading && !error && (
-                        <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 z-10">
+                        <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 z-10 bg-black/50 backdrop-blur-sm">
                             <RefreshCw className="text-primary animate-spin" size={32} />
                             <span className="text-xs font-bold text-white uppercase tracking-widest">Uruchamianie kamery...</span>
+                        </div>
+                    )}
+                    
+                    {/* Scanner overlay guide */}
+                    {!isLoading && !error && (
+                        <div className="absolute inset-0 border-2 border-white/30 m-12 rounded-2xl pointer-events-none">
+                            <div className="absolute top-0 left-0 w-4 h-4 border-t-4 border-l-4 border-primary -mt-1 -ml-1 rounded-tl-lg"></div>
+                            <div className="absolute top-0 right-0 w-4 h-4 border-t-4 border-r-4 border-primary -mt-1 -mr-1 rounded-tr-lg"></div>
+                            <div className="absolute bottom-0 left-0 w-4 h-4 border-b-4 border-l-4 border-primary -mb-1 -ml-1 rounded-bl-lg"></div>
+                            <div className="absolute bottom-0 right-0 w-4 h-4 border-b-4 border-r-4 border-primary -mb-1 -mr-1 rounded-br-lg"></div>
                         </div>
                     )}
                 </div>
