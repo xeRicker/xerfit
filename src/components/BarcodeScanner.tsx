@@ -47,7 +47,7 @@ export function BarcodeScanner({ onClose, onScan, onError }: BarcodeScannerProps
         const initScanner = async () => {
             try {
                 // Dynamic import
-                const { Html5Qrcode, Html5QrcodeSupportedFormats } = await import("html5-qrcode");
+                const { Html5Qrcode } = await import("html5-qrcode");
                 
                 if (!isMountedRef.current) return;
                 
@@ -62,7 +62,10 @@ export function BarcodeScanner({ onClose, onScan, onError }: BarcodeScannerProps
                 // Select initial camera (Back camera preference)
                 const backCamera = devices.find(d => {
                     const label = d.label.toLowerCase();
-                    return label.includes('back') || label.includes('tył') || label.includes('environment');
+                    return label.includes('back') || label.includes('tył') || label.includes('environment') || label.includes('rear');
+                }) || devices.find(d => {
+                    const label = d.label.toLowerCase();
+                    return !label.includes('front') && !label.includes('przód') && !label.includes('user');
                 }) || devices[0];
                 
                 setCurrentCameraId(backCamera.id);
@@ -166,21 +169,29 @@ export function BarcodeScanner({ onClose, onScan, onError }: BarcodeScannerProps
         setCurrentCameraId(cameras[nextIndex].id);
     };
 
+    // Check if current camera is front-facing (heuristic)
+    const isFrontCamera = (() => {
+        if (!currentCameraId) return false;
+        const camera = cameras.find(c => c.id === currentCameraId);
+        if (!camera) return false;
+        const label = camera.label.toLowerCase();
+        return label.includes('front') || label.includes('przód') || label.includes('user');
+    })();
+
     const toggleTorch = async () => {
-        // If we have hardware torch, toggle it
-        if (hasTorch && scannerRef.current) {
+        // If it's NOT front camera, try to toggle hardware torch regardless of hasTorch check
+        // (sometimes capabilities check fails but torch works)
+        if (!isFrontCamera && scannerRef.current) {
             try {
                 await scannerRef.current.applyVideoConstraints({
                     advanced: [{ torch: !isTorchOn }]
                 });
-                setIsTorchOn(!isTorchOn);
             } catch (e) {
                 console.error("Torch toggle failed", e);
             }
-        } else {
-            // "Selfie Flash" - simple white screen mode
-            setIsTorchOn(!isTorchOn);
         }
+        
+        setIsTorchOn(!isTorchOn);
     };
 
     const handleManualSubmit = (e: React.FormEvent) => {
@@ -190,10 +201,8 @@ export function BarcodeScanner({ onClose, onScan, onError }: BarcodeScannerProps
         }
     };
 
-    // Check if current camera is front-facing (heuristic)
-    const isFrontCamera = currentCameraId && cameras.find(c => c.id === currentCameraId)?.label.toLowerCase().includes('front');
-    // If no hardware torch, we use screen flash
-    const useScreenFlash = isTorchOn && (!hasTorch || isFrontCamera);
+    // Only use screen flash if it is the front camera
+    const useScreenFlash = isTorchOn && isFrontCamera;
 
     return (
         <motion.div 
@@ -300,7 +309,7 @@ export function BarcodeScanner({ onClose, onScan, onError }: BarcodeScannerProps
                         {/* Overlay */}
                         {!isLoading && !error && (
                             <div className="absolute inset-0 z-10 pointer-events-none flex flex-col items-center justify-center">
-                                <div className="w-64 h-64 border-2 border-white/50 rounded-3xl relative overflow-hidden shadow-[0_0_0_100vmax_rgba(0,0,0,0.6)]">
+                                <div className="w-64 h-64 rounded-3xl relative overflow-hidden shadow-[0_0_0_100vmax_rgba(0,0,0,0.6)]">
                                      <div className="absolute top-0 left-0 w-8 h-8 border-t-4 border-l-4 border-primary rounded-tl-xl z-20"></div>
                                     <div className="absolute top-0 right-0 w-8 h-8 border-t-4 border-r-4 border-primary rounded-tr-xl z-20"></div>
                                     <div className="absolute bottom-0 left-0 w-8 h-8 border-b-4 border-l-4 border-primary rounded-bl-xl z-20"></div>
