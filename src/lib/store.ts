@@ -107,7 +107,15 @@ interface DiaryState {
   };
   isLoading: boolean;
   dbError: boolean;
-  unsavedChanges: boolean;
+  unsavedChanges: boolean; // Deprecated
+  pendingChanges: {
+    profiles: boolean;
+    products: boolean;
+    sets: boolean;
+    entries: boolean;
+    measurements: boolean;
+    settings: boolean;
+  };
   loadingStatus: string;
   loadingProgress: number;
 
@@ -168,6 +176,14 @@ export const useDiaryStore = create<DiaryState>((set) => ({
   isLoading: true,
   dbError: false,
   unsavedChanges: false,
+  pendingChanges: {
+    profiles: false,
+    products: false,
+    sets: false,
+    entries: false,
+    measurements: false,
+    settings: false,
+  },
   loadingStatus: 'Inicjalizacja...',
   loadingProgress: 0,
 
@@ -188,6 +204,7 @@ export const useDiaryStore = create<DiaryState>((set) => ({
           entries: data.entries || [],
           measurements: data.measurements || [],
           unsavedChanges: false,
+          pendingChanges: { profiles: false, products: false, sets: false, entries: false, measurements: false, settings: false },
           loadingProgress: 90
         });
       }
@@ -202,27 +219,48 @@ export const useDiaryStore = create<DiaryState>((set) => ({
 
   sync: async () => {
     const state = useDiaryStore.getState();
+    const { pendingChanges } = state;
+    
+    if (!Object.values(pendingChanges).some(Boolean) && !state.unsavedChanges) return;
+
     set({ isLoading: true, loadingStatus: 'Przygotowanie do zapisu...', loadingProgress: 0 });
     try {
-      set({ loadingStatus: 'Zapisywanie profili...', loadingProgress: 20 });
-      await syncProfiles(state.profiles);
+      if (pendingChanges.profiles) {
+          set({ loadingStatus: 'Zapisywanie profili...', loadingProgress: 20 });
+          await syncProfiles(state.profiles);
+      }
       
-      set({ loadingStatus: 'Zapisywanie produktów...', loadingProgress: 40 });
-      await syncProducts(state.products);
+      if (pendingChanges.products) {
+          set({ loadingStatus: 'Zapisywanie produktów...', loadingProgress: 40 });
+          await syncProducts(state.products);
+      }
       
-      set({ loadingStatus: 'Zapisywanie zestawów...', loadingProgress: 50 });
-      await syncSets(state.sets);
+      if (pendingChanges.sets) {
+          set({ loadingStatus: 'Zapisywanie zestawów...', loadingProgress: 50 });
+          await syncSets(state.sets);
+      }
       
-      set({ loadingStatus: 'Zapisywanie dziennika...', loadingProgress: 60 });
-      await syncEntries(state.entries);
+      if (pendingChanges.entries) {
+          set({ loadingStatus: 'Zapisywanie dziennika...', loadingProgress: 60 });
+          await syncEntries(state.entries);
+      }
 
-      set({ loadingStatus: 'Zapisywanie pomiarów...', loadingProgress: 80 });
-      await syncMeasurements(state.measurements);
+      if (pendingChanges.measurements) {
+          set({ loadingStatus: 'Zapisywanie pomiarów...', loadingProgress: 80 });
+          await syncMeasurements(state.measurements);
+      }
       
-      set({ loadingStatus: 'Zapisywanie ustawień...', loadingProgress: 90 });
-      await syncSettings(state.activeProfileId);
+      if (pendingChanges.settings) {
+          set({ loadingStatus: 'Zapisywanie ustawień...', loadingProgress: 90 });
+          await syncSettings(state.activeProfileId);
+      }
       
-      set({ unsavedChanges: false, loadingStatus: 'Zapisano pomyślnie!', loadingProgress: 100 });
+      set({ 
+          unsavedChanges: false, 
+          pendingChanges: { profiles: false, products: false, sets: false, entries: false, measurements: false, settings: false },
+          loadingStatus: 'Zapisano pomyślnie!', 
+          loadingProgress: 100 
+      });
     } catch (error) {
       console.error('Sync error:', error);
       set({ dbError: true, loadingStatus: 'Błąd zapisu', loadingProgress: 0 });
@@ -236,14 +274,16 @@ export const useDiaryStore = create<DiaryState>((set) => ({
     const id = Math.random().toString(36).substring(7);
     set((state) => ({
       profiles: [...state.profiles, { ...profile, id }],
-      unsavedChanges: true
+      unsavedChanges: true,
+      pendingChanges: { ...state.pendingChanges, profiles: true }
     }));
     return id;
   },
 
   updateProfile: (id, data) => set((state) => ({
     profiles: state.profiles.map(p => p.id === id ? { ...p, ...data } : p),
-    unsavedChanges: true
+    unsavedChanges: true,
+    pendingChanges: { ...state.pendingChanges, profiles: true }
   })),
 
   deleteProfile: (id) => set((state) => ({
@@ -251,10 +291,15 @@ export const useDiaryStore = create<DiaryState>((set) => ({
     entries: state.entries.filter(e => e.profileId !== id),
     measurements: state.measurements.filter(m => m.profileId !== id),
     activeProfileId: state.activeProfileId === id ? state.profiles[0]?.id || '' : state.activeProfileId,
-    unsavedChanges: true
+    unsavedChanges: true,
+    pendingChanges: { ...state.pendingChanges, profiles: true, entries: true, measurements: true, settings: true }
   })),
 
-  setActiveProfile: (id) => set({ activeProfileId: id, unsavedChanges: true }),
+  setActiveProfile: (id) => set((state) => ({ 
+      activeProfileId: id, 
+      unsavedChanges: true,
+      pendingChanges: { ...state.pendingChanges, settings: true }
+  })),
 
   calculateTargets: (profileId) => {
     set((state) => {
@@ -293,24 +338,31 @@ export const useDiaryStore = create<DiaryState>((set) => ({
 
       const newProfiles = [...state.profiles];
       newProfiles[profileIndex] = updatedProfile;
-      return { profiles: newProfiles, unsavedChanges: true };
+      return { 
+          profiles: newProfiles, 
+          unsavedChanges: true,
+          pendingChanges: { ...state.pendingChanges, profiles: true }
+      };
     });
   },
 
   // Product Implementation
   addProduct: (product) => set((state) => ({
     products: [...state.products, { ...product, id: Math.random().toString(36).substring(7), updatedAt: Date.now() }],
-    unsavedChanges: true
+    unsavedChanges: true,
+    pendingChanges: { ...state.pendingChanges, products: true }
   })),
 
   updateProduct: (id, updatedProduct) => set((state) => ({
     products: state.products.map(p => p.id === id ? { ...p, ...updatedProduct, updatedAt: Date.now() } : p),
-    unsavedChanges: true
+    unsavedChanges: true,
+    pendingChanges: { ...state.pendingChanges, products: true }
   })),
 
   deleteProduct: (id) => set((state) => ({
     products: state.products.filter(p => p.id !== id),
-    unsavedChanges: true
+    unsavedChanges: true,
+    pendingChanges: { ...state.pendingChanges, products: true }
   })),
 
   setEditingProduct: (product) => set({ editingProduct: product }),
@@ -323,12 +375,14 @@ export const useDiaryStore = create<DiaryState>((set) => ({
       timestamp: Date.now()
     }],
     products: state.products.map(p => p.id === entry.productId ? { ...p, lastUsedAt: Date.now() } : p),
-    unsavedChanges: true
+    unsavedChanges: true,
+    pendingChanges: { ...state.pendingChanges, entries: true, products: true }
   })),
 
   removeEntry: (id) => set((state) => ({
     entries: state.entries.filter(e => e.id !== id),
-    unsavedChanges: true
+    unsavedChanges: true,
+    pendingChanges: { ...state.pendingChanges, entries: true }
   })),
 
   updateEntry: (id, weight) => set((state) => {
@@ -344,7 +398,8 @@ export const useDiaryStore = create<DiaryState>((set) => ({
         fat: e.fat * ratio,
         carbs: e.carbs * ratio
       } : e),
-      unsavedChanges: true
+      unsavedChanges: true,
+      pendingChanges: { ...state.pendingChanges, entries: true }
     };
   }),
 
@@ -356,17 +411,20 @@ export const useDiaryStore = create<DiaryState>((set) => ({
       profileId: state.activeProfileId,
       timestamp: Date.now()
     }],
-    unsavedChanges: true
+    unsavedChanges: true,
+    pendingChanges: { ...state.pendingChanges, measurements: true }
   })),
 
   updateMeasurement: (id, updatedData) => set((state) => ({
     measurements: state.measurements.map(m => m.id === id ? { ...m, ...updatedData } : m),
-    unsavedChanges: true
+    unsavedChanges: true,
+    pendingChanges: { ...state.pendingChanges, measurements: true }
   })),
 
   deleteMeasurement: (id) => set((state) => ({
     measurements: state.measurements.filter(m => m.id !== id),
-    unsavedChanges: true
+    unsavedChanges: true,
+    pendingChanges: { ...state.pendingChanges, measurements: true }
   })),
 
   // Set Implementation
@@ -374,19 +432,22 @@ export const useDiaryStore = create<DiaryState>((set) => ({
     const id = Math.random().toString(36).substring(7);
     set((state) => ({
       sets: [...state.sets, { ...setInfo, id, updatedAt: Date.now() }],
-      unsavedChanges: true
+      unsavedChanges: true,
+      pendingChanges: { ...state.pendingChanges, sets: true }
     }));
     return id;
   },
 
   updateSet: (id, updatedSet) => set((state) => ({
     sets: state.sets.map(s => s.id === id ? { ...s, ...updatedSet, updatedAt: Date.now() } : s),
-    unsavedChanges: true
+    unsavedChanges: true,
+    pendingChanges: { ...state.pendingChanges, sets: true }
   })),
 
   deleteSet: (id) => set((state) => ({
     sets: state.sets.filter(s => s.id !== id),
-    unsavedChanges: true
+    unsavedChanges: true,
+    pendingChanges: { ...state.pendingChanges, sets: true }
   })),
 
   setEditingSet: (productSet) => set({ editingSet: productSet }),

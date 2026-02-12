@@ -11,11 +11,11 @@ interface DbRow {
 export async function fetchAllData() {
   try {
     // Inicjalizacja tabel jeśli nie istnieją
-    await query(`CREATE TABLE IF NOT EXISTS profiles (id VARCHAR(50) PRIMARY KEY, data JSON)`);
-    await query(`CREATE TABLE IF NOT EXISTS products (id VARCHAR(50) PRIMARY KEY, data JSON)`);
-    await query(`CREATE TABLE IF NOT EXISTS sets (id VARCHAR(50) PRIMARY KEY, data JSON)`);
-    await query(`CREATE TABLE IF NOT EXISTS entries (id VARCHAR(50) PRIMARY KEY, profile_id VARCHAR(50), date VARCHAR(20), data JSON)`);
-    await query(`CREATE TABLE IF NOT EXISTS measurements (id VARCHAR(50) PRIMARY KEY, profile_id VARCHAR(50), data JSON)`);
+    await query(`CREATE TABLE IF NOT EXISTS profiles (id VARCHAR(50) PRIMARY KEY, data TEXT)`);
+    await query(`CREATE TABLE IF NOT EXISTS products (id VARCHAR(50) PRIMARY KEY, data TEXT)`);
+    await query(`CREATE TABLE IF NOT EXISTS sets (id VARCHAR(50) PRIMARY KEY, data TEXT)`);
+    await query(`CREATE TABLE IF NOT EXISTS entries (id VARCHAR(50) PRIMARY KEY, profile_id VARCHAR(50), date VARCHAR(20), data TEXT)`);
+    await query(`CREATE TABLE IF NOT EXISTS measurements (id VARCHAR(50) PRIMARY KEY, profile_id VARCHAR(50), data TEXT)`);
     await query(`CREATE TABLE IF NOT EXISTS app_settings ( \`key\` VARCHAR(50) PRIMARY KEY, \`value\` VARCHAR(255))`);
 
     const results = await Promise.all([
@@ -86,6 +86,6 @@ export async function syncMeasurements(measurements: Measurement[]) {
 }
 
 export async function syncSettings(activeProfileId: string) {
-  await query('INSERT INTO app_settings (`key`, `value`) VALUES ("active_profile_id", ?) ON DUPLICATE KEY UPDATE `value` = VALUES(`value`)', 
+  await query('INSERT INTO app_settings (`key`, `value`) VALUES ("active_profile_id", ?) ON CONFLICT(`key`) DO UPDATE SET `value` = excluded.value', 
     [activeProfileId]);
 }

@@ -150,40 +150,40 @@ export function AddProductForm() {
       <form onSubmit={handlePreSubmit} className="flex flex-col gap-4">
         
         {/* Main Info Card */}
-        <div className="glass p-6 rounded-[32px] flex flex-col gap-6">
+        <div className="glass p-6 rounded-[32px] flex flex-col gap-5">
              <div className="flex flex-col gap-4">
-                <div className="flex flex-col">
-                    <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider ml-1 mb-1">Nazwa Produktu</label>
+                <div className="flex flex-col gap-1.5">
+                    <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest ml-1">Nazwa Produktu</label>
                     <input 
                         type="text" 
                         name="name"
                         value={form.name}
                         onChange={handleInput}
                         placeholder="np. Jajko"
-                        className="w-full bg-black/10 text-xl font-bold rounded-xl p-3 outline-none focus:ring-2 focus:ring-primary/50 transition-all placeholder:text-muted-foreground/30"
+                        className="w-full bg-black/20 border border-white/10 text-xl font-bold rounded-xl p-3 outline-none focus:border-primary/50 transition-all placeholder:text-muted-foreground/30"
                         autoFocus={!editingProduct}
                     />
                 </div>
                 
-                <div className="flex flex-col">
-                    <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider ml-1 mb-1">Marka / Firma (Opcjonalne)</label>
+                <div className="flex flex-col gap-1.5">
+                    <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest ml-1">Marka (Opcjonalne)</label>
                     <input 
                         type="text" 
                         name="brand"
                         value={form.brand}
                         onChange={handleInput}
                         placeholder="np. Biedronka"
-                         className="w-full bg-black/10 text-lg font-bold rounded-xl p-3 outline-none focus:ring-2 focus:ring-primary/50 transition-all placeholder:text-muted-foreground/30"
+                         className="w-full bg-black/20 border border-white/10 text-lg font-medium rounded-xl p-3 outline-none focus:border-primary/50 transition-all placeholder:text-muted-foreground/30"
                     />
                 </div>
             </div>
         </div>
 
         {/* Macros */}
-        <div className="glass p-5 rounded-[32px] flex flex-col gap-4">
-            <div className="flex flex-col gap-1">
-                <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider ml-1 flex items-center gap-1">
-                    <MacroIcon type="calories" size={10} /> Kalorie (100g)
+        <div className="glass p-6 rounded-[32px] flex flex-col gap-5">
+            <div className="flex flex-col gap-1.5">
+                <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest ml-1 flex items-center gap-1">
+                    <MacroIcon type="calories" size={12} /> Kalorie (100g)
                 </label>
                 <input 
                     type="number" 
@@ -191,15 +191,15 @@ export function AddProductForm() {
                     value={form.calories}
                     onChange={handleInput}
                     placeholder="0"
-                    className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-2 text-xl font-black outline-none focus:border-primary/50 transition-colors text-primary"
+                    className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-xl font-black outline-none focus:border-primary/50 transition-colors text-primary"
                     inputMode="decimal"
                 />
             </div>
 
             <div className="grid grid-cols-3 gap-3">
-                 <div className="flex flex-col gap-1">
+                 <div className="flex flex-col gap-1.5">
                     <label className="text-[9px] font-bold text-protein uppercase tracking-wider ml-1 flex items-center gap-1">
-                        <MacroIcon type="protein" size={8} /> B
+                        <MacroIcon type="protein" size={10} /> Białko
                     </label>
                     <input 
                         type="number" 
@@ -207,13 +207,13 @@ export function AddProductForm() {
                         value={form.protein}
                         onChange={handleInput}
                         placeholder="0"
-                        className="w-full bg-black/20 border border-white/10 rounded-lg px-3 py-2 text-sm font-bold outline-none focus:border-protein/50 transition-colors"
+                        className="w-full bg-black/20 border border-white/10 rounded-xl px-3 py-2 text-sm font-bold outline-none focus:border-protein/50 transition-colors"
                         inputMode="decimal"
                     />
                 </div>
-                <div className="flex flex-col gap-1">
+                <div className="flex flex-col gap-1.5">
                     <label className="text-[9px] font-bold text-fat uppercase tracking-wider ml-1 flex items-center gap-1">
-                        <MacroIcon type="fat" size={8} /> T
+                        <MacroIcon type="fat" size={10} /> Tłuszcze
                     </label>
                     <input 
                         type="number" 
@@ -221,13 +221,13 @@ export function AddProductForm() {
                         value={form.fat}
                         onChange={handleInput}
                         placeholder="0"
-                        className="w-full bg-black/20 border border-white/10 rounded-lg px-3 py-2 text-sm font-bold outline-none focus:border-fat/50 transition-colors"
+                        className="w-full bg-black/20 border border-white/10 rounded-xl px-3 py-2 text-sm font-bold outline-none focus:border-fat/50 transition-colors"
                         inputMode="decimal"
                     />
                 </div>
-                <div className="flex flex-col gap-1">
+                <div className="flex flex-col gap-1.5">
                     <label className="text-[9px] font-bold text-carbs uppercase tracking-wider ml-1 flex items-center gap-1">
-                        <MacroIcon type="carbs" size={8} /> W
+                        <MacroIcon type="carbs" size={10} /> Węglowodany
                     </label>
                     <input 
                         type="number" 
@@ -235,7 +235,7 @@ export function AddProductForm() {
                         value={form.carbs}
                         onChange={handleInput}
                         placeholder="0"
-                        className="w-full bg-black/20 border border-white/10 rounded-lg px-3 py-2 text-sm font-bold outline-none focus:border-carbs/50 transition-colors"
+                        className="w-full bg-black/20 border border-white/10 rounded-xl px-3 py-2 text-sm font-bold outline-none focus:border-carbs/50 transition-colors"
                         inputMode="decimal"
                     />
                 </div>

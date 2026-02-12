@@ -29,32 +29,6 @@ export function TabBar() {
                 <TabItem key={tab.id} tab={tab} isActive={pathname === tab.href} />
             ))}
 
-            <AnimatePresence>
-                {unsavedChanges && (
-                    <motion.button
-                        initial={{ scale: 0, opacity: 0 }}
-                        animate={{ scale: 1, opacity: 1 }}
-                        exit={{ scale: 0, opacity: 0 }}
-                        whileTap={{ scale: 0.9 }}
-                        onClick={() => sync()}
-                        disabled={isLoading}
-                        className="absolute -top-16 left-1/2 -translate-x-1/2 w-14 h-14 rounded-full bg-[#FF6A00] text-white flex items-center justify-center shadow-[0_0_20px_rgba(255,106,0,0.5)] z-50 border-4 border-black/50"
-                    >
-                         {isLoading ? (
-                             <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                         ) : (
-                             <>
-                                <CloudUpload size={24} strokeWidth={2.5} />
-                                <span className="absolute -top-1 -right-1 flex h-3 w-3">
-                                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
-                                  <span className="relative inline-flex rounded-full h-3 w-3 bg-white"></span>
-                                </span>
-                             </>
-                         )}
-                    </motion.button>
-                )}
-            </AnimatePresence>
-
         </div>
       </div>
     </>

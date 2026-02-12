@@ -68,7 +68,7 @@ function MacroRow({ label, val, tgt, color, unit }: MacroRowProps) {
         <div className="flex flex-col gap-2">
             <div className="flex justify-between items-end">
                 <span className={cn("text-xs font-bold flex items-center gap-1.5", textColor)}>
-                     <MacroIcon type={macroType as any} size={12} colored={false} className="opacity-80" />
+                     <MacroIcon type={macroType as any} size={12} />
                      {label}
                 </span>
                 <span className="text-xs font-bold text-muted-foreground">

@@ -4,6 +4,7 @@ import { ThemeProvider } from "next-themes";
 import { useEffect, useState } from "react";
 import { useDiaryStore } from "@/lib/store";
 import ConnectionError from "@/components/ConnectionError";
+import { AutoSaveListener } from "@/components/AutoSaveListener";
 
 export function Providers({ children }: { children: React.ReactNode }) {
   const [mounted, setMounted] = useState(false);
@@ -24,6 +25,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
 
   return (
     <ThemeProvider attribute="class" defaultTheme="dark" forcedTheme="dark" enableSystem={false}>
+      <AutoSaveListener />
       {dbError && <ConnectionError />}
       {children}
       {isLoading && (
