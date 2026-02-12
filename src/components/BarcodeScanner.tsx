@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState, useRef, useId } from "react";
-import { motion } from "framer-motion";
-import { X, RefreshCw, AlertCircle, Flashlight, Keyboard, ArrowRight, ScanBarcode } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { X, RefreshCw, AlertCircle, Flashlight, Keyboard, ArrowRight, ScanBarcode, SwitchCamera, FlashlightOff } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface BarcodeScannerProps {
@@ -14,6 +14,12 @@ interface BarcodeScannerProps {
 export function BarcodeScanner({ onClose, onScan, onError }: BarcodeScannerProps) {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    
+    // Camera State
+    const [cameras, setCameras] = useState<Array<{ id: string; label: string }>>([]);
+    const [currentCameraId, setCurrentCameraId] = useState<string | null>(null);
+    
+    // Features State
     const [isTorchOn, setIsTorchOn] = useState(false);
     const [showManualInput, setShowManualInput] = useState(false);
     const [manualCode, setManualCode] = useState("");
@@ -34,74 +40,32 @@ export function BarcodeScanner({ onClose, onScan, onError }: BarcodeScannerProps
         };
     }, []);
 
+    // Initial Camera Setup
     useEffect(() => {
         if (showManualInput) return;
 
-        let html5QrCode: any = null;
-
         const initScanner = async () => {
             try {
-                // Dynamic import to avoid SSR issues and heavy bundle load
+                // Dynamic import
                 const { Html5Qrcode, Html5QrcodeSupportedFormats } = await import("html5-qrcode");
                 
                 if (!isMountedRef.current) return;
                 
-                // Cleanup previous instance if any
-                if (scannerRef.current) {
-                    try {
-                        await scannerRef.current.stop();
-                        scannerRef.current.clear();
-                    } catch (e) {
-                        // ignore stop error
-                    }
-                }
-
-                const formatsToSupport = [ Html5QrcodeSupportedFormats.EAN_13, Html5QrcodeSupportedFormats.EAN_8 ];
-                html5QrCode = new Html5Qrcode(elementId, { formatsToSupport, verbose: false });
-                scannerRef.current = html5QrCode;
-
+                // Fetch cameras first
                 const devices = await Html5Qrcode.getCameras();
-                if (devices && devices.length) {
-                    const backCamera = devices.find(d => {
-                        const label = d.label.toLowerCase();
-                        return label.includes('back') || label.includes('tył') || label.includes('environment');
-                    }) || devices[0];
-                    
-                    const cameraId = backCamera.id;
-
-                    await html5QrCode.start(
-                        cameraId, 
-                        {
-                            fps: 10,
-                            qrbox: { width: 250, height: 250 },
-                            aspectRatio: 1.0
-                        },
-                        (decodedText: string) => {
-                            if (isMountedRef.current) {
-                                // Stop scanning immediately after success
-                                html5QrCode.stop().then(() => {
-                                    onScan(decodedText);
-                                }).catch(() => onScan(decodedText));
-                            }
-                        },
-                        () => {}
-                    );
-
-                    // Check torch capability
-                    try {
-                        const track = html5QrCode.getRunningTrackCameraCapabilities();
-                        // @ts-ignore
-                        if (track && track.torchFeature && track.torchFeature.isSupported()) {
-                            setHasTorch(true);
-                        }
-                    } catch (e) {
-                         // Torch check failed, ignore
-                    }
-                    
-                    if (isMountedRef.current) setIsLoading(false);
-                } else {
+                if (!devices || devices.length === 0) {
                     throw new Error("Nie wykryto kamery.");
                 }
+                
+                setCameras(devices);
+
+                // Select initial camera (Back camera preference)
+                const backCamera = devices.find(d => {
+                    const label = d.label.toLowerCase();
+                    return label.includes('back') || label.includes('tył') || label.includes('environment');
+                }) || devices[0];
+                
+                setCurrentCameraId(backCamera.id);
 
             } catch (err: any) {
                 console.error("Scanner init error:", err);
@@ -114,32 +78,108 @@ export function BarcodeScanner({ onClose, onScan, onError }: BarcodeScannerProps
             }
         };
 
-        // Small delay to ensure DOM is ready and prevent race conditions
+        initScanner();
+    }, [onError, showManualInput]);
+
+    // Camera Stream Management (Start/Stop when camera ID changes)
+    useEffect(() => {
+        if (!currentCameraId || showManualInput) return;
+
+        let html5QrCode: any = null;
+
+        const startStream = async () => {
+            setIsLoading(true);
+            setHasTorch(false);
+            setIsTorchOn(false);
+
+            try {
+                const { Html5Qrcode, Html5QrcodeSupportedFormats } = await import("html5-qrcode");
+                
+                // Cleanup previous
+                if (scannerRef.current) {
+                    try {
+                        await scannerRef.current.stop();
+                        scannerRef.current.clear();
+                    } catch (e) {
+                         // ignore
+                    }
+                }
+
+                const formatsToSupport = [ Html5QrcodeSupportedFormats.EAN_13, Html5QrcodeSupportedFormats.EAN_8 ];
+                html5QrCode = new Html5Qrcode(elementId, { formatsToSupport, verbose: false });
+                scannerRef.current = html5QrCode;
+
+                await html5QrCode.start(
+                    currentCameraId, 
+                    {
+                        fps: 10,
+                        qrbox: { width: 250, height: 250 },
+                        aspectRatio: 1.0
+                    },
+                    (decodedText: string) => {
+                        if (isMountedRef.current) {
+                            html5QrCode.stop().then(() => {
+                                onScan(decodedText);
+                            }).catch(() => onScan(decodedText));
+                        }
+                    },
+                    () => {}
+                );
+
+                // Check torch capability
+                try {
+                    const track = html5QrCode.getRunningTrackCameraCapabilities();
+                    // @ts-ignore
+                    if (track && track.torchFeature && track.torchFeature.isSupported()) {
+                        setHasTorch(true);
+                    }
+                } catch (e) {
+                    // Torch check failed
+                }
+                
+                if (isMountedRef.current) setIsLoading(false);
+
+            } catch (err) {
+                console.error("Camera start error:", err);
+                setIsLoading(false);
+            }
+        };
+
+        // Small delay to prevent rapid switching issues
         const timer = setTimeout(() => {
-            initScanner();
+            startStream();
         }, 300);
 
         return () => {
             clearTimeout(timer);
             if (html5QrCode) {
-                html5QrCode.stop().then(() => {
-                    html5QrCode.clear();
-                }).catch(() => {
-                    html5QrCode.clear();
-                });
+                html5QrCode.stop().then(() => html5QrCode.clear()).catch(() => html5QrCode.clear());
             }
         };
-    }, [elementId, onScan, onError, showManualInput]);
+    }, [currentCameraId, elementId, onScan, showManualInput]);
+
+    const toggleCamera = () => {
+        if (cameras.length < 2) return;
+        
+        const currentIndex = cameras.findIndex(c => c.id === currentCameraId);
+        const nextIndex = (currentIndex + 1) % cameras.length;
+        setCurrentCameraId(cameras[nextIndex].id);
+    };
 
     const toggleTorch = async () => {
-        if (!scannerRef.current) return;
-        try {
-            await scannerRef.current.applyVideoConstraints({
-                advanced: [{ torch: !isTorchOn }]
-            });
+        // If we have hardware torch, toggle it
+        if (hasTorch && scannerRef.current) {
+            try {
+                await scannerRef.current.applyVideoConstraints({
+                    advanced: [{ torch: !isTorchOn }]
+                });
+                setIsTorchOn(!isTorchOn);
+            } catch (e) {
+                console.error("Torch toggle failed", e);
+            }
+        } else {
+            // "Selfie Flash" - simple white screen mode
             setIsTorchOn(!isTorchOn);
-        } catch (e) {
-            console.error("Torch toggle failed", e);
         }
     };
 
@@ -150,6 +190,11 @@ export function BarcodeScanner({ onClose, onScan, onError }: BarcodeScannerProps
         }
     };
 
+    // Check if current camera is front-facing (heuristic)
+    const isFrontCamera = currentCameraId && cameras.find(c => c.id === currentCameraId)?.label.toLowerCase().includes('front');
+    // If no hardware torch, we use screen flash
+    const useScreenFlash = isTorchOn && (!hasTorch || isFrontCamera);
+
     return (
         <motion.div 
             initial={{ opacity: 0 }} 
@@ -157,37 +202,68 @@ export function BarcodeScanner({ onClose, onScan, onError }: BarcodeScannerProps
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-[100] bg-black flex flex-col"
         >
-            <div className="p-6 flex justify-between items-center z-10 pt-[env(safe-area-inset-top)] bg-gradient-to-b from-black/80 to-transparent">
+            {/* Screen Flash Overlay */}
+            <AnimatePresence>
+                {useScreenFlash && (
+                     <motion.div 
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 0.9 }}
+                        exit={{ opacity: 0 }}
+                        className="absolute inset-0 z-[200] bg-white pointer-events-none"
+                     />
+                )}
+            </AnimatePresence>
+
+            <div className="p-6 flex justify-between items-center z-[210] pt-[env(safe-area-inset-top)] bg-gradient-to-b from-black/80 to-transparent">
                 <div className="flex flex-col mt-2">
-                    <h2 className="text-xl font-black text-white tracking-tight">Skaner</h2>
-                    <p className="text-xs text-white/50 font-bold uppercase tracking-widest flex items-center gap-1">
+                    <h2 className={cn("text-xl font-black tracking-tight transition-colors", useScreenFlash ? "text-black" : "text-white")}>Skaner</h2>
+                    <p className={cn("text-xs font-bold uppercase tracking-widest flex items-center gap-1 transition-colors", useScreenFlash ? "text-black/50" : "text-white/50")}>
                         {showManualInput ? "Wpisz kod ręcznie" : "Skieruj kamerę na kod"}
                     </p>
                 </div>
                 <div className="flex items-center gap-3">
-                    {hasTorch && !showManualInput && (
+                    {/* Torch / Flash Button */}
+                    {!showManualInput && (
                         <button 
                             onClick={toggleTorch}
                             className={cn(
-                                "p-3 rounded-full transition-colors backdrop-blur-md",
-                                isTorchOn ? "bg-white text-black" : "bg-white/10 text-white"
+                                "p-3 rounded-full transition-colors backdrop-blur-md relative",
+                                isTorchOn ? "bg-white text-black" : "bg-white/10 text-white",
+                                useScreenFlash && isTorchOn ? "bg-black/10 text-black border border-black/10" : ""
                             )}
                         >
-                            <Flashlight size={20} className={isTorchOn ? "fill-current" : ""} />
+                            {isTorchOn ? <FlashlightOff size={20} /> : <Flashlight size={20} />}
                         </button>
                     )}
+
+                    {/* Camera Flip Button */}
+                    {!showManualInput && cameras.length > 1 && (
+                        <button 
+                            onClick={toggleCamera}
+                            className={cn(
+                                "p-3 rounded-full transition-colors backdrop-blur-md",
+                                useScreenFlash ? "bg-black/10 text-black" : "bg-white/10 text-white"
+                            )}
+                        >
+                            <SwitchCamera size={20} />
+                        </button>
+                    )}
+
                     <button 
                         onClick={() => setShowManualInput(!showManualInput)}
                         className={cn(
                             "p-3 rounded-full transition-colors backdrop-blur-md",
-                            showManualInput ? "bg-primary text-white" : "bg-white/10 text-white"
+                            showManualInput ? "bg-primary text-white" : (useScreenFlash ? "bg-black/10 text-black" : "bg-white/10 text-white")
                         )}
                     >
                         <Keyboard size={20} />
                     </button>
                     <button 
                         onClick={onClose}
-                        className="p-3 bg-white/10 rounded-full text-white active:scale-90 transition-transform backdrop-blur-md"
+                        className={cn(
+                            "p-3 rounded-full active:scale-90 transition-transform backdrop-blur-md",
+                             useScreenFlash ? "bg-black/10 text-black" : "bg-white/10 text-white"
+                        )}
                     >
                         <X size={20} />
                     </button>
@@ -198,7 +274,8 @@ export function BarcodeScanner({ onClose, onScan, onError }: BarcodeScannerProps
                 {!showManualInput ? (
                     <div className="w-full h-full relative bg-black flex flex-col items-center justify-center">
                          {/* The scanner element must be in DOM */}
-                        <div id={elementId} className="w-full h-full object-cover absolute inset-0 [&>video]:object-cover [&>video]:w-full [&>video]:h-full" />
+                         {/* CSS FIX: [&>video]:!w-full [&>video]:!h-full [&>video]:!object-cover ensures video fills container without extra borders */}
+                        <div id={elementId} className="w-full h-full absolute inset-0 [&>video]:!w-full [&>video]:!h-full [&>video]:!object-cover overflow-hidden" />
 
                         {error && (
                             <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-black/90 backdrop-blur-md z-20 p-8 text-center">
@@ -247,7 +324,7 @@ export function BarcodeScanner({ onClose, onScan, onError }: BarcodeScannerProps
                         initial={{ opacity: 0, scale: 0.95 }}
                         animate={{ opacity: 1, scale: 1 }}
                         onSubmit={handleManualSubmit}
-                        className="w-full max-w-sm bg-[#1C1C1E] p-6 rounded-[32px] flex flex-col gap-4 border border-white/10 mx-6"
+                        className="w-full max-w-sm bg-[#1C1C1E] p-6 rounded-[32px] flex flex-col gap-4 border border-white/10 mx-6 z-[210]"
                     >
                         <div className="flex flex-col gap-2">
                             <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider ml-1">Numer Barcode</label>
