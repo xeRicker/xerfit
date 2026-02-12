@@ -6,12 +6,14 @@ import { format, addDays, subDays, parseISO } from "date-fns";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { CalendarModal } from "@/components/CalendarModal";
+import { User } from "lucide-react";
 
-import { DashboardHeader } from "./_components/DashboardHeader";
+import { DateNavigator } from "./_components/DateNavigator";
 import { CaloriesCard } from "./_components/CaloriesCard";
 import { MacrosGrid } from "./_components/MacrosGrid";
 import { MealList } from "./_components/MealList";
 import { EditEntryModal } from "./_components/EditEntryModal";
+import { cn } from "@/lib/utils";
 
 export default function DashboardPage() {
   const { entries, profiles, activeProfileId, currentDate, setDate, updateEntry, removeEntry, setSelectionMode } = useDiaryStore();
@@ -64,14 +66,24 @@ export default function DashboardPage() {
   };
 
   return (
-    <main className="p-5 flex flex-col gap-6 max-w-md mx-auto min-h-screen pb-32">
-      <DashboardHeader 
-        userName={activeProfile.name}
-        currentDate={currentDate}
-        onPrevDate={() => navigateDate('prev')}
-        onNextDate={() => navigateDate('next')}
-        onCalendarOpen={() => setIsCalendarOpen(true)}
-      />
+    <main className="p-5 flex flex-col gap-6 max-w-md mx-auto min-h-screen pb-[160px]">
+      
+      {/* Simple Top Header */}
+      <header className="pt-8 flex justify-between items-start">
+        <div className="flex flex-col">
+            <h1 className="text-3xl font-black tracking-tight">Cześć, {activeProfile.name}!</h1>
+            <p className="text-muted-foreground text-sm font-medium uppercase tracking-widest mt-1">Podsumowanie dnia</p>
+        </div>
+        <button 
+            onClick={() => router.push('/profile')}
+            className={cn(
+                "w-10 h-10 rounded-2xl flex items-center justify-center text-white shadow-lg active:scale-95 transition-transform",
+                activeProfile.color
+            )}
+        >
+            <User size={20} />
+        </button>
+      </header>
 
       <CaloriesCard 
         current={totals.cal}
@@ -88,6 +100,13 @@ export default function DashboardPage() {
         entries={dayEntries}
         onAdd={handleAddClick}
         onEdit={handleEditClick}
+      />
+
+      <DateNavigator 
+        currentDate={currentDate}
+        onPrevDate={() => navigateDate('prev')}
+        onNextDate={() => navigateDate('next')}
+        onCalendarOpen={() => setIsCalendarOpen(true)}
       />
 
       <AnimatePresence>

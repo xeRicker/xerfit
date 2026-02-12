@@ -107,26 +107,30 @@ export default function DiaryPage() {
   const isCurrentWeek = isSameWeek(currentWeekStart, new Date(), { weekStartsOn: 1 });
 
   return (
-    <main className="p-5 flex flex-col gap-6 max-w-md mx-auto pt-12 min-h-screen pb-32">
-      <div className="flex flex-col">
+    <main className="flex flex-col h-screen overflow-hidden relative">
+      <div className="pt-12 px-5 pb-4">
         <h1 className="text-3xl font-black tracking-tight text-primary">Dziennik</h1>
       </div>
 
-       <WeekNavigation 
-         currentWeekStart={currentWeekStart}
-         onPrev={() => navigateWeek('prev')}
-         onNext={() => navigateWeek('next')}
-         onCalendarOpen={() => setIsCalendarOpen(true)}
-         isCurrentWeek={isCurrentWeek}
-       />
+      <div className="flex-1 overflow-y-auto px-5 pb-[160px] flex flex-col gap-6 scrollbar-hide">
+          <WeeklyChart weeklyStats={weeklyStats} />
 
-      <WeeklyChart weeklyStats={weeklyStats} />
+          <AveragesSummary avgs={avgs} />
 
-      <AveragesSummary avgs={avgs} />
+          <MacroAveragesChart avgs={avgs} targets={target} />
 
-      <MacroAveragesChart avgs={avgs} targets={target} />
+          <AIInsights insights={insights} />
+      </div>
 
-      <AIInsights insights={insights} />
+       <div className="fixed bottom-[calc(env(safe-area-inset-bottom)+90px)] left-5 right-5 z-40">
+           <WeekNavigation 
+             currentWeekStart={currentWeekStart}
+             onPrev={() => navigateWeek('prev')}
+             onNext={() => navigateWeek('next')}
+             onCalendarOpen={() => setIsCalendarOpen(true)}
+             isCurrentWeek={isCurrentWeek}
+           />
+       </div>
 
       <AnimatePresence>
         {isCalendarOpen && (

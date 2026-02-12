@@ -46,7 +46,7 @@
   --background: #F2F2F7;
   --foreground: #1C1C1E;
   
-  --card: rgba(255, 255, 255, 0.55);
+  --card: rgba(255, 255, 255, 0.65);
   --card-foreground: #1C1C1E;
   
   --popover: #FFFFFF;
@@ -67,8 +67,8 @@
   --destructive: #FF453A;
   --destructive-foreground: #FFFFFF;
   
-  --border: rgba(255, 255, 255, 0.35);
-  --input: rgba(255, 255, 255, 0.55);
+  --border: rgba(255, 255, 255, 0.4);
+  --input: rgba(255, 255, 255, 0.6);
   --ring: rgba(255, 106, 0, 0.3);
   
   --radius: 1rem;
@@ -77,10 +77,12 @@
 }
 
 .dark {
-  --background: #000000;
+  /* Deep, rich black background base */
+  --background: #000000; 
   --foreground: #F5F5F7;
   
-  --card: rgba(255, 255, 255, 0.08);
+  /* Liquid Glass - Dark Mode */
+  --card: rgba(30, 30, 35, 0.6); /* Slightly more opaque for better contrast */
   --card-foreground: #F5F5F7;
   
   --popover: #1C1C1E;
@@ -89,11 +91,11 @@
   --primary: #FF6A00;
   --primary-foreground: #FFFFFF;
   
-  --secondary: rgba(255, 255, 255, 0.08);
+  --secondary: rgba(255, 255, 255, 0.1);
   --secondary-foreground: #FF6A00;
   
   --muted: #1C1C1E;
-  --muted-foreground: #8E8E93;
+  --muted-foreground: #98989D;
   
   --accent: rgba(255, 106, 0, 0.25);
   --accent-foreground: #FF6A00;
@@ -101,9 +103,9 @@
   --destructive: #FF453A;
   --destructive-foreground: #FFFFFF;
   
-  --border: rgba(255, 255, 255, 0.12);
-  --input: rgba(255, 255, 255, 0.08);
-  --ring: rgba(255, 106, 0, 0.3);
+  --border: rgba(255, 255, 255, 0.08);
+  --input: rgba(255, 255, 255, 0.1);
+  --ring: rgba(255, 106, 0, 0.5);
 }
 
 @layer base {
@@ -114,14 +116,35 @@
     @apply bg-background text-foreground antialiased;
     font-feature-settings: "rlig" 1, "calt" 1;
     overscroll-behavior-y: none;
+    
+    /* Global subtle gradient mesh */
+    background-image: 
+      radial-gradient(circle at 0% 0%, rgba(255, 106, 0, 0.08) 0%, transparent 40%),
+      radial-gradient(circle at 100% 100%, rgba(10, 132, 255, 0.05) 0%, transparent 40%);
+    background-attachment: fixed;
   }
 }
 
-/* Glass effect utilities */
+/* Liquid Glass Utilities */
 .glass {
-  @apply bg-card backdrop-blur-3xl border border-border shadow-sm;
+  @apply bg-card backdrop-blur-2xl border border-white/20 shadow-lg shadow-black/5;
 }
 
-.glass-dark {
-  @apply dark:bg-card dark:backdrop-blur-3xl dark:border dark:border-border dark:shadow-md;
+/* More prominent inputs/elements in dark mode */
+.dark .glass {
+  @apply bg-[#1C1C1E]/60 border-white/10 shadow-black/20;
+}
+
+/* Specific class for heavy blur background elements like bottom sheets/nav */
+.glass-heavy {
+    @apply bg-background/80 backdrop-blur-3xl border-t border-white/10;
+}
+
+/* Scrollbar hiding utility */
+.scrollbar-hide::-webkit-scrollbar {
+    display: none;
+}
+.scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
 }

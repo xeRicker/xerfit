@@ -22,25 +22,29 @@ export function ProductListItem({ product, isSelectionMode, onSelect, onEdit, on
             layoutId={`product-${product.id}`}
             onClick={() => isSelectionMode ? onSelect(product) : null}
             className={cn(
-                "glass p-4 rounded-2xl flex items-center gap-4 transition-all",
+                "glass p-4 rounded-2xl flex items-center gap-4 transition-all relative group overflow-hidden",
                 isSelectionMode ? "active:scale-[0.98] cursor-pointer ring-1 ring-primary/20" : "cursor-default"
             )}
         >
             <div 
                 className={cn(
-                    "w-10 h-10 rounded-full flex items-center justify-center text-white shrink-0 shadow-lg",
+                    "w-12 h-12 rounded-2xl flex items-center justify-center text-white shrink-0 shadow-lg relative",
                     !isCustomColor && (product.color || "bg-primary")
                 )}
                 style={isCustomColor ? { backgroundColor: product.color } : {}}
             >
-                 <Icon size={18} />
+                 <Icon size={20} />
+                 {product.is_scanned && (
+                    <div className="absolute -top-1 -right-1 bg-white text-black rounded-full p-0.5 border-2 border-[#1C1C1E]">
+                        <ScanBarcode size={8} />
+                    </div>
+                 )}
             </div>
             
             <div className="flex flex-col gap-0.5 flex-1 min-w-0">
                 <div className="flex flex-col">
                     <span className="font-semibold text-base truncate flex items-center gap-2">
                         {product.name}
-                        {product.is_scanned && <ScanBarcode size={14} className="text-blue-400 shrink-0" />}
                     </span>
                     {product.brand && <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider truncate">{product.brand}</span>}
                 </div>
@@ -53,18 +57,18 @@ export function ProductListItem({ product, isSelectionMode, onSelect, onEdit, on
             </div>
             
             {!isSelectionMode && (
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity absolute right-4 bg-black/40 backdrop-blur-md rounded-full p-1">
                     <button 
                         onClick={(e) => onEdit(e, product)}
-                        className="p-2 rounded-full bg-white/5 text-muted-foreground hover:bg-white/10 hover:text-white transition-colors"
+                        className="p-2 rounded-full text-white hover:bg-white/20 transition-colors"
                     >
-                        <Pencil size={18} />
+                        <Pencil size={16} />
                     </button>
                     <button 
                         onClick={(e) => onDelete(e, product.id)}
-                        className="p-2 rounded-full bg-red-500/10 text-red-500/50 hover:bg-red-500/20 hover:text-red-500 transition-colors"
+                        className="p-2 rounded-full text-red-500 hover:bg-red-500/20 transition-colors"
                     >
-                        <Trash2 size={18} />
+                        <Trash2 size={16} />
                     </button>
                 </div>
             )}

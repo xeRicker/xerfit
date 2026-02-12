@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { UserProfile } from "@/lib/store";
 import { Target, Check, Calculator } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { MacroIcon } from "@/components/MacroIcon";
 
 interface StatsEditorProps {
     profile: UserProfile;
@@ -29,9 +30,7 @@ export function StatsEditor({ profile, onSave }: StatsEditorProps) {
         <div className="flex flex-col gap-6">
             {/* Current Targets Card (Compact) */}
             <div className="glass p-4 rounded-3xl flex items-center justify-between border-primary/20 bg-primary/5 relative overflow-hidden">
-                <div className="absolute top-0 right-0 p-3 opacity-10 pointer-events-none">
-                    <Target size={80} className="text-primary" />
-                </div>
+                {/* Removed the large obstructing icon */}
                 
                 <div className="flex flex-col gap-1 z-10">
                     <span className="text-[10px] font-black uppercase text-primary tracking-widest flex items-center gap-1">
@@ -45,17 +44,23 @@ export function StatsEditor({ profile, onSave }: StatsEditorProps) {
 
                 <div className="flex gap-4 z-10 bg-black/20 p-2 rounded-2xl backdrop-blur-sm border border-white/5">
                     <div className="flex flex-col items-center gap-0.5">
-                        <span className="text-[10px] font-bold text-muted-foreground uppercase">B</span>
+                        <span className="text-[10px] font-bold text-muted-foreground uppercase flex items-center gap-1">
+                            <MacroIcon type="protein" size={10} colored /> B
+                        </span>
                         <span className="text-sm font-black text-protein">{profile.targets.protein}</span>
                     </div>
                     <div className="w-px h-8 bg-white/10" />
                     <div className="flex flex-col items-center gap-0.5">
-                        <span className="text-[10px] font-bold text-muted-foreground uppercase">T</span>
+                        <span className="text-[10px] font-bold text-muted-foreground uppercase flex items-center gap-1">
+                            <MacroIcon type="fat" size={10} colored /> T
+                        </span>
                         <span className="text-sm font-black text-fat">{profile.targets.fat}</span>
                     </div>
                     <div className="w-px h-8 bg-white/10" />
                     <div className="flex flex-col items-center gap-0.5">
-                        <span className="text-[10px] font-bold text-muted-foreground uppercase">W</span>
+                        <span className="text-[10px] font-bold text-muted-foreground uppercase flex items-center gap-1">
+                            <MacroIcon type="carbs" size={10} colored /> W
+                        </span>
                         <span className="text-sm font-black text-carbs">{profile.targets.carbs}</span>
                     </div>
                 </div>
