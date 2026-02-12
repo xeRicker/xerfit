@@ -6,6 +6,7 @@ import { format } from "date-fns";
 import { motion, AnimatePresence } from "framer-motion";
 import { Ruler, Trash2, Plus, Scale, BicepsFlexed, Shirt, Activity, ArrowDown, ArrowUp } from "lucide-react";
 import { pl } from "date-fns/locale";
+import { cn } from "@/lib/utils";
 
 import { TrendChart } from "./_components/TrendChart";
 import { CompactStat } from "./_components/CompactStat";
@@ -21,53 +22,9 @@ export default function MeasurementsPage() {
     const [sortOrder, setSortOrder] = useState<'desc' | 'asc'>('desc');
     const [currentPage, setCurrentPage] = useState(1);
 
-    // Memoize filtered and sorted measurements
-    const sortedMeasurements = useMemo(() => {
-        return measurements
-            .filter(m => m.profileId === activeProfileId)
-            .sort((a, b) => {
-                const getDate = (d: string) => {
-                    // Try standard date parsing first
-                    let time = new Date(d).getTime();
-                    if (!isNaN(time)) return time;
-                    
-                    // Try parsing DD.MM.YYYY format common in Poland
-                    const parts = d.split('.');
-                    if (parts.length === 3) {
-                        // parts[0] = day, parts[1] = month, parts[2] = year
-                        // New Date(year, monthIndex, day)
-                        time = new Date(parseInt(parts[2]), parseInt(parts[1]) - 1, parseInt(parts[0])).getTime();
-                        if (!isNaN(time)) return time;
-                    }
-                    return 0; // Fallback for invalid dates
-                };
-
-                const dateA = getDate(a.date);
-                const dateB = getDate(b.date);
-                return sortOrder === 'desc' ? dateB - dateA : dateA - dateB;
-            });
-    }, [measurements, activeProfileId, sortOrder]);
-
-    // Memoize paginated measurements
-    const paginatedMeasurements = useMemo(() => {
-        const start = (currentPage - 1) * ITEMS_PER_PAGE;
-        const end = start + ITEMS_PER_PAGE;
-        return sortedMeasurements.slice(start, end);
-    }, [sortedMeasurements, currentPage]);
-
-    const totalPages = Math.ceil(sortedMeasurements.length / ITEMS_PER_PAGE);
-
-    // Latest measurement should always be the most recent by date, regardless of list sorting
-    const latest = useMemo(() => {
-        const chronological = [...measurements]
-            .filter(m => m.profileId === activeProfileId)
-            .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-        return chronological[chronological.length - 1];
-    }, [measurements, activeProfileId]);
-
-    // Chart data should always be chronological (oldest to newest) regardless of list sorting
-    const chartData = useMemo(() => {
-        const chronological = [...measurements]
+    // Helper to sort by date
+    const getSortedMeasurements = (ms: Measurement[], order: 'asc' | 'desc') => {
+        return [...ms]
             .filter(m => m.profileId === activeProfileId)
             .sort((a, b) => {
                 const getDate = (d: string) => {
@@ -80,13 +37,44 @@ export default function MeasurementsPage() {
                     }
                     return 0;
                 };
-                return getDate(a.date) - getDate(b.date);
+                const dateA = getDate(a.date);
+                const dateB = getDate(b.date);
+                return order === 'desc' ? dateB - dateA : dateA - dateB;
             });
+    };
 
+    // Memoize filtered and sorted measurements
+    const sortedMeasurements = useMemo(() => {
+        return getSortedMeasurements(measurements, sortOrder);
+    }, [measurements, activeProfileId, sortOrder]);
+
+    // Full chronological list for diff calculation
+    const chronologicalMeasurements = useMemo(() => {
+        return getSortedMeasurements(measurements, 'asc');
+    }, [measurements, activeProfileId]);
+
+    // Memoize paginated measurements
+    const paginatedMeasurements = useMemo(() => {
+        const start = (currentPage - 1) * ITEMS_PER_PAGE;
+        const end = start + ITEMS_PER_PAGE;
+        return sortedMeasurements.slice(start, end);
+    }, [sortedMeasurements, currentPage]);
+
+    const totalPages = Math.ceil(sortedMeasurements.length / ITEMS_PER_PAGE);
+
+    // Latest measurement should always be the most recent by date
+    const latest = useMemo(() => {
+        const chronological = getSortedMeasurements(measurements, 'asc');
+        return chronological[chronological.length - 1];
+    }, [measurements, activeProfileId]);
+
+    // Chart data should always be chronological
+    const chartData = useMemo(() => {
+        const chronological = getSortedMeasurements(measurements, 'asc');
         return chronological.map(m => ({
             date: m.date,
             value: m.weight
-        })).slice(-30); // show last 30 entries
+        })).slice(-30);
     }, [measurements, activeProfileId]);
 
     const handleEdit = (m: Measurement) => {
@@ -96,7 +84,15 @@ export default function MeasurementsPage() {
 
     const handleSortToggle = () => {
         setSortOrder(prev => prev === 'desc' ? 'asc' : 'desc');
-        setCurrentPage(1); // Reset to first page on sort change
+        setCurrentPage(1); 
+    };
+
+    const getDiff = (current: Measurement) => {
+        const index = chronologicalMeasurements.findIndex(m => m.id === current.id);
+        if (index <= 0) return null;
+        const prev = chronologicalMeasurements[index - 1];
+        const diff = current.weight - prev.weight;
+        return diff;
     };
 
     return (
@@ -109,10 +105,12 @@ export default function MeasurementsPage() {
                 <TrendChart data={chartData} color="#FF6A00" />
 
                 {latest && (
-                    <div className="glass p-5 rounded-3xl flex flex-col gap-4 relative overflow-hidden active:scale-[0.98] transition-transform cursor-pointer" onClick={() => handleEdit(latest)}>
+                    <div className="glass p-5 rounded-3xl flex flex-col gap-4 relative min-h-[140px] active:scale-[0.98] transition-transform cursor-pointer" onClick={() => handleEdit(latest)}>
                         <div className="flex items-center justify-between">
-                            <span className="text-[10px] font-bold uppercase text-muted-foreground tracking-widest">Ostatni pomiar: {format(new Date(latest.date), 'd MMM yyyy', { locale: pl })}</span>
-                            <div className="flex items-center gap-1 text-primary">
+                            <span className="text-[10px] font-bold uppercase text-muted-foreground tracking-widest truncate mr-2">
+                                Ostatni pomiar: {format(new Date(latest.date), 'd MMM yyyy', { locale: pl })}
+                            </span>
+                            <div className="flex items-center gap-1 text-primary shrink-0">
                                 <Scale size={14} />
                                 <span className="text-lg font-black">{latest.weight}kg</span>
                             </div>
@@ -136,39 +134,49 @@ export default function MeasurementsPage() {
                         </button>
                     </div>
 
-                    {paginatedMeasurements.length > 0 ? paginatedMeasurements.map((m) => (
-                        <motion.div 
-                            key={m.id}
-                            layoutId={m.id}
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: -10 }}
-                            className="glass p-3 rounded-2xl flex items-center justify-between active:scale-[0.99] transition-transform cursor-pointer"
-                            onClick={() => handleEdit(m)}
-                        >
-                            <div className="flex items-center gap-3">
-                                <div className="flex flex-col items-center justify-center w-10 h-10 bg-black/20 rounded-xl">
-                                    <span className="font-bold text-xs text-white">{format(new Date(m.date), 'dd')}</span>
-                                    <span className="text-[9px] font-medium text-muted-foreground uppercase">{format(new Date(m.date), 'MMM', { locale: pl })}</span>
-                                </div>
-                                <span className="font-black text-white text-lg">{m.weight}<span className="text-xs text-muted-foreground ml-0.5">kg</span></span>
-                            </div>
-                            
-                            <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide mask-gradient-r max-w-[180px]">
-                                <ListStat val={m.waist} icon={Shirt} />
-                                <ListStat val={m.chest} icon={Activity} />
-                                <ListStat val={m.biceps} icon={BicepsFlexed} />
-                                <ListStat val={m.thigh} icon={Ruler} />
-                            </div>
-
-                            <button 
-                                onClick={(e) => { e.stopPropagation(); if(confirm('Na pewno usunąć ten pomiar?')) deleteMeasurement(m.id); }}
-                                className="p-2 text-muted-foreground/50 hover:text-red-500 transition-colors"
+                    {paginatedMeasurements.length > 0 ? paginatedMeasurements.map((m) => {
+                        const diff = getDiff(m);
+                        return (
+                            <motion.div 
+                                key={m.id}
+                                layoutId={m.id}
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: -10 }}
+                                className="glass p-3 rounded-2xl flex items-center justify-between active:scale-[0.99] transition-transform cursor-pointer"
+                                onClick={() => handleEdit(m)}
                             >
-                                <Trash2 size={16} />
-                            </button>
-                        </motion.div>
-                    )) : (
+                                <div className="flex items-center gap-3">
+                                    <div className="flex flex-col items-center justify-center w-10 h-10 bg-black/20 rounded-xl">
+                                        <span className="font-bold text-xs text-white">{format(new Date(m.date), 'dd')}</span>
+                                        <span className="text-[9px] font-medium text-muted-foreground uppercase">{format(new Date(m.date), 'MMM', { locale: pl })}</span>
+                                    </div>
+                                    <div className="flex flex-col">
+                                        <span className="font-black text-white text-lg leading-none">{m.weight}<span className="text-xs text-muted-foreground ml-0.5">kg</span></span>
+                                        {diff !== null && diff !== 0 && (
+                                            <span className={cn("text-[9px] font-bold mt-1", diff > 0 ? "text-error" : "text-success")}>
+                                                {diff > 0 ? "+" : ""}{diff.toFixed(1)}kg
+                                            </span>
+                                        )}
+                                    </div>
+                                </div>
+                                
+                                <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide mask-gradient-r max-w-[160px]">
+                                    <ListStat val={m.waist} icon={Shirt} />
+                                    <ListStat val={m.chest} icon={Activity} />
+                                    <ListStat val={m.biceps} icon={BicepsFlexed} />
+                                    <ListStat val={m.thigh} icon={Ruler} />
+                                </div>
+
+                                <button 
+                                    onClick={(e) => { e.stopPropagation(); if(confirm('Na pewno usunąć ten pomiar?')) deleteMeasurement(m.id); }}
+                                    className="p-2 text-muted-foreground/50 hover:text-red-500 transition-colors"
+                                >
+                                    <Trash2 size={16} />
+                                </button>
+                            </motion.div>
+                        );
+                    }) : (
                         <div className="text-center py-8 text-muted-foreground text-sm opacity-50">
                             Brak historii pomiarów dla tego profilu.
                         </div>

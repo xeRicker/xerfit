@@ -9,7 +9,7 @@ import { CalendarModal } from "@/components/CalendarModal";
 
 import { WeekNavigation } from "./_components/WeekNavigation";
 import { WeeklyChart } from "./_components/WeeklyChart";
-import { AveragesSummary } from "./_components/AveragesSummary";
+// import { AveragesSummary } from "./_components/AveragesSummary"; // Removed
 import { MacroAveragesChart } from "./_components/MacroAveragesChart";
 import { AIInsights } from "./_components/AIInsights";
 
@@ -115,8 +115,7 @@ export default function DiaryPage() {
       <div className="flex-1 overflow-y-auto px-5 pb-[160px] flex flex-col gap-6 scrollbar-hide">
           <WeeklyChart weeklyStats={weeklyStats} />
 
-          <AveragesSummary avgs={avgs} />
-
+          {/* Combined Chart with Averages included */}
           <MacroAveragesChart avgs={avgs} targets={target} />
 
           <AIInsights insights={insights} />

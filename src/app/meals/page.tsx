@@ -1,7 +1,7 @@
 "use client";
 
 import { useDiaryStore, Product } from "@/lib/store";
-import { Plus, Search, ArrowUpDown, Barcode, X } from "lucide-react";
+import { Plus, Search, ArrowUpDown, Barcode, X, AlertTriangle } from "lucide-react";
 import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useRouter } from "next/navigation";
@@ -68,6 +68,11 @@ export default function MealsPage() {
     } finally {
         setIsFetching(false);
     }
+  };
+
+  const handleScanError = (error: string) => {
+      setIsScanning(false);
+      setScanError(error);
   };
 
   const handleAdd = () => {
@@ -165,7 +170,7 @@ export default function MealsPage() {
                     type="text" 
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
-                    placeholder="Szukaj produktu..."
+                    placeholder="Szukaj"
                     className="w-full glass-heavy rounded-2xl pl-12 pr-4 py-4 text-lg outline-none focus:ring-2 focus:ring-primary/50 transition-all placeholder:text-muted-foreground/50 shadow-xl"
                 />
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" size={20} />
@@ -189,14 +194,14 @@ export default function MealsPage() {
 
                  <button 
                     onClick={() => setIsScanning(true)}
-                    className="p-4 glass-heavy text-primary rounded-2xl active:scale-95 transition-transform shadow-xl"
+                    className="p-4 bg-primary text-white rounded-2xl active:scale-95 transition-transform shadow-xl flex items-center justify-center"
                 >
                     <Barcode size={24} />
                 </button>
                 
                 <button 
                     onClick={() => router.push('/add')}
-                    className="p-4 bg-primary text-white rounded-2xl active:scale-95 transition-transform shadow-lg shadow-primary/30"
+                    className="p-4 bg-white/10 text-white rounded-2xl active:scale-95 transition-transform shadow-lg backdrop-blur-md"
                 >
                     <Plus size={24} />
                 </button>
@@ -208,7 +213,8 @@ export default function MealsPage() {
         {isScanning && (
             <BarcodeScanner 
                 onClose={() => setIsScanning(false)} 
-                onScan={handleScan} 
+                onScan={handleScan}
+                onError={handleScanError} 
             />
         )}
       </AnimatePresence>
@@ -226,7 +232,7 @@ export default function MealsPage() {
                 exit={{ opacity: 0, y: 50 }}
                 className="fixed bottom-32 left-5 right-5 z-[120] bg-red-500 text-white p-4 rounded-2xl shadow-2xl flex items-center gap-3"
             >
-                <div className="bg-white/20 p-2 rounded-full"><X size={16} /></div>
+                <div className="bg-white/20 p-2 rounded-full"><AlertTriangle size={16} /></div>
                 <span className="font-bold text-sm">{scanError}</span>
                 <button onClick={() => setScanError(null)} className="ml-auto p-2 hover:bg-white/10 rounded-lg">OK</button>
             </motion.div>

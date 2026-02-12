@@ -20,10 +20,16 @@ export function ProductListItem({ product, isSelectionMode, onSelect, onEdit, on
     return (
         <motion.div 
             layoutId={`product-${product.id}`}
-            onClick={() => isSelectionMode ? onSelect(product) : null}
+            onClick={(e) => {
+                 if (isSelectionMode) {
+                     onSelect(product);
+                 } else {
+                     onEdit(e, product);
+                 }
+            }}
             className={cn(
-                "glass p-4 rounded-2xl flex items-center gap-4 transition-all relative group overflow-hidden",
-                isSelectionMode ? "active:scale-[0.98] cursor-pointer ring-1 ring-primary/20" : "cursor-default"
+                "glass p-4 rounded-2xl flex items-center gap-4 transition-all relative group overflow-visible",
+                isSelectionMode ? "active:scale-[0.98] cursor-pointer ring-1 ring-primary/20" : "cursor-pointer active:scale-[0.98]"
             )}
         >
             <div 
@@ -35,46 +41,56 @@ export function ProductListItem({ product, isSelectionMode, onSelect, onEdit, on
             >
                  <Icon size={20} />
                  {product.is_scanned && (
-                    <div className="absolute -top-1 -right-1 bg-white text-black rounded-full p-0.5 border-2 border-[#1C1C1E]">
-                        <ScanBarcode size={8} />
+                    <div className="absolute -bottom-1 -right-1 bg-white text-black rounded-full p-0.5 border-2 border-[#1C1C1E] z-10 shadow-sm">
+                        <ScanBarcode size={10} strokeWidth={2.5} />
                     </div>
                  )}
             </div>
             
-            <div className="flex flex-col gap-0.5 flex-1 min-w-0">
-                <div className="flex flex-col">
-                    <span className="font-semibold text-base truncate flex items-center gap-2">
+            <div className="flex flex-col gap-1 flex-1 min-w-0">
+                <div className="flex justify-between items-start">
+                    <span className="font-semibold text-base truncate pr-2">
                         {product.name}
                     </span>
-                    {product.brand && <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider truncate">{product.brand}</span>}
+                    <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider shrink-0 mt-1">
+                        100g
+                    </span>
                 </div>
-                <div className="flex gap-3 text-xs text-muted-foreground font-medium items-center mt-1">
-                    <span className="flex items-center gap-1 text-primary"><MacroIcon type="calories" size={10} colored /> {product.calories}</span>
-                    <span className="flex items-center gap-1 text-protein"><MacroIcon type="protein" size={10} colored /> {product.protein}</span>
-                    <span className="flex items-center gap-1 text-fat"><MacroIcon type="fat" size={10} colored /> {product.fat}</span>
-                    <span className="flex items-center gap-1 text-carbs"><MacroIcon type="carbs" size={10} colored /> {product.carbs}</span>
+                
+                <div className="flex justify-between items-end mt-1">
+                    <div className="flex flex-col">
+                         {product.brand && (
+                            <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider truncate mb-1">
+                                {product.brand}
+                            </span>
+                         )}
+                        <div className="flex gap-3 text-xs text-muted-foreground font-medium items-center">
+                            <span className="flex items-center gap-1 text-protein font-bold"><MacroIcon type="protein" size={12} colored /> {product.protein}g</span>
+                            <span className="flex items-center gap-1 text-fat font-bold"><MacroIcon type="fat" size={12} colored /> {product.fat}g</span>
+                            <span className="flex items-center gap-1 text-carbs font-bold"><MacroIcon type="carbs" size={12} colored /> {product.carbs}g</span>
+                        </div>
+                    </div>
+
+                    <div className="flex flex-col items-end shrink-0 pl-1">
+                         <span className="text-xl font-black text-primary leading-none tracking-tight">{product.calories}</span>
+                         <span className="text-[8px] font-bold text-muted-foreground uppercase tracking-wider">kcal</span>
+                    </div>
                 </div>
             </div>
             
-            {!isSelectionMode && (
-                <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity absolute right-4 bg-black/40 backdrop-blur-md rounded-full p-1">
-                    <button 
-                        onClick={(e) => onEdit(e, product)}
-                        className="p-2 rounded-full text-white hover:bg-white/20 transition-colors"
-                    >
-                        <Pencil size={16} />
-                    </button>
-                    <button 
+             {!isSelectionMode && (
+                <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity absolute top-2 right-2 z-20">
+                     <button 
                         onClick={(e) => onDelete(e, product.id)}
-                        className="p-2 rounded-full text-red-500 hover:bg-red-500/20 transition-colors"
+                        className="p-1.5 rounded-full bg-red-500/10 text-red-500 hover:bg-red-500 transition-colors hover:text-white backdrop-blur-md"
                     >
-                        <Trash2 size={16} />
+                        <Trash2 size={14} />
                     </button>
                 </div>
             )}
 
             {isSelectionMode && (
-                <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+                <div className="absolute right-4 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary">
                     <Plus size={20} />
                 </div>
             )}

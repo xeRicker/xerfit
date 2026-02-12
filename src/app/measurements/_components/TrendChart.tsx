@@ -9,7 +9,7 @@ interface TrendChartProps {
 
 export function TrendChart({ data, color }: TrendChartProps) {
     if (data.length < 2) return (
-        <div className="glass p-6 rounded-[32px] h-48 flex flex-col items-center justify-center gap-2">
+        <div className="glass p-6 rounded-[32px] h-64 flex flex-col items-center justify-center gap-2">
             <TrendingUp size={24} className="text-muted-foreground/50" />
             <span className="text-xs font-bold text-muted-foreground/50">Za mało danych do pokazania trendu</span>
         </div>
@@ -20,9 +20,14 @@ export function TrendChart({ data, color }: TrendChartProps) {
     const max = Math.max(...values);
     const range = max - min || 1;
 
+    // Use a slightly smaller range for drawing to prevent clipping
+    const PADDING = 4;
     const points = values.map((v, i) => {
         const x = (i / (values.length - 1)) * 100;
-        const y = 100 - ((v - min) / range) * 100;
+        // Map y to PADDING ... (100-PADDING)
+        const normalized = (v - min) / range; // 0 to 1
+        // Invert Y because SVG 0 is top
+        const y = 100 - (normalized * (100 - PADDING * 2) + PADDING);
         return `${x},${y}`;
     }).join(' ');
 
@@ -30,7 +35,7 @@ export function TrendChart({ data, color }: TrendChartProps) {
     const isUp = trend > 0;
 
     return (
-        <div className="glass p-6 rounded-[32px] flex flex-col gap-4 relative overflow-hidden h-48 justify-between">
+        <div className="glass p-6 rounded-[32px] flex flex-col gap-4 relative h-64 justify-between">
             <div className="flex items-center justify-between z-10">
                  <div className="flex items-center gap-2 text-muted-foreground text-[11px] font-bold uppercase tracking-wider">
                     <TrendingUp size={14} className="text-primary" />
@@ -71,7 +76,7 @@ export function TrendChart({ data, color }: TrendChartProps) {
                 </svg>
             </div>
             
-            <div className="flex justify-between z-10 text-[9px] font-bold text-muted-foreground uppercase">
+            <div className="flex justify-between z-10 text-[9px] font-bold text-muted-foreground uppercase pointer-events-none">
                 <span>Start: {values[0]}kg</span>
                 <span>Teraz: {values[values.length - 1]}kg</span>
             </div>

@@ -8,172 +8,117 @@ import { cn } from "@/lib/utils";
 interface BarcodeScannerProps {
     onClose: () => void;
     onScan: (barcode: string) => void;
+    onError?: (error: string) => void;
 }
 
-export function BarcodeScanner({ onClose, onScan }: BarcodeScannerProps) {
+export function BarcodeScanner({ onClose, onScan, onError }: BarcodeScannerProps) {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    
-    // Scanner State
     const [isTorchOn, setIsTorchOn] = useState(false);
     const [showManualInput, setShowManualInput] = useState(false);
     const [manualCode, setManualCode] = useState("");
     const [hasTorch, setHasTorch] = useState(false);
-    const [statusMessage, setStatusMessage] = useState("Szukam kodu...");
-
-    const scannerId = useId().replace(/:/g, ""); 
-    const hiddenElementId = `hidden-reader-${scannerId}`;
     
-    const videoRef = useRef<HTMLVideoElement>(null);
-    const canvasRef = useRef<HTMLCanvasElement>(null);
-    const scannerInstanceRef = useRef<any>(null);
-    const isScanningRef = useRef(false);
+    const scannerId = useId().replace(/:/g, ""); 
+    const elementId = `reader-${scannerId}`;
+    const scannerRef = useRef<any>(null);
     const isMountedRef = useRef(true);
-    const streamRef = useRef<MediaStream | null>(null);
+
+    // Lock body scroll
+    useEffect(() => {
+        document.body.style.overflow = 'hidden';
+        return () => {
+            document.body.style.overflow = '';
+        };
+    }, []);
 
     useEffect(() => {
         isMountedRef.current = true;
-        let scanInterval: NodeJS.Timeout;
 
         const initScanner = async () => {
             try {
-                const { Html5Qrcode } = await import("html5-qrcode");
+                const { Html5Qrcode, Html5QrcodeSupportedFormats } = await import("html5-qrcode");
                 
                 if (!isMountedRef.current) return;
                 
-                scannerInstanceRef.current = new Html5Qrcode(hiddenElementId);
+                // Use explicit format to speed up scanning
+                const formatsToSupport = [ Html5QrcodeSupportedFormats.EAN_13, Html5QrcodeSupportedFormats.EAN_8 ];
+                const html5QrCode = new Html5Qrcode(elementId, { formatsToSupport, verbose: false });
+                scannerRef.current = html5QrCode;
 
-                // Manual getUserMedia
-                const stream = await navigator.mediaDevices.getUserMedia({
-                    video: {
-                        facingMode: "environment",
-                        width: { ideal: 1280 },
-                        height: { ideal: 720 }
-                    },
-                    audio: false
-                });
-                
-                streamRef.current = stream;
-
-                const track = stream.getVideoTracks()[0];
-                if (track) {
-                    const capabilities = track.getCapabilities();
+                const devices = await Html5Qrcode.getCameras();
+                if (devices && devices.length) {
+                    // Try to find a specific back camera to prevent lens switching
+                    // Prefer the "primary" back camera if distinguishable, often the first one with "back"
+                    const backCamera = devices.find(d => {
+                        const label = d.label.toLowerCase();
+                        return label.includes('back') || label.includes('tył') || label.includes('environment');
+                    }) || devices[0];
                     
-                    // Torch Support
+                    const cameraId = backCamera.id;
+
+                    await html5QrCode.start(
+                        cameraId, 
+                        {
+                            fps: 10,
+                            qrbox: { width: 250, height: 250 },
+                            aspectRatio: 1.0
+                        },
+                        (decodedText) => {
+                            if (isMountedRef.current) {
+                                html5QrCode.stop().then(() => {
+                                    onScan(decodedText);
+                                }).catch(() => onScan(decodedText));
+                            }
+                        },
+                        () => {} // Ignore errors per frame
+                    );
+
+                    // Check torch capability
+                    const track = html5QrCode.getRunningTrackCameraCapabilities();
                     // @ts-ignore
-                    if (capabilities.torch) {
+                    if (track && track.torchFeature && track.torchFeature.isSupported()) {
                         setHasTorch(true);
                     }
-
-                    // Zoom Support (Auto-zoom to 2x or max)
-                    // @ts-ignore
-                    if (capabilities.zoom) {
-                        // @ts-ignore
-                        const maxZoom = capabilities.zoom.max;
-                        // @ts-ignore
-                        const minZoom = capabilities.zoom.min;
-                        const targetZoom = Math.min(Math.max(2.0, minZoom), maxZoom); 
-                        // @ts-ignore
-                        track.applyConstraints({ advanced: [{ zoom: targetZoom }] }).catch(() => {});
-                    }
-                }
-
-                if (videoRef.current) {
-                    videoRef.current.srcObject = stream;
-                    videoRef.current.onloadedmetadata = () => {
-                         if (videoRef.current) {
-                             videoRef.current.play().catch(e => console.error(e));
-                             setIsLoading(false);
-                             startScanningLoop();
-                         }
-                    };
+                    
+                    setIsLoading(false);
+                } else {
+                    throw new Error("Nie wykryto kamery.");
                 }
 
             } catch (err: any) {
                 console.error("Scanner init error:", err);
                 if (isMountedRef.current) {
-                    setError(err?.message || "Nie udało się uruchomić kamery.");
+                    const errorMsg = "Nie udało się uruchomić kamery. Sprawdź uprawnienia.";
+                    setError(errorMsg);
+                    if (onError) onError(errorMsg);
                     setIsLoading(false);
                 }
             }
         };
 
-        const startScanningLoop = () => {
-            if (!isMountedRef.current) return;
-            isScanningRef.current = true;
-            
-            // Scan every 500ms
-            scanInterval = setInterval(async () => {
-                if (!isScanningRef.current || !videoRef.current || !canvasRef.current || !scannerInstanceRef.current || showManualInput) return;
-                
-                if (videoRef.current.readyState === videoRef.current.HAVE_ENOUGH_DATA) {
-                    try {
-                        const canvas = canvasRef.current;
-                        const video = videoRef.current;
-                        const ctx = canvas.getContext('2d', { willReadFrequently: true });
-                        if (!ctx) return;
-
-                        canvas.width = video.videoWidth;
-                        canvas.height = video.videoHeight;
-                        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-                        canvas.toBlob(async (blob) => {
-                            if (!blob || !isScanningRef.current) return;
-                            setStatusMessage("Analizuję...");
-                            
-                            const file = new File([blob], "frame.png", { type: "image/png" });
-                            
-                            try {
-                                const result = await scannerInstanceRef.current.scanFile(file, false);
-                                if (result) {
-                                    isScanningRef.current = false;
-                                    clearInterval(scanInterval);
-                                    if (streamRef.current) {
-                                        streamRef.current.getTracks().forEach(track => track.stop());
-                                    }
-                                    onScan(result);
-                                }
-                            } catch (scanErr) {
-                                setStatusMessage("Szukam kodu...");
-                            }
-                        }, 'image/png');
-
-                    } catch (err) {
-                        // Frame capture error
-                    }
-                }
-            }, 500);
-        };
-
-        initScanner();
+        if (!showManualInput) {
+            initScanner();
+        }
 
         return () => {
             isMountedRef.current = false;
-            isScanningRef.current = false;
-            clearInterval(scanInterval);
-            
-            if (streamRef.current) {
-                streamRef.current.getTracks().forEach(track => {
-                    // Turn off torch before stopping
-                    track.applyConstraints({ advanced: [{ torch: false } as any] }).catch(() => {});
-                    track.stop();
+            if (scannerRef.current) {
+                scannerRef.current.stop().then(() => {
+                    scannerRef.current.clear();
+                }).catch(() => {
+                    scannerRef.current.clear();
                 });
             }
-            
-            if (scannerInstanceRef.current) {
-                try { scannerInstanceRef.current.clear(); } catch (e) {}
-            }
         };
-    }, [hiddenElementId, onScan, showManualInput]);
+    }, [elementId, onScan, showManualInput]);
 
     const toggleTorch = async () => {
-        if (!streamRef.current) return;
-        const track = streamRef.current.getVideoTracks()[0];
-        if (!track) return;
-
+        if (!scannerRef.current) return;
         try {
-            await track.applyConstraints({
-                advanced: [{ torch: !isTorchOn } as any]
+            const settings = scannerRef.current.getRunningTrackSettings();
+            await scannerRef.current.applyVideoConstraints({
+                advanced: [{ torch: !isTorchOn }]
             });
             setIsTorchOn(!isTorchOn);
         } catch (e) {
@@ -195,19 +140,19 @@ export function BarcodeScanner({ onClose, onScan }: BarcodeScannerProps) {
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-[100] bg-black flex flex-col"
         >
-            <div className="p-6 flex justify-between items-center z-10 pt-[env(safe-area-inset-top)]">
-                <div className="flex flex-col mt-4">
+            <div className="p-6 flex justify-between items-center z-10 pt-[env(safe-area-inset-top)] bg-gradient-to-b from-black/80 to-transparent">
+                <div className="flex flex-col mt-2">
                     <h2 className="text-xl font-black text-white tracking-tight">Skaner</h2>
                     <p className="text-xs text-white/50 font-bold uppercase tracking-widest flex items-center gap-1">
-                        {showManualInput ? "Wpisz kod ręcznie" : statusMessage}
+                        {showManualInput ? "Wpisz kod ręcznie" : "Skieruj kamerę na kod"}
                     </p>
                 </div>
-                <div className="flex items-center gap-3 mt-4">
+                <div className="flex items-center gap-3">
                     {hasTorch && !showManualInput && (
                         <button 
                             onClick={toggleTorch}
                             className={cn(
-                                "p-3 rounded-full transition-colors",
+                                "p-3 rounded-full transition-colors backdrop-blur-md",
                                 isTorchOn ? "bg-white text-black" : "bg-white/10 text-white"
                             )}
                         >
@@ -217,7 +162,7 @@ export function BarcodeScanner({ onClose, onScan }: BarcodeScannerProps) {
                     <button 
                         onClick={() => setShowManualInput(!showManualInput)}
                         className={cn(
-                            "p-3 rounded-full transition-colors",
+                            "p-3 rounded-full transition-colors backdrop-blur-md",
                             showManualInput ? "bg-primary text-white" : "bg-white/10 text-white"
                         )}
                     >
@@ -225,31 +170,21 @@ export function BarcodeScanner({ onClose, onScan }: BarcodeScannerProps) {
                     </button>
                     <button 
                         onClick={onClose}
-                        className="p-3 bg-white/10 rounded-full text-white active:scale-90 transition-transform"
+                        className="p-3 bg-white/10 rounded-full text-white active:scale-90 transition-transform backdrop-blur-md"
                     >
                         <X size={20} />
                     </button>
                 </div>
             </div>
 
-            <div className="flex-1 relative flex flex-col items-center justify-center p-6">
+            <div className="flex-1 relative flex flex-col items-center justify-center p-0 overflow-hidden">
                 {!showManualInput ? (
-                    <div className="w-full max-w-sm aspect-square overflow-hidden rounded-[32px] border-2 border-white/20 relative bg-zinc-900 shadow-2xl shadow-black">
-                        {!error && (
-                            <video
-                                ref={videoRef}
-                                className="w-full h-full object-cover"
-                                playsInline
-                                muted
-                                autoPlay
-                            />
-                        )}
-
-                        <div id={hiddenElementId} className="hidden"></div>
-                        <canvas ref={canvasRef} className="hidden"></canvas>
+                    <div className="w-full h-full relative bg-black flex flex-col items-center justify-center">
+                         {/* The scanner element must be in DOM */}
+                        <div id={elementId} className="w-full h-full object-cover absolute inset-0 [&>video]:object-cover [&>video]:w-full [&>video]:h-full" />
 
                         {error && (
-                            <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-black/80 backdrop-blur-md z-10 p-8 text-center">
+                            <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-black/90 backdrop-blur-md z-20 p-8 text-center">
                                 <AlertCircle className="text-error" size={40} />
                                 <p className="text-sm font-bold text-white leading-relaxed">{error}</p>
                                 <button 
@@ -262,26 +197,31 @@ export function BarcodeScanner({ onClose, onScan }: BarcodeScannerProps) {
                         )}
                         
                         {isLoading && !error && (
-                            <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 z-10 bg-black/50 backdrop-blur-sm">
+                            <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 z-20 bg-black">
                                 <RefreshCw className="text-primary animate-spin" size={32} />
                                 <span className="text-xs font-bold text-white uppercase tracking-widest">Uruchamianie kamery...</span>
                             </div>
                         )}
                         
-                        {/* Scanner overlay guide & Animation */}
+                        {/* Overlay */}
                         {!isLoading && !error && (
-                            <div className="absolute inset-0 border-2 border-white/30 m-12 rounded-2xl pointer-events-none overflow-hidden relative">
-                                <div className="absolute top-0 left-0 w-4 h-4 border-t-4 border-l-4 border-primary -mt-1 -ml-1 rounded-tl-lg z-20"></div>
-                                <div className="absolute top-0 right-0 w-4 h-4 border-t-4 border-r-4 border-primary -mt-1 -mr-1 rounded-tr-lg z-20"></div>
-                                <div className="absolute bottom-0 left-0 w-4 h-4 border-b-4 border-l-4 border-primary -mb-1 -ml-1 rounded-bl-lg z-20"></div>
-                                <div className="absolute bottom-0 right-0 w-4 h-4 border-b-4 border-r-4 border-primary -mb-1 -mr-1 rounded-br-lg z-20"></div>
-                                
-                                <motion.div 
-                                    initial={{ top: 0, opacity: 0 }}
-                                    animate={{ top: "100%", opacity: [0, 1, 1, 0] }}
-                                    transition={{ repeat: Infinity, duration: 2, ease: "linear" }}
-                                    className="absolute left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-red-500 to-transparent shadow-[0_0_15px_rgba(255,0,0,0.8)] z-10"
-                                />
+                            <div className="absolute inset-0 z-10 pointer-events-none flex flex-col items-center justify-center">
+                                <div className="w-64 h-64 border-2 border-white/50 rounded-3xl relative overflow-hidden shadow-[0_0_0_100vmax_rgba(0,0,0,0.6)]">
+                                     <div className="absolute top-0 left-0 w-8 h-8 border-t-4 border-l-4 border-primary rounded-tl-xl z-20"></div>
+                                    <div className="absolute top-0 right-0 w-8 h-8 border-t-4 border-r-4 border-primary rounded-tr-xl z-20"></div>
+                                    <div className="absolute bottom-0 left-0 w-8 h-8 border-b-4 border-l-4 border-primary rounded-bl-xl z-20"></div>
+                                    <div className="absolute bottom-0 right-0 w-8 h-8 border-b-4 border-r-4 border-primary rounded-br-xl z-20"></div>
+                                    
+                                    <motion.div 
+                                        initial={{ top: 0, opacity: 0 }}
+                                        animate={{ top: "100%", opacity: [0, 1, 1, 0] }}
+                                        transition={{ repeat: Infinity, duration: 2, ease: "linear" }}
+                                        className="absolute left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-red-500 to-transparent shadow-[0_0_15px_rgba(255,0,0,0.8)] z-10"
+                                    />
+                                </div>
+                                <p className="mt-8 text-xs font-bold text-white/70 bg-black/40 px-4 py-2 rounded-full backdrop-blur-md">
+                                    Umieść kod w ramce
+                                </p>
                             </div>
                         )}
                     </div>
@@ -290,7 +230,7 @@ export function BarcodeScanner({ onClose, onScan }: BarcodeScannerProps) {
                         initial={{ opacity: 0, scale: 0.95 }}
                         animate={{ opacity: 1, scale: 1 }}
                         onSubmit={handleManualSubmit}
-                        className="w-full max-w-sm bg-[#1C1C1E] p-6 rounded-[32px] flex flex-col gap-4 border border-white/10"
+                        className="w-full max-w-sm bg-[#1C1C1E] p-6 rounded-[32px] flex flex-col gap-4 border border-white/10 mx-6"
                     >
                         <div className="flex flex-col gap-2">
                             <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider ml-1">Numer Barcode</label>
@@ -315,18 +255,6 @@ export function BarcodeScanner({ onClose, onScan }: BarcodeScannerProps) {
                             Szukaj <ArrowRight size={20} />
                         </button>
                     </motion.form>
-                )}
-            </div>
-
-            <div className="px-6 pb-[calc(env(safe-area-inset-bottom)+32px)]">
-                {!showManualInput && (
-                    <div className="bg-white/5 rounded-2xl p-4 flex items-center justify-center gap-3 text-center">
-                        <Info size={16} className="text-white/50 shrink-0" />
-                        <p className="text-[10px] font-bold text-white/50 uppercase tracking-wider">
-                            Umieść kod kreskowy wewnątrz ramki. <br/>
-                            {hasTorch && "Włącz latarkę jeśli jest ciemno."}
-                        </p>
-                    </div>
                 )}
             </div>
         </motion.div>
