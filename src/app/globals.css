@@ -125,12 +125,3 @@
 .glass-dark {
   @apply dark:bg-card dark:backdrop-blur-3xl dark:border dark:border-border dark:shadow-md;
 }
-
-/* Glass effect utilities */
-.glass {
-  @apply bg-card backdrop-blur-3xl border border-border shadow-sm;
-}
-
-.glass-dark {
-  @apply dark:bg-card dark:backdrop-blur-3xl dark:border dark:border-border dark:shadow-md;
-}
