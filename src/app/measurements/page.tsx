@@ -98,7 +98,7 @@ export default function MeasurementsPage() {
     return (
         <main className="flex flex-col h-screen overflow-hidden relative">
             <div className="pt-12 px-5 pb-4">
-                <h1 className="text-3xl font-black tracking-tight text-primary">Pomiary Ciała</h1>
+                <h1 className="text-3xl font-black tracking-tight text-primary">Pomiary</h1>
             </div>
 
             <div className="flex-1 overflow-y-auto px-5 pb-[160px] flex flex-col gap-6 scrollbar-hide">

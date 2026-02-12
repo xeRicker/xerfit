@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { format } from 'date-fns';
-import { fetchAllData, syncProfiles, syncProducts, syncEntries, syncSettings, syncMeasurements } from './actions';
+import { fetchAllData, syncProfiles, syncProducts, syncEntries, syncSettings, syncMeasurements, syncSets } from './actions';
 
 export interface Product {
   id: string;
@@ -14,6 +14,8 @@ export interface Product {
   category?: string;
   icon?: string;
   color?: string;
+  updatedAt?: number;
+  lastUsedAt?: number;
 }
 
 export type MealCategory = 'breakfast' | 'lunch' | 'dinner';
@@ -72,6 +74,19 @@ export interface Measurement {
   calf?: number;
 }
 
+export interface SetItem {
+  productId: string;
+  weight: number;
+}
+
+export interface ProductSet {
+  id: string;
+  name: string;
+  items: SetItem[];
+  updatedAt?: number;
+  lastUsedAt?: number;
+}
+
 interface DiaryState {
   currentDate: string;
   products: Product[];
@@ -79,12 +94,16 @@ interface DiaryState {
   activeProfileId: string;
   entries: MealEntry[];
   measurements: Measurement[];
+  sets: ProductSet[];
   
   // UI States
   editingProduct: Product | null;
+  editingSet: ProductSet | null;
   selectionMode: {
     active: boolean;
     category: MealCategory | null;
+    isSetCreation?: boolean;
+    currentSetId?: string;
   };
   isLoading: boolean;
   dbError: boolean;
@@ -110,8 +129,14 @@ interface DiaryState {
   deleteProduct: (id: string) => void;
   setEditingProduct: (product: Product | null) => void;
   
+  // Set Actions
+  addSet: (set: Omit<ProductSet, 'id'>) => string;
+  updateSet: (id: string, set: Partial<ProductSet>) => void;
+  deleteSet: (id: string) => void;
+  setEditingSet: (set: ProductSet | null) => void;
+
   // Entry Actions
-  setSelectionMode: (active: boolean, category: MealCategory | null) => void;
+  setSelectionMode: (active: boolean, category: MealCategory | null, isSetCreation?: boolean, currentSetId?: string) => void;
   addEntry: (entry: Omit<MealEntry, 'id' | 'timestamp' | 'profileId'>) => void;
   removeEntry: (id: string) => void;
   updateEntry: (id: string, weight: number) => void;
@@ -125,6 +150,7 @@ interface DiaryState {
 export const useDiaryStore = create<DiaryState>((set) => ({
   currentDate: format(new Date(), 'yyyy-MM-dd'),
   products: [],
+  sets: [],
   profiles: [{
     id: 'default',
     name: 'Sportowiec',
@@ -137,6 +163,7 @@ export const useDiaryStore = create<DiaryState>((set) => ({
   entries: [],
   measurements: [],
   editingProduct: null,
+  editingSet: null,
   selectionMode: { active: false, category: null },
   isLoading: true,
   dbError: false,
@@ -155,6 +182,7 @@ export const useDiaryStore = create<DiaryState>((set) => ({
       if (data && data.profiles && data.profiles.length > 0) {
         set({
           products: data.products || [],
+          sets: data.sets || [],
           profiles: data.profiles,
           activeProfileId: data.activeProfileId || 'default',
           entries: data.entries || [],
@@ -181,6 +209,9 @@ export const useDiaryStore = create<DiaryState>((set) => ({
       
       set({ loadingStatus: 'Zapisywanie produktów...', loadingProgress: 40 });
       await syncProducts(state.products);
+      
+      set({ loadingStatus: 'Zapisywanie zestawów...', loadingProgress: 50 });
+      await syncSets(state.sets);
       
       set({ loadingStatus: 'Zapisywanie dziennika...', loadingProgress: 60 });
       await syncEntries(state.entries);
@@ -268,12 +299,12 @@ export const useDiaryStore = create<DiaryState>((set) => ({
 
   // Product Implementation
   addProduct: (product) => set((state) => ({
-    products: [...state.products, { ...product, id: Math.random().toString(36).substring(7) }],
+    products: [...state.products, { ...product, id: Math.random().toString(36).substring(7), updatedAt: Date.now() }],
     unsavedChanges: true
   })),
 
   updateProduct: (id, updatedProduct) => set((state) => ({
-    products: state.products.map(p => p.id === id ? { ...p, ...updatedProduct } : p),
+    products: state.products.map(p => p.id === id ? { ...p, ...updatedProduct, updatedAt: Date.now() } : p),
     unsavedChanges: true
   })),
 
@@ -294,6 +325,7 @@ export const useDiaryStore = create<DiaryState>((set) => ({
       id: Math.random().toString(36).substring(7),
       timestamp: Date.now()
     }],
+    products: state.products.map(p => p.id === entry.productId ? { ...p, lastUsedAt: Date.now() } : p),
     unsavedChanges: true
   })),
 
@@ -339,4 +371,30 @@ export const useDiaryStore = create<DiaryState>((set) => ({
     measurements: state.measurements.filter(m => m.id !== id),
     unsavedChanges: true
   })),
+
+  // Set Implementation
+  addSet: (setInfo) => {
+    const id = Math.random().toString(36).substring(7);
+    set((state) => ({
+      sets: [...state.sets, { ...setInfo, id, updatedAt: Date.now() }],
+      unsavedChanges: true
+    }));
+    return id;
+  },
+
+  updateSet: (id, updatedSet) => set((state) => ({
+    sets: state.sets.map(s => s.id === id ? { ...s, ...updatedSet, updatedAt: Date.now() } : s),
+    unsavedChanges: true
+  })),
+
+  deleteSet: (id) => set((state) => ({
+    sets: state.sets.filter(s => s.id !== id),
+    unsavedChanges: true
+  })),
+
+  setEditingSet: (productSet) => set({ editingSet: productSet }),
+
+  setSelectionMode: (active, category, isSetCreation, currentSetId) => set({ 
+    selectionMode: { active, category, isSetCreation, currentSetId } 
+  }),
 }));

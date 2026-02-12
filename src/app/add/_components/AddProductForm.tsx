@@ -1,79 +1,83 @@
 import { useState, useEffect } from "react";
 import { useDiaryStore } from "@/lib/store";
-import { Plus, Save, X, Pencil, Check } from "lucide-react";
+import { Plus, Save, X, Trash2, Check, AlertCircle } from "lucide-react";
 import * as LucideIcons from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useRouter, useSearchParams } from "next/navigation";
 import { MacroIcon } from "@/components/MacroIcon";
 import { AnimatePresence } from "framer-motion";
-import { ICON_NAMES, PRESET_COLORS } from "./constants";
-import { IconPickerModal } from "./IconPickerModal";
-import { ColorPicker } from "./ColorPicker";
 
 export function AddProductForm() {
-  const { addProduct, updateProduct, editingProduct, setEditingProduct, selectionMode } = useDiaryStore();
+  const { addProduct, updateProduct, deleteProduct, editingProduct, setEditingProduct, selectionMode, sets } = useDiaryStore();
   const router = useRouter();
   const searchParams = useSearchParams();
   
-  const [form, setForm] = useState({
-    name: "",
-    brand: "",
-    calories: "",
-    protein: "",
-    fat: "",
-    carbs: "",
-    icon: "ChefHat",
-    color: "bg-orange-500"
-  });
-  const [success, setSuccess] = useState(false);
-  const [isIconPickerOpen, setIsIconPickerOpen] = useState(false);
-
-  useEffect(() => {
-    const name = searchParams.get('name');
-    const calories = searchParams.get('calories');
-    const protein = searchParams.get('protein');
-    const fat = searchParams.get('fat');
-    const carbs = searchParams.get('carbs');
-    const brand = searchParams.get('brand');
-
-    if (editingProduct) {
-        setForm({
+  // Initial state logic
+  const [form, setForm] = useState(() => {
+      if (editingProduct) {
+          return {
             name: editingProduct.name,
             brand: editingProduct.brand || "",
             calories: editingProduct.calories.toString(),
             protein: editingProduct.protein.toString(),
             fat: editingProduct.fat.toString(),
             carbs: editingProduct.carbs.toString(),
-            icon: editingProduct.icon || "ChefHat",
-            color: editingProduct.color || "bg-orange-500"
-        });
-    } else if (name || calories) {
-        setForm({
-            name: name || "",
-            brand: brand || "",
-            calories: calories || "",
-            protein: protein || "",
-            fat: fat || "",
-            carbs: carbs || "",
-            icon: "ChefHat",
-            color: "bg-orange-500"
-        });
-    } else {
-        // Randomize initial state
-        setForm({
-            name: "", brand: "", calories: "", protein: "", fat: "", carbs: "",
-            icon: ICON_NAMES[Math.floor(Math.random() * ICON_NAMES.length)],
-            color: PRESET_COLORS[Math.floor(Math.random() * PRESET_COLORS.length)]
+          };
+      }
+      return {
+        name: "",
+        brand: "",
+        calories: "",
+        protein: "",
+        fat: "",
+        carbs: "",
+      };
+  });
+
+  const [success, setSuccess] = useState(false);
+  const [affectedSets, setAffectedSets] = useState<string[]>([]);
+  const [showWarning, setShowWarning] = useState(false);
+
+  // Sync with search params ONLY if not editing an existing product and form is empty (first load)
+  useEffect(() => {
+    if (editingProduct) return; // Don't override if we are editing
+
+    const name = searchParams.get('name');
+    const calories = searchParams.get('calories');
+    
+    if (name || calories) {
+        setForm(prev => {
+            // Only update if current form is empty to avoid overwriting user input
+            if (prev.name) return prev; 
+            return {
+                name: name || "",
+                brand: searchParams.get('brand') || "",
+                calories: calories || "",
+                protein: searchParams.get('protein') || "",
+                fat: searchParams.get('fat') || "",
+                carbs: searchParams.get('carbs') || "",
+            };
         });
     }
+  }, [searchParams, editingProduct]);
 
-    return () => setEditingProduct(null);
-  }, [editingProduct, setEditingProduct, searchParams]);
+  const handlePreSubmit = (e: React.FormEvent) => {
+      e.preventDefault();
+      if (!form.name || !form.calories) return;
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!form.name || !form.calories) return;
+      if (editingProduct) {
+          // Check if product is in any sets
+          const inSets = sets.filter(s => s.items.some(i => i.productId === editingProduct.id));
+          if (inSets.length > 0) {
+              setAffectedSets(inSets.map(s => s.name));
+              setShowWarning(true);
+              return;
+          }
+      }
+      handleSubmit();
+  };
 
+  const handleSubmit = () => {
     const productData = {
       name: form.name,
       brand: form.brand,
@@ -81,8 +85,6 @@ export function AddProductForm() {
       protein: Number(form.protein) || 0,
       fat: Number(form.fat) || 0,
       carbs: Number(form.carbs) || 0,
-      icon: form.icon,
-      color: form.color
     };
 
     if (editingProduct) {
@@ -94,18 +96,23 @@ export function AddProductForm() {
     setSuccess(true);
     setTimeout(() => {
         setSuccess(false);
-        setEditingProduct(null);
+        setEditingProduct(null); // Clear state here
         router.push('/meals');
     }, 1000);
+  };
+
+  const handleDelete = () => {
+      if (editingProduct && confirm("Czy na pewno chcesz usunąć ten produkt?")) {
+          deleteProduct(editingProduct.id);
+          setEditingProduct(null);
+          router.push('/meals');
+      }
   };
 
   const handleInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setForm(prev => ({ ...prev, [name]: value }));
   };
-
-  const SelectedIcon = (LucideIcons as any)[form.icon] || LucideIcons.ChefHat;
-  const isCustomColor = !form.color.startsWith('bg-');
 
   return (
     <main className="p-5 flex flex-col gap-6 max-w-md mx-auto pt-12 pb-32">
@@ -120,68 +127,56 @@ export function AddProductForm() {
                 {editingProduct ? "Edytuj Produkt" : "Nowy Produkt"}
             </h1>
         </div>
-        <button 
-            type="button"
-            onClick={() => router.back()}
-            className="p-2 glass rounded-full text-muted-foreground active:scale-90"
-        >
-            <X size={20} />
-        </button>
+        <div className="flex items-center gap-2">
+            {editingProduct && (
+                <button 
+                    type="button"
+                    onClick={handleDelete}
+                    className="p-2 glass rounded-full text-red-500 hover:bg-red-500/10 active:scale-90"
+                >
+                    <Trash2 size={20} />
+                </button>
+            )}
+            <button 
+                type="button"
+                onClick={() => { setEditingProduct(null); router.back(); }}
+                className="p-2 glass rounded-full text-muted-foreground active:scale-90"
+            >
+                <X size={20} />
+            </button>
+        </div>
       </div>
       
-      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+      <form onSubmit={handlePreSubmit} className="flex flex-col gap-4">
         
         {/* Main Info Card */}
         <div className="glass p-6 rounded-[32px] flex flex-col gap-6">
-            <div className="flex gap-5 items-start">
-                <button
-                    type="button"
-                    onClick={() => setIsIconPickerOpen(true)}
-                    className={cn(
-                        "w-20 h-20 rounded-3xl flex items-center justify-center shadow-lg transition-all active:scale-95 shrink-0 relative overflow-hidden group",
-                        !isCustomColor && form.color
-                    )}
-                    style={isCustomColor ? { backgroundColor: form.color } : {}}
-                >
-                    <SelectedIcon size={40} className="text-white drop-shadow-md z-10" />
-                    <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center z-20">
-                         <Pencil size={20} className="text-white" />
-                    </div>
-                </button>
+             <div className="flex flex-col gap-4">
+                <div className="flex flex-col">
+                    <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider ml-1 mb-1">Nazwa Produktu</label>
+                    <input 
+                        type="text" 
+                        name="name"
+                        value={form.name}
+                        onChange={handleInput}
+                        placeholder="np. Jajko"
+                        className="w-full bg-black/10 text-xl font-bold rounded-xl p-3 outline-none focus:ring-2 focus:ring-primary/50 transition-all placeholder:text-muted-foreground/30"
+                        autoFocus={!editingProduct}
+                    />
+                </div>
                 
-                <div className="flex flex-col gap-3 flex-1 min-w-0">
-                    <div className="flex flex-col">
-                        <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider ml-1 mb-1">Nazwa Produktu</label>
-                        <input 
-                            type="text" 
-                            name="name"
-                            value={form.name}
-                            onChange={handleInput}
-                            placeholder="np. Jajko"
-                            className="w-full bg-transparent text-lg font-bold outline-none placeholder:text-muted-foreground/30 border-b border-white/10 focus:border-primary transition-colors pb-1"
-                            autoFocus={!editingProduct}
-                        />
-                    </div>
-                    
-                    <div className="flex flex-col">
-                        <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider ml-1 mb-1">Marka / Firma (Opcjonalne)</label>
-                        <input 
-                            type="text" 
-                            name="brand"
-                            value={form.brand}
-                            onChange={handleInput}
-                            placeholder="np. Biedronka"
-                            className="w-full bg-transparent text-lg font-bold outline-none placeholder:text-muted-foreground/30 border-b border-white/10 focus:border-primary transition-colors pb-1 text-white/80"
-                        />
-                    </div>
+                <div className="flex flex-col">
+                    <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider ml-1 mb-1">Marka / Firma (Opcjonalne)</label>
+                    <input 
+                        type="text" 
+                        name="brand"
+                        value={form.brand}
+                        onChange={handleInput}
+                        placeholder="np. Biedronka"
+                         className="w-full bg-black/10 text-lg font-bold rounded-xl p-3 outline-none focus:ring-2 focus:ring-primary/50 transition-all placeholder:text-muted-foreground/30"
+                    />
                 </div>
             </div>
-
-            {/* Color Selection */}
-            <ColorPicker 
-                color={form.color}
-                onChange={(c) => setForm(f => ({ ...f, color: c }))}
-            />
         </div>
 
         {/* Macros */}
@@ -258,25 +253,35 @@ export function AddProductForm() {
             {success ? (
                 <Check size={24} />
             ) : editingProduct ? (
-                <><Save size={24} /> Zapisz zmiany</>
+                <><Save size={24} /> Zapisz</>
             ) : selectionMode.active ? (
                 <><Plus size={24} /> Dodaj</>
             ) : (
-                <><Plus size={24} /> Dodaj do bazy</>
+                <><Plus size={24} /> Dodaj</>
             )}
         </button>
       </form>
       
-      {/* Icon Picker Modal */}
-      <AnimatePresence>
-        {isIconPickerOpen && (
-            <IconPickerModal 
-                onClose={() => setIsIconPickerOpen(false)} 
-                onSelect={(icon) => { setForm(f => ({ ...f, icon })); setIsIconPickerOpen(false); }} 
-                currentIcon={form.icon}
-            />
-        )}
-      </AnimatePresence>
+      {/* Set Warning Modal */}
+      {showWarning && (
+          <div className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm flex items-center justify-center p-6">
+              <div className="bg-[#1C1C1E] rounded-[32px] p-6 w-full max-w-sm border border-white/10 flex flex-col gap-4">
+                  <div className="flex items-center gap-3 text-yellow-500">
+                      <AlertCircle size={32} />
+                      <h3 className="text-xl font-black leading-none">Uwaga</h3>
+                  </div>
+                  <p className="text-sm font-medium text-muted-foreground leading-relaxed">
+                      Ten produkt znajduje się w <strong>{affectedSets.length}</strong> zestawach (np. {affectedSets[0]}).
+                      <br/><br/>
+                      Zapisanie zmian spowoduje automatyczną aktualizację makroskładników w tych zestawach.
+                  </p>
+                  <div className="grid grid-cols-2 gap-3 mt-2">
+                      <button onClick={() => setShowWarning(false)} className="py-3 rounded-xl bg-white/10 font-bold text-sm">Anuluj</button>
+                      <button onClick={handleSubmit} className="py-3 rounded-xl bg-yellow-500 text-black font-bold text-sm">Zrozumiałem, zapisz</button>
+                  </div>
+              </div>
+          </div>
+      )}
     </main>
   );
 }

@@ -2,6 +2,7 @@ import { motion } from "framer-motion";
 import { BarChart3 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
+import { MacroIcon } from "@/components/MacroIcon";
 
 interface WeeklyChartProps {
     weeklyStats: {
@@ -58,9 +59,9 @@ export function WeeklyChart({ weeklyStats }: WeeklyChartProps) {
                 })}
             </div>
             <div className="flex justify-around pt-2 border-t border-white/5">
-                <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-protein"/> <span className="text-[10px] font-bold text-muted-foreground uppercase">Białko</span></div>
-                <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-fat"/> <span className="text-[10px] font-bold text-muted-foreground uppercase">Tłuszcze</span></div>
-                <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-carbs"/> <span className="text-[10px] font-bold text-muted-foreground uppercase">Węgle</span></div>
+                <div className="flex items-center gap-1.5"><MacroIcon type="protein" size={12} colored /> <span className="text-[10px] font-bold text-muted-foreground uppercase">Białko</span></div>
+                <div className="flex items-center gap-1.5"><MacroIcon type="fat" size={12} colored /> <span className="text-[10px] font-bold text-muted-foreground uppercase">Tłuszcze</span></div>
+                <div className="flex items-center gap-1.5"><MacroIcon type="carbs" size={12} colored /> <span className="text-[10px] font-bold text-muted-foreground uppercase">Węgle</span></div>
             </div>
         </div>
     );

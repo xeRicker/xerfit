@@ -1,8 +1,8 @@
 "use client";
 
-import { useDiaryStore, Product } from "@/lib/store";
-import { Plus, Search, ArrowUpDown, Barcode, X, AlertTriangle } from "lucide-react";
-import { useState } from "react";
+import { useDiaryStore, Product, ProductSet, SetItem } from "@/lib/store";
+import { Plus, Search, ArrowUpDown, Barcode, X, AlertTriangle, Layers, Box, Package } from "lucide-react";
+import { useState, useMemo, useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
@@ -11,6 +11,7 @@ import dynamic from 'next/dynamic';
 import { SelectionHeader } from "./_components/SelectionHeader";
 import { SortDropdown, SortOption } from "./_components/SortDropdown";
 import { ProductListItem } from "./_components/ProductListItem";
+import { SetListItem } from "./_components/SetListItem";
 import { AddProductModal } from "./_components/AddProductModal";
 import { LoadingOverlay } from "./_components/LoadingOverlay";
 
@@ -19,8 +20,10 @@ const BarcodeScanner = dynamic(() => import('@/components/BarcodeScanner').then(
   loading: () => null
 });
 
+type Tab = 'all' | 'products' | 'sets';
+
 export default function MealsPage() {
-  const { products, addEntry, currentDate, setEditingProduct, selectionMode, setSelectionMode, deleteProduct } = useDiaryStore();
+  const { products, sets, addEntry, currentDate, setEditingProduct, setEditingSet, selectionMode, setSelectionMode, deleteProduct, deleteSet, updateSet } = useDiaryStore();
   const [search, setSearch] = useState("");
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [weight, setWeight] = useState("100");
@@ -29,15 +32,63 @@ export default function MealsPage() {
   const [isScanning, setIsScanning] = useState(false);
   const [isFetching, setIsFetching] = useState(false);
   const [scanError, setScanError] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<Tab>('all');
+  const [isAddMenuOpen, setIsAddMenuOpen] = useState(false);
   const router = useRouter();
 
-  const filtered = products
-    .filter(p => p.name && p.name.toLowerCase().includes(search.toLowerCase()))
-    .sort((a, b) => {
-        if (sortBy === 'name') return (a.name || '').localeCompare(b.name || '');
-        if (sortBy === 'scanned') return (b.is_scanned ? 1 : 0) - (a.is_scanned ? 1 : 0);
-        return (b[sortBy] as number || 0) - (a[sortBy] as number || 0);
+  // Force active tab to products if in Set Creation Mode
+  useEffect(() => {
+      if (selectionMode.isSetCreation) {
+          setActiveTab('products');
+      }
+  }, [selectionMode.isSetCreation]);
+
+  // Unified list of items to display
+  const items = useMemo(() => {
+    let list: Array<{ type: 'product' | 'set', data: Product | ProductSet }> = [];
+
+    // If making a set, ONLY show products
+    if (selectionMode.isSetCreation) {
+        list = products.map(p => ({ type: 'product', data: p }));
+    } else {
+        if (activeTab === 'all' || activeTab === 'products') {
+            list = list.concat(products.map(p => ({ type: 'product', data: p })));
+        }
+        if (activeTab === 'all' || activeTab === 'sets') {
+            list = list.concat(sets.map(s => ({ type: 'set', data: s })));
+        }
+    }
+
+    // Filter
+    if (search) {
+        const lower = search.toLowerCase();
+        list = list.filter(item => item.data.name.toLowerCase().includes(lower));
+    }
+
+    // Sort
+    list.sort((a, b) => {
+        if (sortBy === 'name') {
+            const timeA = Math.max(a.data.updatedAt || 0, a.data.lastUsedAt || 0);
+            const timeB = Math.max(b.data.updatedAt || 0, b.data.lastUsedAt || 0);
+            
+            // If times are significantly different (e.g. > 1 sec), sort by time
+            if (timeB !== timeA) return timeB - timeA;
+            
+            // Fallback to A-Z
+            return a.data.name.localeCompare(b.data.name);
+        }
+        // Products prioritize scanned status if requested
+        if (sortBy === 'scanned') {
+            const isScannedA = a.type === 'product' ? (a.data as Product).is_scanned : false;
+            const isScannedB = b.type === 'product' ? (b.data as Product).is_scanned : false;
+            return (isScannedB ? 1 : 0) - (isScannedA ? 1 : 0);
+        }
+        // Fallback or other sorts
+        return 0;
     });
+
+    return list;
+  }, [products, sets, activeTab, search, sortBy, selectionMode.isSetCreation]);
 
   const handleScan = async (barcode: string) => {
     setIsScanning(false);
@@ -75,8 +126,30 @@ export default function MealsPage() {
       setScanError(error);
   };
 
-  const handleAdd = () => {
-    if (!selectedProduct || !selectionMode.category) return;
+  const handleAddProduct = () => {
+    if (!selectedProduct) return;
+    
+    // If we are in "Set Creation Mode"
+    if (selectionMode.isSetCreation && selectionMode.currentSetId) {
+        const w = Number(weight) || 0;
+        // Add to set logic
+        const currentSet = sets.find(s => s.id === selectionMode.currentSetId);
+        if (currentSet) {
+            const newItems = [...currentSet.items, { productId: selectedProduct.id, weight: w }];
+            // Update the set in store
+            updateSet(currentSet.id, { items: newItems });
+            // IMPORTANT: Also update the editingSet state so the Set Editor reflects changes immediately
+            setEditingSet({ ...currentSet, items: newItems });
+            
+            router.push('/add-set'); // Return to set editor
+        }
+        setSelectionMode(false, null, false, undefined);
+        setSelectedProduct(null);
+        return;
+    }
+
+    // Normal Meal Addition
+    if (!selectionMode.category) return;
     const w = Number(weight) || 0;
     const ratio = w / 100;
     
@@ -99,10 +172,47 @@ export default function MealsPage() {
     router.push('/dashboard');
   };
 
-  const handleEdit = (e: React.MouseEvent, product: Product) => {
+  const handleAddSet = (set: ProductSet) => {
+      if (!selectionMode.category) return;
+
+      // Update set usage time
+      updateSet(set.id, { lastUsedAt: Date.now() });
+
+      // Add all items from the set
+      set.items.forEach(item => {
+          const product = products.find(p => p.id === item.productId);
+          if (product) {
+              const ratio = item.weight / 100;
+              addEntry({
+                date: currentDate,
+                productId: product.id,
+                name: product.name,
+                brand: product.brand,
+                is_scanned: product.is_scanned,
+                weight: item.weight,
+                calories: product.calories * ratio,
+                protein: product.protein * ratio,
+                fat: product.fat * ratio,
+                carbs: product.carbs * ratio,
+                category: selectionMode.category!
+              });
+          }
+      });
+      
+      setSelectionMode(false, null);
+      router.push('/dashboard');
+  };
+
+  const handleEditProduct = (e: React.MouseEvent, product: Product) => {
     e.stopPropagation();
     setEditingProduct(product);
     router.push('/add');
+  };
+
+  const handleEditSet = (e: React.MouseEvent, set: ProductSet) => {
+      e.stopPropagation();
+      setEditingSet(set);
+      router.push('/add-set');
   };
 
   const handleDeleteProduct = (e: React.MouseEvent, id: string) => {
@@ -110,6 +220,23 @@ export default function MealsPage() {
     if (confirm('Czy na pewno chcesz usunąć ten produkt z bazy?')) {
         deleteProduct(id);
     }
+  };
+
+  const handleDeleteSet = (e: React.MouseEvent, id: string) => {
+    e.stopPropagation();
+    if (confirm('Czy na pewno chcesz usunąć ten zestaw?')) {
+        deleteSet(id);
+    }
+  };
+  
+  const handleAddClick = () => {
+      if (activeTab === 'products') {
+          router.push('/add');
+      } else if (activeTab === 'sets') {
+          router.push('/add-set');
+      } else {
+          setIsAddMenuOpen(!isAddMenuOpen);
+      }
   };
 
   return (
@@ -122,42 +249,70 @@ export default function MealsPage() {
           {selectionMode.active && (
               <SelectionHeader 
                 category={selectionMode.category} 
-                onClose={() => setSelectionMode(false, null)} 
+                onClose={() => setSelectionMode(false, null, false, undefined)} 
+                isSetCreation={selectionMode.isSetCreation}
               />
           )}
       </AnimatePresence>
 
-      <div className="pt-12 px-5 pb-4">
-        <h1 className="text-3xl font-black tracking-tight text-primary">Baza Produktów</h1>
+      <div className="pt-12 px-5 pb-2 flex flex-col gap-4">
+        <h1 className="text-3xl font-black tracking-tight text-primary">Baza</h1>
+        
+        {/* Tabs - Hidden in Set Creation Mode */}
+        {!selectionMode.isSetCreation && (
+            <div className="flex p-1 bg-black/10 rounded-xl">
+                {(['all', 'products', 'sets'] as Tab[]).map(tab => (
+                    <button
+                        key={tab}
+                        onClick={() => { setActiveTab(tab); setIsAddMenuOpen(false); }}
+                        className={cn(
+                            "flex-1 py-2 rounded-lg text-xs font-bold uppercase transition-all",
+                            activeTab === tab ? "bg-white text-black shadow-sm" : "text-muted-foreground hover:text-white"
+                        )}
+                    >
+                        {tab === 'all' ? 'Wszystko' : tab === 'products' ? 'Produkty' : 'Zestawy'}
+                    </button>
+                ))}
+            </div>
+        )}
       </div>
 
-      <div className="flex-1 overflow-y-auto px-5 pb-[180px] flex flex-col gap-3 scrollbar-hide">
-        {filtered.length === 0 ? (
+      <div className="flex-1 overflow-y-auto px-5 pb-[180px] flex flex-col gap-3 scrollbar-hide pt-2">
+        {items.length === 0 ? (
             <div className="text-center py-12 glass rounded-[32px] flex flex-col items-center gap-4 mt-10">
                 <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center text-muted-foreground/30">
                     <Search size={32} />
                 </div>
                 <div className="flex flex-col gap-1">
                     <span className="text-lg font-bold text-muted-foreground">
-                        {products.length === 0 ? "Baza jest pusta" : "Nie znaleziono produktu"}
+                        Brak wyników
                     </span>
                     <p className="text-xs text-muted-foreground/60 px-8">
-                        {products.length === 0 
-                            ? "Dodaj swój pierwszy produkt do bazy, aby móc go używać w posiłkach." 
-                            : `Nie znaleźliśmy "${search}" w Twojej bazie.`}
+                        {selectionMode.isSetCreation ? "Brak produktów." : "Spróbuj zmienić filtry lub dodaj nowy element."}
                     </p>
                 </div>
             </div>
         ) : (
-            filtered.map((p) => (
-                <ProductListItem 
-                    key={p.id}
-                    product={p}
-                    isSelectionMode={selectionMode.active}
-                    onSelect={() => setSelectedProduct(p)}
-                    onEdit={handleEdit}
-                    onDelete={handleDeleteProduct}
-                />
+            items.map((item) => (
+                item.type === 'product' ? (
+                    <ProductListItem 
+                        key={`p-${item.data.id}`}
+                        product={item.data as Product}
+                        isSelectionMode={selectionMode.active}
+                        onSelect={() => setSelectedProduct(item.data as Product)}
+                        onEdit={handleEditProduct}
+                        onDelete={handleDeleteProduct}
+                    />
+                ) : (
+                    <SetListItem 
+                        key={`s-${item.data.id}`}
+                        set={item.data as ProductSet}
+                        isSelectionMode={selectionMode.active && !selectionMode.isSetCreation}
+                        onSelect={() => handleAddSet(item.data as ProductSet)}
+                        onEdit={handleEditSet}
+                        onDelete={handleDeleteSet}
+                    />
+                )
             ))
         )}
       </div>
@@ -192,19 +347,65 @@ export default function MealsPage() {
                     />
                  </div>
 
-                 <button 
-                    onClick={() => setIsScanning(true)}
-                    className="p-4 bg-primary text-white rounded-2xl active:scale-95 transition-transform shadow-xl flex items-center justify-center"
-                >
-                    <Barcode size={24} />
-                </button>
-                
-                <button 
-                    onClick={() => router.push('/add')}
-                    className="p-4 bg-white/10 text-white rounded-2xl active:scale-95 transition-transform shadow-lg backdrop-blur-md"
-                >
-                    <Plus size={24} />
-                </button>
+                 {/* Don't show scanner or add button in Set Creation Mode if we only want simple selection */}
+                 {!selectionMode.isSetCreation && (
+                     <>
+                        <button 
+                            onClick={() => setIsScanning(true)}
+                            className="p-4 bg-primary text-white rounded-2xl active:scale-95 transition-transform shadow-xl flex items-center justify-center"
+                        >
+                            <Barcode size={24} />
+                        </button>
+                        
+                        <div className="relative">
+                            <button 
+                                onClick={handleAddClick}
+                                className={cn(
+                                    "p-4 text-white rounded-2xl active:scale-95 transition-transform shadow-lg backdrop-blur-md",
+                                    isAddMenuOpen ? "bg-white text-black" : "bg-white/10"
+                                )}
+                            >
+                                {isAddMenuOpen ? <X size={24} /> : <Plus size={24} />}
+                            </button>
+                            
+                            <AnimatePresence>
+                                {isAddMenuOpen && (
+                                    <motion.div 
+                                        initial={{ opacity: 0, y: 10, scale: 0.9 }}
+                                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                                        exit={{ opacity: 0, y: 10, scale: 0.9 }}
+                                        className="absolute bottom-full right-0 mb-3 flex flex-col gap-2 min-w-[160px]"
+                                    >
+                                        <button 
+                                            onClick={() => router.push('/add')}
+                                            className="p-4 bg-[#1C1C1E] rounded-2xl border border-white/10 shadow-2xl flex items-center gap-3 active:scale-95 text-left"
+                                        >
+                                            <div className="bg-primary/20 text-primary p-2 rounded-lg">
+                                                <Package size={20} />
+                                            </div>
+                                            <div className="flex flex-col">
+                                                <span className="font-bold text-sm text-white">Produkt</span>
+                                                <span className="text-[10px] text-muted-foreground font-medium">Pojedynczy składnik</span>
+                                            </div>
+                                        </button>
+                                        <button 
+                                            onClick={() => router.push('/add-set')}
+                                            className="p-4 bg-[#1C1C1E] rounded-2xl border border-white/10 shadow-2xl flex items-center gap-3 active:scale-95 text-left"
+                                        >
+                                            <div className="bg-blue-500/20 text-blue-500 p-2 rounded-lg">
+                                                <Layers size={20} />
+                                            </div>
+                                            <div className="flex flex-col">
+                                                <span className="font-bold text-sm text-white">Zestaw</span>
+                                                <span className="text-[10px] text-muted-foreground font-medium">Grupa produktów</span>
+                                            </div>
+                                        </button>
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
+                        </div>
+                     </>
+                 )}
              </div>
           </div>
       </div>
@@ -246,8 +447,9 @@ export default function MealsPage() {
                 onClose={() => setSelectedProduct(null)}
                 weight={weight}
                 onWeightChange={setWeight}
-                onAdd={handleAdd}
+                onAdd={handleAddProduct}
                 category={selectionMode.category}
+                isSetCreation={selectionMode.isSetCreation}
             />
         )}
       </AnimatePresence>

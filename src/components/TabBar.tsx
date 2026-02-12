@@ -12,16 +12,14 @@ export function TabBar() {
   const { unsavedChanges, sync, isLoading } = useDiaryStore();
 
   const tabs = [
-    { id: "dashboard", href: "/dashboard", icon: Home, label: "Dziś" },
+    { id: "dashboard", href: "/dashboard", icon: Home, label: "Posiłki" },
     { id: "meals", href: "/meals", icon: Utensils, label: "Baza" },
-    { id: "measurements", href: "/measurements", icon: Ruler, label: "Pomiary" }, // Added Measurements
+    { id: "measurements", href: "/measurements", icon: Ruler, label: "Pomiary" },
     { id: "diary", href: "/diary", icon: Calendar, label: "Dziennik" },
-    { id: "profile", href: "/profile", icon: User, label: "Profil" },
   ];
 
   return (
     <>
-      {/* Gradient fade at bottom to blend content behind tab bar */}
       <div className="fixed bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-background to-transparent pointer-events-none z-40" />
       
       <div className="fixed bottom-0 left-0 right-0 z-50 pb-[env(safe-area-inset-bottom,20px)] pt-0 px-4">
@@ -31,7 +29,6 @@ export function TabBar() {
                 <TabItem key={tab.id} tab={tab} isActive={pathname === tab.href} />
             ))}
 
-            {/* Sync Button Overlay - Appears when there are unsaved changes */}
             <AnimatePresence>
                 {unsavedChanges && (
                     <motion.button
