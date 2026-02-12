@@ -1,21 +1,23 @@
 "use client";
 
 import { useDiaryStore, Product } from "@/lib/store";
-import { Plus, Search, Scale, Pencil, ArrowUpDown, Trash2, X, Barcode, Loader2, ScanBarcode } from "lucide-react";
+import { Plus, Search, ArrowUpDown, Barcode } from "lucide-react";
 import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { AnimatePresence } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { MacroIcon } from "@/components/MacroIcon";
 import dynamic from 'next/dynamic';
-import * as LucideIcons from "lucide-react";
+
+import { SelectionHeader } from "./_components/SelectionHeader";
+import { SortDropdown, SortOption } from "./_components/SortDropdown";
+import { ProductListItem } from "./_components/ProductListItem";
+import { AddProductModal } from "./_components/AddProductModal";
+import { LoadingOverlay } from "./_components/LoadingOverlay";
 
 const BarcodeScanner = dynamic(() => import('@/components/BarcodeScanner').then(mod => mod.BarcodeScanner), {
   ssr: false,
   loading: () => null
 });
-
-type SortOption = 'name' | 'calories' | 'protein' | 'fat' | 'carbs' | 'scanned';
 
 export default function MealsPage() {
   const { products, addEntry, currentDate, setEditingProduct, selectionMode, setSelectionMode, deleteProduct } = useDiaryStore();
@@ -109,22 +111,12 @@ export default function MealsPage() {
         selectionMode.active ? "bg-primary/5 pt-20" : "pt-12"
     )}>
       
-      {/* Selection Mode Header */}
       <AnimatePresence>
           {selectionMode.active && (
-              <motion.div 
-                initial={{ y: -50, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                exit={{ y: -50, opacity: 0 }}
-                className="fixed top-0 left-0 right-0 z-50 glass bg-primary/20 backdrop-blur-xl border-b border-primary/20 p-4 flex items-center justify-between"
-              >
-                  <button onClick={() => setSelectionMode(false, null)} className="p-2 bg-white/10 rounded-full"><X size={20}/></button>
-                  <div className="flex flex-col items-center">
-                      <span className="text-[10px] font-black uppercase text-primary tracking-widest leading-none">Dodawanie do</span>
-                      <span className="text-lg font-black capitalize">{selectionMode.category === 'breakfast' ? 'Śniadania' : selectionMode.category === 'lunch' ? 'Obiadu' : 'Kolacji'}</span>
-                  </div>
-                  <div className="w-10" />
-              </motion.div>
+              <SelectionHeader 
+                category={selectionMode.category} 
+                onClose={() => setSelectionMode(false, null)} 
+              />
           )}
       </AnimatePresence>
 
@@ -151,41 +143,16 @@ export default function MealsPage() {
                 >
                     <ArrowUpDown size={20} />
                 </button>
-                <AnimatePresence>
-                    {sortOpen && (
-                        <motion.div
-                            initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                            animate={{ opacity: 1, y: 0, scale: 1 }}
-                            exit={{ opacity: 0, scale: 0.95 }}
-                            className="absolute right-0 top-12 w-40 glass bg-[#1C1C1E] rounded-xl p-1 z-50 flex flex-col shadow-xl"
-                        >
-                            {[
-                                { id: 'name', label: 'Nazwa' },
-                                { id: 'calories', label: 'Kalorie' },
-                                { id: 'protein', label: 'Białko' },
-                                { id: 'fat', label: 'Tłuszcz' },
-                                { id: 'carbs', label: 'Węgle' },
-                                { id: 'scanned', label: 'Zeskanowane' }
-                            ].map((opt) => (
-                                <button
-                                    key={opt.id}
-                                    onClick={() => { setSortBy(opt.id as SortOption); setSortOpen(false); }}
-                                    className={cn(
-                                        "px-3 py-2 text-sm font-bold text-left rounded-lg transition-colors",
-                                        sortBy === opt.id ? "bg-primary text-white" : "text-muted-foreground hover:bg-white/5"
-                                    )}
-                                >
-                                    {opt.label}
-                                </button>
-                            ))}
-                        </motion.div>
-                    )}
-                </AnimatePresence>
+                <SortDropdown 
+                    isOpen={sortOpen}
+                    onClose={() => setSortOpen(false)}
+                    sortBy={sortBy}
+                    onSelect={setSortBy}
+                />
             </div>
         </div>
       </div>
       
-      {/* Search */}
       <div className="relative">
         <input 
             type="text" 
@@ -223,71 +190,16 @@ export default function MealsPage() {
                 )}
             </div>
         ) : (
-            filtered.map((p) => {
-                const Icon = (LucideIcons as any)[p.icon || 'ChefHat'] || LucideIcons.ChefHat;
-                const isCustomColor = p.color && !p.color.startsWith('bg-');
-                
-                return (
-                    <motion.div 
-                        key={p.id}
-                        layoutId={`product-${p.id}`}
-                        onClick={() => selectionMode.active ? setSelectedProduct(p) : null}
-                        className={cn(
-                            "glass p-4 rounded-2xl flex items-center gap-4 transition-all",
-                            selectionMode.active ? "active:scale-[0.98] cursor-pointer ring-1 ring-primary/20" : "cursor-default"
-                        )}
-                    >
-                        <div 
-                            className={cn(
-                                "w-10 h-10 rounded-full flex items-center justify-center text-white shrink-0 shadow-lg",
-                                !isCustomColor && (p.color || "bg-primary")
-                            )}
-                            style={isCustomColor ? { backgroundColor: p.color } : {}}
-                        >
-                             <Icon size={18} />
-                        </div>
-                        
-                        <div className="flex flex-col gap-0.5 flex-1 min-w-0">
-                            <div className="flex flex-col">
-                                <span className="font-semibold text-base truncate flex items-center gap-2">
-                                    {p.name}
-                                    {p.is_scanned && <ScanBarcode size={14} className="text-blue-400 shrink-0" />}
-                                </span>
-                                {p.brand && <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider truncate">{p.brand}</span>}
-                            </div>
-                            <div className="flex gap-3 text-xs text-muted-foreground font-medium items-center mt-1">
-                                <span className="flex items-center gap-1 text-primary"><MacroIcon type="calories" size={10} colored /> {p.calories}</span>
-                                <span className="flex items-center gap-1 text-protein"><MacroIcon type="protein" size={10} colored /> {p.protein}</span>
-                                <span className="flex items-center gap-1 text-fat"><MacroIcon type="fat" size={10} colored /> {p.fat}</span>
-                                <span className="flex items-center gap-1 text-carbs"><MacroIcon type="carbs" size={10} colored /> {p.carbs}</span>
-                            </div>
-                        </div>
-                        
-                        {!selectionMode.active && (
-                            <div className="flex items-center gap-2">
-                                <button 
-                                    onClick={(e) => handleEdit(e, p)}
-                                    className="p-2 rounded-full bg-white/5 text-muted-foreground hover:bg-white/10 hover:text-white transition-colors"
-                                >
-                                    <Pencil size={18} />
-                                </button>
-                                <button 
-                                    onClick={(e) => handleDeleteProduct(e, p.id)}
-                                    className="p-2 rounded-full bg-red-500/10 text-red-500/50 hover:bg-red-500/20 hover:text-red-500 transition-colors"
-                                >
-                                    <Trash2 size={18} />
-                                </button>
-                            </div>
-                        )}
-
-                        {selectionMode.active && (
-                            <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary">
-                                <Plus size={20} />
-                            </div>
-                        )}
-                    </motion.div>
-                );
-            })
+            filtered.map((p) => (
+                <ProductListItem 
+                    key={p.id}
+                    product={p}
+                    isSelectionMode={selectionMode.active}
+                    onSelect={() => setSelectedProduct(p)}
+                    onEdit={handleEdit}
+                    onDelete={handleDeleteProduct}
+                />
+            ))
         )}
       </div>
 
@@ -301,103 +213,19 @@ export default function MealsPage() {
       </AnimatePresence>
 
       <AnimatePresence>
-        {isFetching && (
-            <motion.div 
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="fixed inset-0 z-[110] bg-black/60 backdrop-blur-md flex flex-col items-center justify-center gap-4"
-            >
-                <div className="w-16 h-16 rounded-3xl bg-primary/20 flex items-center justify-center">
-                    <Loader2 className="text-primary animate-spin" size={32} />
-                </div>
-                <div className="flex flex-col items-center gap-1">
-                    <span className="text-sm font-black text-white uppercase tracking-widest">Pobieranie danych</span>
-                    <span className="text-[10px] font-bold text-white/50 uppercase tracking-tighter">Open Food Facts API</span>
-                </div>
-            </motion.div>
-        )}
+        {isFetching && <LoadingOverlay />}
       </AnimatePresence>
 
-      {/* Add Modal */}
       <AnimatePresence>
         {selectedProduct && (
-            <>
-                <motion.div 
-                    initial={{ opacity: 0 }} 
-                    animate={{ opacity: 1 }} 
-                    exit={{ opacity: 0 }}
-                    onClick={() => setSelectedProduct(null)}
-                    className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60]"
-                />
-                <motion.div 
-                    initial={{ y: "100%" }} 
-                    animate={{ y: 0 }} 
-                    exit={{ y: "100%" }}
-                    className="fixed bottom-0 left-0 right-0 z-[70] bg-[#1C1C1E] rounded-t-[32px] p-6 pb-[env(safe-area-inset-bottom,20px)] shadow-2xl border-t border-white/10"
-                >
-                    <div className="max-w-md mx-auto flex flex-col gap-6">
-                        <div className="flex justify-between items-start">
-                            <h2 className="text-2xl font-bold">{selectedProduct.name}</h2>
-                            <button onClick={() => setSelectedProduct(null)} className="p-2 bg-white/5 rounded-full text-muted-foreground"><X size={20}/></button>
-                        </div>
-                        
-                        <div className="glass p-4 rounded-2xl flex items-center gap-4">
-                            <Scale size={24} className="text-primary" />
-                            <div className="flex flex-col flex-1">
-                                <label className="text-xs font-bold text-muted-foreground uppercase">Ile gramów?</label>
-                                <input 
-                                    type="number" 
-                                    value={weight}
-                                    onChange={(e) => setWeight(e.target.value)}
-                                    className="bg-transparent text-3xl font-black outline-none w-full"
-                                    autoFocus
-                                    onFocus={(e) => e.target.select()}
-                                />
-                            </div>
-                            <span className="text-xl font-bold text-muted-foreground">g</span>
-                        </div>
-
-                        <div className="flex justify-between text-center px-2">
-                             <div className="flex flex-col items-center gap-1">
-                                <span className="text-2xl font-black text-primary flex items-center gap-1">
-                                    <MacroIcon type="calories" size={16} colored />
-                                    {Math.round(selectedProduct.calories * (Number(weight)/100))}
-                                </span>
-                                <span className="text-[10px] uppercase font-bold text-muted-foreground">kcal</span>
-                            </div>
-                            <div className="flex flex-col items-center gap-1">
-                                <span className="text-xl font-bold text-protein flex items-center gap-1">
-                                    <MacroIcon type="protein" size={14} colored />
-                                    {Math.round(selectedProduct.protein * (Number(weight)/100))}
-                                </span>
-                                <span className="text-[10px] uppercase font-bold text-muted-foreground">Białko</span>
-                            </div>
-                            <div className="flex flex-col items-center gap-1">
-                                <span className="text-xl font-bold text-fat flex items-center gap-1">
-                                    <MacroIcon type="fat" size={14} colored />
-                                    {Math.round(selectedProduct.fat * (Number(weight)/100))}
-                                </span>
-                                <span className="text-[10px] uppercase font-bold text-muted-foreground">Tłuszcz</span>
-                            </div>
-                            <div className="flex flex-col items-center gap-1">
-                                <span className="text-xl font-bold text-carbs flex items-center gap-1">
-                                    <MacroIcon type="carbs" size={14} colored />
-                                    {Math.round(selectedProduct.carbs * (Number(weight)/100))}
-                                </span>
-                                <span className="text-[10px] uppercase font-bold text-muted-foreground">Węgle</span>
-                            </div>
-                        </div>
-
-                        <button 
-                            onClick={handleAdd}
-                            className="h-14 rounded-full bg-primary text-white font-bold text-lg shadow-lg shadow-primary/25 active:scale-95 transition-transform capitalize"
-                        >
-                            Dodaj do {selectionMode.category === 'breakfast' ? 'Śniadania' : selectionMode.category === 'lunch' ? 'Obiadu' : 'Kolacji'}
-                        </button>
-                    </div>
-                </motion.div>
-            </>
+            <AddProductModal 
+                product={selectedProduct}
+                onClose={() => setSelectedProduct(null)}
+                weight={weight}
+                onWeightChange={setWeight}
+                onAdd={handleAdd}
+                category={selectionMode.category}
+            />
         )}
       </AnimatePresence>
     </main>
