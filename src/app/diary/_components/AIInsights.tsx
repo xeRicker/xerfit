@@ -10,21 +10,22 @@ export function AIInsights({ insights }: { insights: any[] }) {
         <div className="glass p-6 rounded-[32px] flex flex-col gap-4">
             <div className="flex items-center gap-2 text-muted-foreground text-[11px] font-bold uppercase tracking-wider">
                 <Info size={14} className="text-primary" />
-                AI Insights
+                ANALIZA AI
             </div>
             
             <div className="flex flex-col gap-3">
                 {insights.map((insight, idx) => {
-                    const color = insight.type === 'warning' ? 'text-warning border-warning/20 bg-warning/5' :
-                                  insight.type === 'success' ? 'text-success border-success/20 bg-success/5' :
-                                  'text-info border-info/20 bg-info/5';
+                    const styles = insight.type === 'warning' ? { border: 'border-warning/20', bg: 'bg-warning/10', icon: 'text-warning' } :
+                                  insight.type === 'success' ? { border: 'border-success/20', bg: 'bg-success/10', icon: 'text-success' } :
+                                  { border: 'border-info/20', bg: 'bg-info/10', icon: 'text-info' };
                     
                     return (
-                        <div key={idx} className={cn("p-4 rounded-2xl border flex flex-col gap-1", color)}>
-                            <span className="font-bold text-sm flex items-center gap-2">
+                        <div key={idx} className={cn("p-4 rounded-2xl border flex flex-col gap-1", styles.border, styles.bg)}>
+                            <span className={cn("font-bold text-sm flex items-center gap-2 text-white")}>
+                                <div className={cn("w-2 h-2 rounded-full", styles.icon.replace('text-', 'bg-'))} />
                                 {insight.t}
                             </span>
-                            <span className="text-xs font-medium opacity-80 leading-relaxed">
+                            <span className="text-xs font-medium text-muted-foreground leading-relaxed pl-4">
                                 {insight.d}
                             </span>
                         </div>

@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState, useRef, useId } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { X, RefreshCw, AlertCircle, Info, Flashlight, Keyboard, ArrowRight, ScanBarcode } from "lucide-react";
+import { motion } from "framer-motion";
+import { X, RefreshCw, AlertCircle, Flashlight, Keyboard, ArrowRight, ScanBarcode } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface BarcodeScannerProps {
@@ -27,29 +27,41 @@ export function BarcodeScanner({ onClose, onScan, onError }: BarcodeScannerProps
     // Lock body scroll
     useEffect(() => {
         document.body.style.overflow = 'hidden';
+        isMountedRef.current = true;
         return () => {
             document.body.style.overflow = '';
+            isMountedRef.current = false;
         };
     }, []);
 
     useEffect(() => {
-        isMountedRef.current = true;
+        if (showManualInput) return;
+
+        let html5QrCode: any = null;
 
         const initScanner = async () => {
             try {
+                // Dynamic import to avoid SSR issues and heavy bundle load
                 const { Html5Qrcode, Html5QrcodeSupportedFormats } = await import("html5-qrcode");
                 
                 if (!isMountedRef.current) return;
                 
-                // Use explicit format to speed up scanning
+                // Cleanup previous instance if any
+                if (scannerRef.current) {
+                    try {
+                        await scannerRef.current.stop();
+                        scannerRef.current.clear();
+                    } catch (e) {
+                        // ignore stop error
+                    }
+                }
+
                 const formatsToSupport = [ Html5QrcodeSupportedFormats.EAN_13, Html5QrcodeSupportedFormats.EAN_8 ];
-                const html5QrCode = new Html5Qrcode(elementId, { formatsToSupport, verbose: false });
+                html5QrCode = new Html5Qrcode(elementId, { formatsToSupport, verbose: false });
                 scannerRef.current = html5QrCode;
 
                 const devices = await Html5Qrcode.getCameras();
                 if (devices && devices.length) {
-                    // Try to find a specific back camera to prevent lens switching
-                    // Prefer the "primary" back camera if distinguishable, often the first one with "back"
                     const backCamera = devices.find(d => {
                         const label = d.label.toLowerCase();
                         return label.includes('back') || label.includes('tył') || label.includes('environment');
@@ -64,24 +76,29 @@ export function BarcodeScanner({ onClose, onScan, onError }: BarcodeScannerProps
                             qrbox: { width: 250, height: 250 },
                             aspectRatio: 1.0
                         },
-                        (decodedText) => {
+                        (decodedText: string) => {
                             if (isMountedRef.current) {
+                                // Stop scanning immediately after success
                                 html5QrCode.stop().then(() => {
                                     onScan(decodedText);
                                 }).catch(() => onScan(decodedText));
                             }
                         },
-                        () => {} // Ignore errors per frame
+                        () => {}
                     );
 
                     // Check torch capability
-                    const track = html5QrCode.getRunningTrackCameraCapabilities();
-                    // @ts-ignore
-                    if (track && track.torchFeature && track.torchFeature.isSupported()) {
-                        setHasTorch(true);
+                    try {
+                        const track = html5QrCode.getRunningTrackCameraCapabilities();
+                        // @ts-ignore
+                        if (track && track.torchFeature && track.torchFeature.isSupported()) {
+                            setHasTorch(true);
+                        }
+                    } catch (e) {
+                         // Torch check failed, ignore
                     }
                     
-                    setIsLoading(false);
+                    if (isMountedRef.current) setIsLoading(false);
                 } else {
                     throw new Error("Nie wykryto kamery.");
                 }
@@ -97,26 +114,26 @@ export function BarcodeScanner({ onClose, onScan, onError }: BarcodeScannerProps
             }
         };
 
-        if (!showManualInput) {
+        // Small delay to ensure DOM is ready and prevent race conditions
+        const timer = setTimeout(() => {
             initScanner();
-        }
+        }, 300);
 
         return () => {
-            isMountedRef.current = false;
-            if (scannerRef.current) {
-                scannerRef.current.stop().then(() => {
-                    scannerRef.current.clear();
+            clearTimeout(timer);
+            if (html5QrCode) {
+                html5QrCode.stop().then(() => {
+                    html5QrCode.clear();
                 }).catch(() => {
-                    scannerRef.current.clear();
+                    html5QrCode.clear();
                 });
             }
         };
-    }, [elementId, onScan, showManualInput]);
+    }, [elementId, onScan, onError, showManualInput]);
 
     const toggleTorch = async () => {
         if (!scannerRef.current) return;
         try {
-            const settings = scannerRef.current.getRunningTrackSettings();
             await scannerRef.current.applyVideoConstraints({
                 advanced: [{ torch: !isTorchOn }]
             });

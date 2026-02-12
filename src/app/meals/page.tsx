@@ -358,11 +358,14 @@ export default function MealsPage() {
                         </button>
                         
                         <div className="relative">
+                            {isAddMenuOpen && (
+                                <div className="fixed inset-0 z-40 bg-black/20 backdrop-blur-sm" onClick={() => setIsAddMenuOpen(false)} />
+                            )}
                             <button 
                                 onClick={handleAddClick}
                                 className={cn(
-                                    "p-4 text-white rounded-2xl active:scale-95 transition-transform shadow-lg backdrop-blur-md",
-                                    isAddMenuOpen ? "bg-white text-black" : "bg-white/10"
+                                    "p-4 text-white rounded-2xl active:scale-95 transition-transform shadow-lg backdrop-blur-md relative z-50",
+                                    isAddMenuOpen ? "bg-white text-black" : "bg-primary"
                                 )}
                             >
                                 {isAddMenuOpen ? <X size={24} /> : <Plus size={24} />}
@@ -374,7 +377,7 @@ export default function MealsPage() {
                                         initial={{ opacity: 0, y: 10, scale: 0.9 }}
                                         animate={{ opacity: 1, y: 0, scale: 1 }}
                                         exit={{ opacity: 0, y: 10, scale: 0.9 }}
-                                        className="absolute bottom-full right-0 mb-3 flex flex-col gap-2 min-w-[160px]"
+                                        className="absolute bottom-full right-0 mb-3 flex flex-col gap-2 min-w-[160px] z-50"
                                     >
                                         <button 
                                             onClick={() => router.push('/add')}
