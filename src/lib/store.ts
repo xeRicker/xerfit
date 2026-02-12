@@ -315,9 +315,6 @@ export const useDiaryStore = create<DiaryState>((set) => ({
 
   setEditingProduct: (product) => set({ editingProduct: product }),
 
-  // Entry Implementation
-  setSelectionMode: (active, category) => set({ selectionMode: { active, category } }),
-
   addEntry: (entry) => set((state) => ({
     entries: [...state.entries, { 
       ...entry, 
