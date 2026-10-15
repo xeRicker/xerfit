@@ -6,7 +6,7 @@ import { dialogService, notify, sheetService } from './components/dialogs.js';
 export function createPlanView(app) {
     return {
         render() {
-            if (!app.plan.containers.length) return renderNoContainers(app);
+            if (!app.draft.containers.length) return renderNoContainers(app);
             if (app.planUI.selectedSplitId) return renderSplitEditor(app);
             return renderContainer(app);
         },
@@ -61,7 +61,7 @@ function renderContainer(app) {
 function renderContainerTabs(app, active) {
     return `
         <div class="container-tabs" role="tablist" aria-label="Zakładki planu">
-            ${app.plan.containers.map(container => `
+            ${app.draft.containers.map(container => `
                 <button type="button" class="chip" role="tab" data-action="select-container" data-container="${container.id}"
                     aria-pressed="${container.id === active.id}">${escapeHtml(container.name)}</button>
             `).join('')}
@@ -83,7 +83,7 @@ function renderNoSplits() {
 }
 
 function renderSplitCard(app, container, split) {
-    const items = planService.listSplitExercises(app.plan, app.exercises, split);
+    const items = planService.listSplitExercises(app.draft, app.draftExercises, split);
     const preview = items.slice(0, 4).map(item => item.name).join(' · ');
     const rest = items.length > 4 ? ` +${items.length - 4}` : '';
 
@@ -111,7 +111,7 @@ function renderSplitEditor(app) {
     const split = planService.findSplit(container, app.planUI.selectedSplitId);
     if (!split) return renderNoSplits();
 
-    const items = planService.listSplitExercises(app.plan, app.exercises, split);
+    const items = planService.listSplitExercises(app.draft, app.draftExercises, split);
 
     return `
         <div class="editor-head">
@@ -182,7 +182,6 @@ function renderPlanSaveBar(app, compact = false) {
             <button type="button" class="btn btn--primary" data-action="save-plan">
                 ${renderMaterialIcon('save')}<span>Zapisz plan</span>
             </button>
-            ${compact ? '' : '<p class="action-bar__hint">Zmiany planu są w pamięci, dopóki nie klikniesz Zapisz.</p>'}
         </div>
     `;
 }
@@ -310,11 +309,11 @@ function openExercisePicker(app) {
 
 function renderCatalog(app, query) {
     const needle = String(query || '').trim().toLowerCase();
-    const groups = exercisesService.listCatalogGroups(app.exercises)
+    const groups = exercisesService.listCatalogGroups(app.draftExercises)
         .map(group => ({ ...group, exercises: group.exercises.filter(item => item.name.toLowerCase().includes(needle)) }))
         .filter(group => group.exercises.length);
 
-    if (!Object.keys(app.exercises).length) {
+    if (!Object.keys(app.draftExercises).length) {
         return `
             <div class="empty-state">
                 ${renderMaterialIcon('fitness_center')}
@@ -343,7 +342,7 @@ function renderCatalog(app, query) {
 
 function openTargetEditor(app, index) {
     const split = planService.findSplit(app.currentContainer(), app.planUI.selectedSplitId);
-    const item = planService.listSplitExercises(app.plan, app.exercises, split)[index];
+    const item = planService.listSplitExercises(app.draft, app.draftExercises, split)[index];
     if (!item) return;
     const defaults = app.draft.defaults;
 

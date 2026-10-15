@@ -3,26 +3,32 @@ import { WORKOUT_CONFIG } from '../config/config.js';
 const WEIGHT_TOLERANCE = 0.01;
 const EPSILON = 0.01;
 
-function estimateOneRepMax(weight, reps) {    const numericWeight = Number(weight) || 0;
+function estimateOneRepMax(weight, reps) {
+    const numericWeight = Math.abs(Number(weight) || 0);
     const numericReps = Number(reps) || 0;
     if (numericWeight <= 0 || numericReps <= 0) return 0;
     return numericWeight * (1 + numericReps / 30);
 }
 
 function isCompletedSet(set) {
-    return Boolean(set?.done) && Number(set?.weight) > 0 && Number(set?.reps) > 0;
+    const weight = set?.weight;
+    return Boolean(set?.done) && Number(set?.reps) > 0 && weight !== null && weight !== undefined && weight !== '';
 }
 
 function completedSets(entry) {
     return (entry?.sets || []).filter(isCompletedSet);
 }
 
+function setLoad(set) {
+    return Math.abs(Number(set?.weight) || 0);
+}
+
 function entryVolume(entry) {
-    return completedSets(entry).reduce((sum, set) => sum + Number(set.weight) * Number(set.reps), 0);
+    return completedSets(entry).reduce((sum, set) => sum + setLoad(set) * Number(set.reps), 0);
 }
 
 function entryBestOneRepMax(entry) {
-    return completedSets(entry).reduce((best, set) => Math.max(best, estimateOneRepMax(set.weight, set.reps)), 0);
+    return completedSets(entry).reduce((best, set) => Math.max(best, estimateOneRepMax(setLoad(set), set.reps)), 0);
 }
 
 function sessionVolume(session) {
@@ -65,33 +71,39 @@ function recommendationFor(entry, previous, targets) {
     const sets = completedSets(entry);
     const repMin = targets.repMin;
     const repMax = targets.repMax;
-    const increment = targets.increment;
 
     if (!sets.length) {
-        return { level: 'muted', headline: 'Brak serii', detail: 'Zapisz serie, aby dostać podpowiedź.' };
+        return { level: 'muted', headline: 'Brak serii', detail: 'Zapisz serię, aby dostać podpowiedź.' };
     }
 
+    const assisted = sets.some(set => Number(set.weight) < 0);
     const topWeight = Math.max(...sets.map(set => Number(set.weight)));
     const topSets = sets.filter(set => Math.abs(Number(set.weight) - topWeight) < WEIGHT_TOLERANCE);
     const heaviest = topSets[topSets.length - 1];
     const allAtTop = topSets.length === sets.length && topSets.every(set => Number(set.reps) >= repMax);
     const repsBelowRange = topSets.some(set => Number(set.reps) < repMin);
+    const unit = assisted ? 'kg asysty' : 'kg';
 
     if (previous && topWeight < Number(previous.weight) - WEIGHT_TOLERANCE) {
-        const delta = Number(previous.weight) - topWeight;
+        const delta = normalizeWeight(Math.abs(topWeight - Number(previous.weight)));
         return {
             level: 'down',
-            headline: `−${normalizeWeight(delta)} kg`,
-            detail: `Wracasz do ${normalizeWeight(topWeight)} kg. Poprzednio ${formatSetPlan(previous)}.`
+            headline: assisted ? `+${delta} kg asysty` : `−${delta} kg`,
+            detail: assisted
+                ? `Cofasz się do ${normalizeWeight(topWeight)} kg asysty. Poprzednio ${formatSetPlan(previous)}.`
+                : `Wracasz do ${normalizeWeight(topWeight)} kg. Poprzednio ${formatSetPlan(previous)}.`
         };
     }
 
     if (allAtTop) {
-        const nextWeight = topWeight + increment;
+        const nextWeight = normalizeWeight(topWeight + targets.increment);
+        const step = normalizeWeight(Math.abs(targets.increment));
         return {
             level: 'up',
-            headline: `+${increment} kg`,
-            detail: `Wszystkie serie na ${repMax} powt. Następnym razem spróbuj ${normalizeWeight(nextWeight)} kg.`
+            headline: assisted ? `−${step} kg asysty` : `+${step} kg`,
+            detail: assisted
+                ? `Wszystkie serie na ${repMax} powt. Następnym razem zdejmij ${step} kg asysty (cel: ${nextWeight} kg).`
+                : `Wszystkie serie na ${repMax} powt. Następnym razem spróbuj ${nextWeight} kg.`
         };
     }
 
@@ -99,14 +111,14 @@ function recommendationFor(entry, previous, targets) {
         return {
             level: 'hold',
             headline: 'Zostań na ciężarze',
-            detail: `Powtórzenia poniżej ${repMin}. Powtórz ${normalizeWeight(topWeight)} kg i odbuduj zakres.`
+            detail: `Powtórzenia poniżej ${repMin}. Powtórz ${normalizeWeight(topWeight)} ${unit} i odbuduj zakres.`
         };
     }
 
     return {
         level: 'up-reps',
         headline: 'Dołóż powtórzenie',
-        detail: `Zostań na ${normalizeWeight(topWeight)} kg i celuj w ${Math.min(Number(heaviest.reps) + 1, repMax)} powt.`
+        detail: `Zostań na ${normalizeWeight(topWeight)} ${unit} i celuj w ${Math.min(Number(heaviest.reps) + 1, repMax)} powt.`
     };
 }
 
@@ -125,14 +137,16 @@ function exerciseProgress(sessions, exerciseId) {
 
     const current = history[history.length - 1];
     const previous = history[history.length - 2];
-    const deltaWeight = Number(current.entry.sets.find(set => isCompletedSet(set))?.weight || 0)
-        - Number(previous.entry.sets.find(set => isCompletedSet(set))?.weight || 0);
+    const currentTop = completedSets(current.entry).reduce((best, set) => (setLoad(set) > setLoad(best) ? set : best), { weight: 0 });
+    const previousTop = completedSets(previous.entry).reduce((best, set) => (setLoad(set) > setLoad(best) ? set : best), { weight: 0 });
+    const deltaLoad = setLoad(currentTop) - setLoad(previousTop);
 
     return {
-        weightDelta: deltaWeight,
+        weight: Number(currentTop.weight),
+        weightDelta: deltaLoad,
         volumeDelta: current.volume - previous.volume,
         oneRepMaxDelta: current.bestOneRepMax - previous.bestOneRepMax,
-        isProgress: current.bestOneRepMax > previous.bestOneRepMax + EPSILON || deltaWeight > WEIGHT_TOLERANCE
+        isProgress: current.bestOneRepMax > previous.bestOneRepMax + EPSILON || deltaLoad > WEIGHT_TOLERANCE
     };
 }
 
@@ -155,14 +169,18 @@ function currentWeights(catalog, sessions) {
         .map(([exerciseId, exercise]) => {
             const history = historyForExercise(sessions, exerciseId);
             const last = history.at(-1) || null;
+            const lastSets = last ? completedSets(last.entry) : [];
+            const topSet = lastSets.reduce((best, set) => (setLoad(set) > setLoad(best) ? set : best), null);
+            const hasWeight = lastSets.some(set => Number(set.weight) !== 0);
+
             return {
                 exerciseId,
                 name: exercise.name,
                 group: exercise.group,
                 sessions: history.length,
                 lastDate: last?.date || null,
-                lastSets: last ? completedSets(last.entry).map(set => ({ weight: Number(set.weight), reps: Number(set.reps) })) : [],
-                weight: last ? Math.max(...completedSets(last.entry).map(set => Number(set.weight))) : 0,
+                lastSets: lastSets.map(set => ({ weight: Number(set.weight), reps: Number(set.reps) })),
+                weight: hasWeight && topSet ? Number(topSet.weight) : null,
                 oneRepMax: last?.bestOneRepMax || 0,
                 isPlateau: isPlateau(sessions, exerciseId)
             };

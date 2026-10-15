@@ -126,7 +126,7 @@ function renderSessionExercise(entry) {
 }
 
 function renderExerciseList(app) {
-    const weights = workoutAnalysis.currentWeights(app.exercises, app.workouts);
+    const weights = workoutAnalysis.currentWeights(app.draftExercises, app.workouts);
 
     return `
         ${renderTabs(app)}
@@ -160,7 +160,7 @@ function renderExerciseList(app) {
 
 function renderExerciseDetail(app) {
     const exerciseId = app.historyUI.exerciseId;
-    const exercise = app.exercises[exerciseId] || { name: 'Ćwiczenie', group: '' };
+    const exercise = app.draftExercises[exerciseId] || { name: 'Ćwiczenie', group: '' };
     const history = workoutAnalysis.historyForExercise(app.workouts, exerciseId);
     const metricKey = app.historyUI.metric;
     const metric = METRICS[metricKey] || METRICS.weight;

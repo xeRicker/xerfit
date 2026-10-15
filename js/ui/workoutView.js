@@ -1,4 +1,4 @@
-import { escapeHtml, formatWeight, renderMaterialIcon } from '../utils.js';
+import { escapeHtml, formatWeight, renderMaterialIcon, sanitizeDecimal, sanitizeInteger } from '../utils.js';
 import { workoutService } from '../services/workoutService.js';
 import { workoutAnalysis } from '../services/workoutAnalysis.js';
 import { dialogService, notify, sheetService } from './components/dialogs.js';
@@ -46,7 +46,7 @@ export function createWorkoutView(app) {
                 </section>
 
                 ${renderSetList(entry, status, activeIndex)}
-                ${renderBottomActions(entry, status)}
+                ${renderBottomActions(app, entry, status)}
             `;
         },
 
@@ -96,6 +96,10 @@ function renderPrevious(entry) {
 
 function renderInputs(entry, activeIndex) {
     const set = entry.sets[activeIndex] || entry.sets[0];
+    const isAssisted = Number(set?.weight) < 0;
+    const hint = isAssisted
+        ? `Asysta ${formatWeight(Math.abs(Number(set.weight)))} kg · wpisz 0 dla masy własnej`
+        : `Zakres ${entry.repMin}–${entry.repMax} powt. · edytujesz serię ${activeIndex + 1} z ${entry.sets.length}`;
 
     return `
         <div class="logger">
@@ -131,7 +135,7 @@ function renderInputs(entry, activeIndex) {
                 </div>
             </div>
         </div>
-        <p class="logger__hint">Zakres ${entry.repMin}–${entry.repMax} powt. · edytujesz serię ${activeIndex + 1} z ${entry.sets.length}</p>
+        <p class="logger__hint ${isAssisted ? 'logger__hint--assist' : ''}">${escapeHtml(hint)}</p>
     `;
 }
 
@@ -180,14 +184,24 @@ function renderSetList(entry, status, activeIndex) {
     `;
 }
 
-function renderBottomActions(entry, status) {
+function renderBottomActions(app, entry, status) {
     const allDone = status !== 'skipped' && workoutAnalysis.completedSets(entry).length >= entry.sets.length;
+    const isFirst = app.session.currentIndex === 0;
+    const isLast = app.session.currentIndex === app.session.exercises.length - 1;
 
     return `
-        <div class="action-bar">
-            <button type="button" class="btn btn--ghost" data-action="skip">
-                ${renderMaterialIcon(entry.skipped ? 'undo' : 'block')}<span>${entry.skipped ? 'Przywróć ćwiczenie' : 'Pomiń ćwiczenie'}</span>
-            </button>
+        <div class="workout-actions">
+            <div class="workout-nav">
+                <button type="button" class="workout-nav__step" data-action="step-prev" aria-label="Poprzednie ćwiczenie" ${isFirst ? 'disabled' : ''}>
+                    ${renderMaterialIcon('chevron_left')}
+                </button>
+                <button type="button" class="btn btn--ghost" data-action="skip">
+                    ${renderMaterialIcon(entry.skipped ? 'undo' : 'block')}<span>${entry.skipped ? 'Przywróć' : 'Pomiń'}</span>
+                </button>
+                <button type="button" class="workout-nav__step" data-action="step-next" aria-label="Następne ćwiczenie" ${isLast ? 'disabled' : ''}>
+                    ${renderMaterialIcon('chevron_right')}
+                </button>
+            </div>
             <button type="button" class="btn btn--primary btn--large btn--block" data-action="confirm-set">
                 ${renderMaterialIcon('check')}<span>${allDone ? 'Popraw serię' : 'Zapisz serię'}</span>
             </button>
@@ -230,6 +244,16 @@ function handleClick(app, event) {
         commitAndAdvance(app);
         return;
     }
+    if (action === 'step-prev') {
+        workoutService.step(app.session, -1);
+        app.render();
+        return;
+    }
+    if (action === 'step-next') {
+        workoutService.step(app.session, 1);
+        app.render();
+        return;
+    }
     if (action === 'skip') {
         workoutService.toggleSkipped(app.session);
         app.render();
@@ -243,9 +267,7 @@ function handleClick(app, event) {
 function handleInput(app, event) {
     const field = event.target.dataset.input;
     if (!field) return;
-    const cleaned = field === 'weight'
-        ? event.target.value.replace(',', '.').replace(/[^0-9.]/g, '')
-        : event.target.value.replace(/[^0-9]/g, '');
+    const cleaned = field === 'weight' ? sanitizeDecimal(event.target.value) : sanitizeInteger(event.target.value);
     if (event.target.value !== cleaned) event.target.value = cleaned;
 }
 
@@ -283,8 +305,9 @@ function openSetEditor(app, index) {
 function readInputs() {
     const weightInput = document.querySelector('[data-input="weight"]');
     const repsInput = document.querySelector('[data-input="reps"]');
+    const rawWeight = String(weightInput?.value ?? '').trim();
     return {
-        weight: Number.parseFloat(String(weightInput?.value || '').replace(',', '.')) || 0,
+        weight: rawWeight === '' ? 0 : Number.parseFloat(rawWeight.replace(',', '.')),
         reps: Number.parseInt(repsInput?.value || '', 10) || 0
     };
 }
@@ -295,8 +318,8 @@ function commitAndAdvance(app) {
     const index = app.activeSetIndex();
     const { weight, reps } = readInputs();
 
-    if (weight <= 0) {
-        dialogService.alert('Wpisz ciężar większy od zera.', 'Brak ciężaru');
+    if (!Number.isFinite(weight)) {
+        dialogService.alert('Wpisz ciężar, 0 dla masy własnej albo wartość ujemną dla asysty.', 'Brak ciężaru');
         return;
     }
     if (reps <= 0) {

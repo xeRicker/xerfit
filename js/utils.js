@@ -33,8 +33,9 @@ export function parseIsoDate(isoDate) {
 }
 
 export function formatWeight(value) {
-    const number = Number(value) || 0;
-    return Number.isInteger(number) ? String(number) : number.toFixed(1).replace('.', ',');
+    const number = Math.round((Number(value) || 0) * 100) / 100;
+    if (Number.isInteger(number)) return String(number);
+    return number.toFixed(2).replace(/0$/, '').replace('.', ',');
 }
 
 export function formatVolume(value) {
@@ -75,9 +76,12 @@ export function isLocalhost() {
 }
 
 export function sanitizeDecimal(value) {
-    const normalised = String(value ?? '').replace(',', '.').replace(/[^0-9.]/g, '');
-    const [whole, ...rest] = normalised.split('.');
-    return rest.length ? `${whole}.${rest.join('').slice(0, 2)}` : whole;
+    const raw = String(value ?? '').replace(',', '.');
+    const negative = raw.trimStart().startsWith('-');
+    const digits = raw.replace(/[^0-9.]/g, '');
+    const [whole, ...rest] = digits.split('.');
+    const number = rest.length ? `${whole}.${rest.join('').slice(0, 2)}` : whole;
+    return negative ? `-${number}` : number;
 }
 
 export function sanitizeInteger(value) {

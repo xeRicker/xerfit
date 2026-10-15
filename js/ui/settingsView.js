@@ -1,9 +1,7 @@
-import { GITHUB_CONFIG } from '../config/config.js';
 import { escapeHtml, formatWeight, renderMaterialIcon } from '../utils.js';
 import { tokenService } from '../services/token.js';
 import { planService } from '../services/planService.js';
 import { dialogService, notify, sheetService } from './components/dialogs.js';
-import { renderSaveStatus } from './components/saveStatus.js';
 
 export function createSettingsView(app) {
     return {
@@ -15,35 +13,17 @@ export function createSettingsView(app) {
             return `
                 <div class="view-header">
                     <h2 class="view-header__title">Ustawienia</h2>
-                    <p class="view-header__subtitle">Zakres powtórzeń, zakładki i zapis danych</p>
+                    <p class="view-header__subtitle">Zakres powtórzeń i skok ciężaru</p>
                 </div>
 
-                ${renderDefaultsSection(defaults)}
-                ${app.isPlanDirty() || app.isExercisesDirty() ? renderSaveBar(app) : ''}
-
                 <section class="section card">
-                    <h3 class="card__title">Zapis do GitHuba</h3>
-                    ${renderSaveStatus(app.planSave)}
-                    ${renderSaveStatus(app.exercisesSave)}
-                    <ul class="list">
-                        <li class="list__item">
-                            ${renderMaterialIcon(tokenService.hasToken() ? 'key' : 'key_off')}
-                            <span class="list__body">
-                                <span class="list__title">${tokenService.hasToken() ? 'Token skonfigurowany' : 'Brak tokenu w tej wersji'}</span>
-                                <span class="list__meta">${tokenService.hasToken() ? 'Zapis idzie przez GitHub API' : 'Zapis lokalnie przez dev-server.js'}</span>
-                            </span>
-                        </li>
-                        <li class="list__item">
-                            ${renderMaterialIcon('folder')}
-                            <span class="list__body">
-                                <span class="list__title">Repozytorium</span>
-                                <span class="list__meta">${escapeHtml(GITHUB_CONFIG.REPO_OWNER)}/${escapeHtml(GITHUB_CONFIG.REPO_NAME)}</span>
-                            </span>
-                        </li>
-                    </ul>
-                    <button type="button" class="btn btn--ghost btn--block btn--compact" data-action="token">
-                        ${renderMaterialIcon('vpn_key')}<span>Ustaw token ręcznie</span>
-                    </button>
+                    <h3 class="card__title">Progresja</h3>
+                    <p class="section__hint">Globalny zakres powtórzeń i domyślny skok ciężaru. Ćwiczenie w splicie może nadpisać te wartości.</p>
+                    <div class="stepper">
+                        ${renderStepper('Powtórzenia min', 'repMin', defaults.repMin, 1, 'powt.')}
+                        ${renderStepper('Powtórzenia max', 'repMax', defaults.repMax, 1, 'powt.')}
+                        ${renderStepper('Skok ciężaru', 'increment', defaults.increment, 0.5, 'kg')}
+                    </div>
                 </section>
 
                 <section class="section card">
@@ -53,14 +33,14 @@ export function createSettingsView(app) {
                             ${renderMaterialIcon('calendar_month')}
                             <span class="list__body">
                                 <span class="list__title">Zakładki</span>
-                                <span class="list__meta">${containerCount} ${containerCount === 1 ? 'zakładka' : 'zakładki'}</span>
+                                <span class="list__meta">${containerCount} ${plural(containerCount, 'zakładka', 'zakładki', 'zakładek')}</span>
                             </span>
                         </li>
                         <li class="list__item">
                             ${renderMaterialIcon('fitness_center')}
                             <span class="list__body">
                                 <span class="list__title">Katalog ćwiczeń</span>
-                                <span class="list__meta">${exerciseCount} pozycji</span>
+                                <span class="list__meta">${exerciseCount} ${plural(exerciseCount, 'pozycja', 'pozycje', 'pozycji')}</span>
                             </span>
                         </li>
                         <li class="list__item">
@@ -74,41 +54,33 @@ export function createSettingsView(app) {
                     <button type="button" class="btn btn--ghost btn--block btn--compact" data-action="reload">
                         ${renderMaterialIcon('refresh')}<span>Wczytaj dane z GitHuba</span>
                     </button>
+                    <button type="button" class="btn btn--ghost btn--block btn--compact" data-action="token">
+                        ${renderMaterialIcon('vpn_key')}<span>${tokenService.hasToken() ? 'Zmień token GitHub' : 'Ustaw token GitHub'}</span>
+                    </button>
                     <button type="button" class="btn btn--danger btn--block btn--compact" data-action="clear-session">
                         ${renderMaterialIcon('delete_sweep')}<span>Usuń trwający trening z urządzenia</span>
                     </button>
                 </section>
+
+                ${renderSaveBar(app)}
             `;
         },
 
         bind(root) {
             root.addEventListener('click', event => {
-                const retryExercises = event.target.closest('[data-exercises-retry]');
-                if (retryExercises) {
-                    app.saveExercises();
-                    return;
-                }
-
                 const trigger = event.target.closest('[data-action]');
                 if (!trigger) return;
 
                 const action = trigger.dataset.action;
-                const step = Number(trigger.dataset.step);
 
                 if (action === 'step') {
                     const field = trigger.dataset.field;
                     const current = Number(app.draft.defaults[field]) || 0;
-                    planService.setDefaults(app.draft, { [field]: current + step });
+                    planService.setDefaults(app.draft, { [field]: current + Number(trigger.dataset.step) });
                     app.markPlanDirty();
                 }
-                if (action === 'save-all') {
-                    if (app.isPlanDirty()) app.savePlan();
-                    if (app.isExercisesDirty()) app.saveExercises();
-                }
-                if (action === 'discard-all') {
-                    app.discardPlanDraft();
-                    app.discardExercisesDraft();
-                }
+                if (action === 'save-plan') app.savePlan();
+                if (action === 'discard-plan') app.discardPlanDraft();
                 if (action === 'reload') app.reloadData();
                 if (action === 'clear-session') clearSession(app);
                 if (action === 'token') setToken(app);
@@ -122,20 +94,6 @@ export function createSettingsView(app) {
             });
         }
     };
-}
-
-function renderDefaultsSection(defaults) {
-    return `
-        <section class="section card">
-            <h3 class="card__title">Progresja</h3>
-            <p class="section__hint">Globalny zakres powtórzeń i domyślny skok ciężaru. Każde ćwiczenie w splicie może nadpisać te wartości.</p>
-            <div class="stepper">
-                ${renderStepper('Powtórzenia min', 'repMin', defaults.repMin, 1, 'powt.')}
-                ${renderStepper('Powtórzenia max', 'repMax', defaults.repMax, 1, 'powt.')}
-                ${renderStepper('Skok ciężaru', 'increment', defaults.increment, 0.5, 'kg')}
-            </div>
-        </section>
-    `;
 }
 
 function renderStepper(label, field, value, step, unit) {
@@ -160,16 +118,13 @@ function renderStepper(label, field, value, step, unit) {
 }
 
 function renderSaveBar(app) {
-    const labels = [];
-    if (app.isPlanDirty()) labels.push('plan');
-    if (app.isExercisesDirty()) labels.push('ćwiczenia');
+    if (!app.isPlanDirty()) return '';
 
     return `
         <div class="action-bar action-bar--grid">
-            <button type="button" class="btn btn--ghost" data-action="discard-all">${renderMaterialIcon('undo')}<span>Cofnij</span></button>
-            <button type="button" class="btn btn--primary" data-action="save-all">${renderMaterialIcon('save')}<span>Zapisz</span></button>
+            <button type="button" class="btn btn--ghost" data-action="discard-plan">${renderMaterialIcon('undo')}<span>Cofnij</span></button>
+            <button type="button" class="btn btn--primary" data-action="save-plan">${renderMaterialIcon('save')}<span>Zapisz</span></button>
         </div>
-        <p class="action-bar__hint">Niezapisane zmiany: ${escapeHtml(labels.join(' i '))}.</p>
     `;
 }
 
@@ -200,4 +155,10 @@ function setToken(app) {
             return true;
         }
     }).then(() => app.render());
+}
+
+function plural(count, one, few, many) {
+    if (count === 1) return one;
+    if (count % 10 >= 2 && count % 10 <= 4 && (count % 100 < 12 || count % 100 > 14)) return few;
+    return many;
 }

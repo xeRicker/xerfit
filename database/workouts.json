@@ -1,4 +1,466 @@
 {
   "version": 1,
-  "workouts": []
+  "workouts": [
+    {
+      "id": "session_mv9bn70xdqdr0",
+      "containerId": "cont_default",
+      "containerName": "Październik",
+      "splitId": "split_express",
+      "splitName": "Express",
+      "date": "2026-10-13",
+      "startedAt": "2026-10-13T17:10:00.000Z",
+      "finishedAt": "2026-10-13T17:51:00.000Z",
+      "currentIndex": 0,
+      "exercises": [
+        {
+          "exerciseId": "ex_cable_crunch",
+          "name": "Cable Crunch",
+          "group": "Brzuch",
+          "skipped": false,
+          "repMin": 2,
+          "repMax": 6,
+          "increment": 2.5,
+          "previous": null,
+          "sets": [
+            {
+              "weight": 80,
+              "reps": 6,
+              "done": true
+            }
+          ]
+        },
+        {
+          "exerciseId": "ex_ohp",
+          "name": "OHP",
+          "group": "Barki",
+          "skipped": false,
+          "repMin": 3,
+          "repMax": 7,
+          "increment": 2.5,
+          "previous": null,
+          "sets": [
+            {
+              "weight": 110,
+              "reps": 7,
+              "done": true
+            }
+          ]
+        },
+        {
+          "exerciseId": "ex_reverse_fly",
+          "name": "Reverse Fly",
+          "group": "Barki",
+          "skipped": false,
+          "repMin": 4,
+          "repMax": 8,
+          "increment": 2.5,
+          "previous": null,
+          "sets": [
+            {
+              "weight": 90,
+              "reps": 8,
+              "done": true
+            }
+          ]
+        },
+        {
+          "exerciseId": "ex_triceps_pushdown",
+          "name": "Triceps Down",
+          "group": "Triceps",
+          "skipped": false,
+          "repMin": 4,
+          "repMax": 8,
+          "increment": 2.5,
+          "previous": null,
+          "sets": [
+            {
+              "weight": 100,
+              "reps": 8,
+              "done": true
+            }
+          ]
+        },
+        {
+          "exerciseId": "ex_triceps_dip",
+          "name": "Triceps Dip",
+          "group": "Triceps",
+          "skipped": false,
+          "repMin": 9,
+          "repMax": 13,
+          "increment": 2.5,
+          "previous": null,
+          "sets": [
+            {
+              "weight": 0,
+              "reps": 13,
+              "done": true
+            }
+          ]
+        },
+        {
+          "exerciseId": "ex_reverse_curl",
+          "name": "Reverse Curl",
+          "group": "Biceps",
+          "skipped": false,
+          "repMin": 5,
+          "repMax": 9,
+          "increment": 1.25,
+          "previous": null,
+          "sets": [
+            {
+              "weight": 20,
+              "reps": 9,
+              "done": true
+            }
+          ]
+        },
+        {
+          "exerciseId": "ex_shrugs",
+          "name": "Shrugsy",
+          "group": "Plecy",
+          "skipped": false,
+          "repMin": 6,
+          "repMax": 10,
+          "increment": 5,
+          "previous": null,
+          "sets": [
+            {
+              "weight": 50,
+              "reps": 10,
+              "done": true
+            }
+          ]
+        },
+        {
+          "exerciseId": "ex_t_row",
+          "name": "T-Row",
+          "group": "Plecy",
+          "skipped": false,
+          "repMin": 2,
+          "repMax": 6,
+          "increment": 2.5,
+          "previous": null,
+          "sets": [
+            {
+              "weight": 100,
+              "reps": 6,
+              "done": true
+            }
+          ]
+        },
+        {
+          "exerciseId": "ex_chest_press",
+          "name": "Chest Press",
+          "group": "Klatka",
+          "skipped": false,
+          "repMin": 2,
+          "repMax": 6,
+          "increment": 2.5,
+          "previous": null,
+          "sets": [
+            {
+              "weight": 80,
+              "reps": 6,
+              "done": true
+            }
+          ]
+        },
+        {
+          "exerciseId": "ex_lateral_raise",
+          "name": "Lateral Raise",
+          "group": "Barki",
+          "skipped": false,
+          "repMin": 2,
+          "repMax": 6,
+          "increment": 1.25,
+          "previous": null,
+          "sets": [
+            {
+              "weight": 44,
+              "reps": 6,
+              "done": true
+            }
+          ]
+        }
+      ],
+      "durationMs": 2460000,
+      "volume": 4794,
+      "isPartial": false
+    },
+    {
+      "id": "session_mv9bn70xqgnsq",
+      "containerId": "cont_default",
+      "containerName": "Październik",
+      "splitId": "split_lower",
+      "splitName": "Lower",
+      "date": "2026-10-14",
+      "startedAt": "2026-10-14T15:40:00.000Z",
+      "finishedAt": "2026-10-14T16:27:00.000Z",
+      "currentIndex": 0,
+      "exercises": [
+        {
+          "exerciseId": "ex_leg_press",
+          "name": "Suwnica",
+          "group": "Nogi",
+          "skipped": false,
+          "repMin": 4,
+          "repMax": 8,
+          "increment": 5,
+          "previous": null,
+          "sets": [
+            {
+              "weight": 230,
+              "reps": 8,
+              "done": true
+            }
+          ]
+        },
+        {
+          "exerciseId": "ex_hack_squat",
+          "name": "Hack Squat",
+          "group": "Nogi",
+          "skipped": false,
+          "repMin": 8,
+          "repMax": 12,
+          "increment": 5,
+          "previous": null,
+          "sets": [
+            {
+              "weight": 170,
+              "reps": 12,
+              "done": true
+            }
+          ]
+        },
+        {
+          "exerciseId": "ex_leg_curl",
+          "name": "Uganianie Podudzi",
+          "group": "Nogi",
+          "skipped": false,
+          "repMin": 7,
+          "repMax": 12,
+          "increment": 2.5,
+          "previous": null,
+          "sets": [
+            {
+              "weight": 100,
+              "reps": 11,
+              "done": true
+            },
+            {
+              "weight": 100,
+              "reps": 12,
+              "done": true
+            }
+          ]
+        },
+        {
+          "exerciseId": "ex_adductors",
+          "name": "Przywodziciele",
+          "group": "Nogi",
+          "skipped": false,
+          "repMin": 5,
+          "repMax": 9,
+          "increment": 5,
+          "previous": null,
+          "sets": [
+            {
+              "weight": 125,
+              "reps": 9,
+              "done": true
+            }
+          ]
+        },
+        {
+          "exerciseId": "ex_abductors",
+          "name": "Odwodziciele",
+          "group": "Nogi",
+          "skipped": false,
+          "repMin": 5,
+          "repMax": 9,
+          "increment": 5,
+          "previous": null,
+          "sets": [
+            {
+              "weight": 145,
+              "reps": 9,
+              "done": true
+            }
+          ]
+        },
+        {
+          "exerciseId": "ex_calf_raise",
+          "name": "Łydki",
+          "group": "Nogi",
+          "skipped": false,
+          "repMin": 5,
+          "repMax": 9,
+          "increment": 5,
+          "previous": null,
+          "sets": [
+            {
+              "weight": 220,
+              "reps": 9,
+              "done": true
+            }
+          ]
+        }
+      ],
+      "durationMs": 2820000,
+      "volume": 10590,
+      "isPartial": false
+    },
+    {
+      "id": "session_mv9bn70w3t158",
+      "containerId": "cont_default",
+      "containerName": "Październik",
+      "splitId": "split_upper",
+      "splitName": "Upper",
+      "date": "2026-10-15",
+      "startedAt": "2026-10-15T16:05:00.000Z",
+      "finishedAt": "2026-10-15T16:57:00.000Z",
+      "currentIndex": 0,
+      "exercises": [
+        {
+          "exerciseId": "ex_upper_chest_press",
+          "name": "Upper Chest Press",
+          "group": "Klatka",
+          "skipped": false,
+          "repMin": 4,
+          "repMax": 8,
+          "increment": 2.5,
+          "previous": null,
+          "sets": [
+            {
+              "weight": 110,
+              "reps": 8,
+              "done": true
+            }
+          ]
+        },
+        {
+          "exerciseId": "ex_back_row",
+          "name": "Back Row",
+          "group": "Plecy",
+          "skipped": false,
+          "repMin": 5,
+          "repMax": 9,
+          "increment": 2.5,
+          "previous": null,
+          "sets": [
+            {
+              "weight": 120,
+              "reps": 9,
+              "done": true
+            }
+          ]
+        },
+        {
+          "exerciseId": "ex_butterfly",
+          "name": "Butterfly",
+          "group": "Klatka",
+          "skipped": false,
+          "repMin": 4,
+          "repMax": 8,
+          "increment": 2.5,
+          "previous": null,
+          "sets": [
+            {
+              "weight": 75,
+              "reps": 8,
+              "done": true
+            }
+          ]
+        },
+        {
+          "exerciseId": "ex_pullups",
+          "name": "Pullups",
+          "group": "Plecy",
+          "skipped": false,
+          "repMin": 3,
+          "repMax": 7,
+          "increment": 2.5,
+          "previous": null,
+          "sets": [
+            {
+              "weight": -15,
+              "reps": 7,
+              "done": true
+            }
+          ]
+        },
+        {
+          "exerciseId": "ex_lateral_raise",
+          "name": "Lateral Raise",
+          "group": "Barki",
+          "skipped": false,
+          "repMin": 5,
+          "repMax": 9,
+          "increment": 1.25,
+          "previous": null,
+          "sets": [
+            {
+              "weight": 7.5,
+              "reps": 9,
+              "done": true
+            }
+          ]
+        },
+        {
+          "exerciseId": "ex_reverse_fly",
+          "name": "Reverse Fly",
+          "group": "Barki",
+          "skipped": false,
+          "repMin": 4,
+          "repMax": 8,
+          "increment": 2.5,
+          "previous": null,
+          "sets": [
+            {
+              "weight": 70,
+              "reps": 8,
+              "done": true
+            }
+          ]
+        },
+        {
+          "exerciseId": "ex_biceps",
+          "name": "Biceps",
+          "group": "Biceps",
+          "skipped": false,
+          "repMin": 2,
+          "repMax": 6,
+          "increment": 2.5,
+          "previous": null,
+          "sets": [
+            {
+              "weight": 50,
+              "reps": 6,
+              "done": true
+            }
+          ]
+        },
+        {
+          "exerciseId": "ex_triceps",
+          "name": "Triceps",
+          "group": "Triceps",
+          "skipped": false,
+          "repMin": 4,
+          "repMax": 8,
+          "increment": 2.5,
+          "previous": null,
+          "sets": [
+            {
+              "weight": 70,
+              "reps": 8,
+              "done": true
+            }
+          ]
+        }
+      ],
+      "durationMs": 3120000,
+      "volume": 4152.5,
+      "isPartial": false
+    }
+  ]
 }

@@ -99,7 +99,8 @@ const nav = elements.get('app-nav');
 
 async function visit(hash) {
     window.location.hash = hash;
-    window.dispatchEvent?.('hashchange');
+    view.innerHTML = '';
+    window.dispatchEvent('hashchange');
     await new Promise(resolve => setTimeout(resolve, 10));
     rendered[hash] = view.innerHTML;
     return view.innerHTML;
@@ -107,7 +108,7 @@ async function visit(hash) {
 
 check('shell rendered without load error', !view.innerHTML.includes('error-state'), view.innerHTML.slice(0, 400));
 check('plan view lists seeded split', view.innerHTML.includes('Upper'), view.innerHTML.slice(0, 200));
-check('plan view shows the container', view.innerHTML.includes('Grudzień'), view.innerHTML.slice(0, 200));
+check('plan view shows the container', view.innerHTML.includes('Październik'), view.innerHTML.slice(0, 200));
 check('plan view offers container copy', view.innerHTML.includes('data-action="copy-container"'));
 check('plan view has start button', view.innerHTML.includes('Startuj'));
 check('plan view counts exercises', view.innerHTML.includes('6 ćwiczeń'));
@@ -117,21 +118,21 @@ check('nav marks plan active', nav.innerHTML.includes('aria-current="page"'));
 
 const history = await visit('#/history');
 check('history renders tabs', history.includes('segmented') && history.includes('Treningi'));
-check('history shows empty state', history.includes('Brak treningów'));
+check('history lists the seeded workouts', history.includes('Upper') && history.includes('Lower') && history.includes('Express'), history.replace(/\s+/g, ' ').slice(0, 400));
 
 const exercises = await visit('#/exercises');
-check('catalog lists seeded exercises', exercises.includes('Wyciskanie sztangi leżąc'), exercises.slice(0, 200));
-check('catalog shows group and split usage', exercises.includes('Klatka') && exercises.includes('splitów'));
+check('catalog lists seeded exercises', exercises.includes('Upper Chest Press') && exercises.includes('Suwnica'), exercises.slice(0, 200));
+check('catalog shows split usage without groups', exercises.includes('split'), exercises.replace(/\s+/g, ' ').slice(0, 600));
 check('catalog shows a dash without history', exercises.includes('—'));
-check('catalog shows no workouts yet', exercises.includes('brak treningów'));
+check('catalog shows the last training date', exercises.includes('15.10.2026'), exercises.replace(/\s+/g, ' ').slice(0, 300));
 check('catalog offers a new exercise', exercises.includes('data-action="new-exercise"'));
 
 const settings = await visit('#/settings');
 check('settings renders steppers', settings.includes('stepper__row'));
 check('settings shows global range', settings.includes('Powtórzenia min') && settings.includes('Powtórzenia max'));
 check('settings has no per-split set count', !settings.includes('Serie na start'));
-check('settings reports both files', settings.includes('data-save-status'));
-check('settings shows repo owner', settings.includes('xeRicker/xerfit'));
+check('settings hides the github info panel', !settings.includes('Zapis do GitHuba') && !settings.includes('Gotowe do zapisu'));
+check('settings offers a token button', settings.includes('data-action="token"'));
 
 const summary = await visit('#/summary');
 check('summary without session invites to plan', summary.includes('Brak podsumowania'));
@@ -139,9 +140,9 @@ check('summary without session invites to plan', summary.includes('Brak podsumow
 const workout = await visit('#/workout');
 check('workout route falls back to plan without session', workout.includes('Startuj'));
 
-const exerciseDetail = await visit('#/exercises/ex_bench_press');
-check('catalog detail renders with exercise id param', exerciseDetail.includes('Wyciskanie sztangi leżąc'), exerciseDetail.slice(0, 200));
-check('catalog detail shows usage', exerciseDetail.includes('Grudzień'));
+const exerciseDetail = await visit('#/exercises/ex_upper_chest_press');
+check('catalog detail renders with exercise id param', exerciseDetail.includes('Upper Chest Press'), exerciseDetail.slice(0, 200));
+check('catalog detail shows usage', exerciseDetail.includes('Październik') && exerciseDetail.includes('Upper'));
 
 for (const [route, html] of Object.entries(rendered)) {
     check(`no raw undefined in ${route || '#/plan'}`, !html.includes('undefined'), html.slice(0, 160));

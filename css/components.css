@@ -281,6 +281,31 @@
     color: var(--text-muted);
 }
 
+.exercise-list-item {
+    padding: var(--space-md) 0;
+}
+
+.exercise-list-item__weight {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 2px;
+    flex-shrink: 0;
+}
+
+.section__link {
+    font-size: var(--font-size-caption);
+    font-weight: var(--weight-bold);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--brand-primary);
+    text-decoration: none;
+}
+
+.section__link:hover {
+    text-decoration: underline;
+}
+
 .list {
     display: flex;
     flex-direction: column;

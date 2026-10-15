@@ -5,6 +5,7 @@
   "description": "Mobile-first tracker progresu w treningu siłowym.",
   "scripts": {
     "dev": "node dev-server.js",
-    "check": "node scripts/check-logic.mjs && node scripts/check-render.mjs && node scripts/check-workout.mjs"
+    "check": "node scripts/check-logic.mjs && node scripts/check-render.mjs && node scripts/check-workout.mjs",
+    "check:browser": "node scripts/check-browser.mjs"
   }
 }

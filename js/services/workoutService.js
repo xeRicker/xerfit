@@ -8,6 +8,12 @@ function createSet(weight = 0, reps = 0) {
     return { weight, reps, done: false };
 }
 
+function toSignedWeight(value) {
+    const number = Number(String(value ?? '').replace(',', '.'));
+    if (!Number.isFinite(number)) return 0;
+    return Math.round(number * 100) / 100;
+}
+
 function buildEntry(item, previous) {
     const previousSets = previous ? workoutAnalysis.completedSets(previous.entry) : [];
     const referenceSet = previousSets.at(-1) || null;
@@ -92,7 +98,7 @@ export const workoutService = {
     updateSet(session, index, patch) {
         const set = this.getCurrentEntry(session)?.sets?.[index];
         if (!set) return;
-        if (patch.weight !== undefined) set.weight = Math.max(0, Number(patch.weight) || 0);
+        if (patch.weight !== undefined) set.weight = toSignedWeight(patch.weight);
         if (patch.reps !== undefined) set.reps = Math.max(0, Number.parseInt(patch.reps, 10) || 0);
         if (patch.done !== undefined) set.done = Boolean(patch.done);
         saveSession(session);
@@ -101,7 +107,7 @@ export const workoutService = {
     updateSetAt(session, exerciseIndex, setIndex, patch) {
         const set = session?.exercises?.[exerciseIndex]?.sets?.[setIndex];
         if (!set) return;
-        if (patch.weight !== undefined) set.weight = Math.max(0, Number(patch.weight) || 0);
+        if (patch.weight !== undefined) set.weight = toSignedWeight(patch.weight);
         if (patch.reps !== undefined) set.reps = Math.max(0, Number.parseInt(patch.reps, 10) || 0);
         saveSession(session);
     },
@@ -121,7 +127,7 @@ export const workoutService = {
         if (field === 'weight') {
             const increment = entry.increment || 2.5;
             const step = delta > 0 ? increment : -increment / 2;
-            set.weight = Math.max(0, Math.round((Number(set.weight) + step) * 100) / 100);
+            set.weight = Math.round((Number(set.weight) + step) * 100) / 100;
         } else {
             set.reps = Math.min(entry.repMax + 10, Math.max(0, Number(set.reps) + delta));
         }

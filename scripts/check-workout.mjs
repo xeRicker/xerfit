@@ -49,22 +49,22 @@ const container = plan.containers[0];
 const split = container.splits[0];
 
 const history = [
-    { id: 'w_prev', date: '2026-02-01', finishedAt: '2026-02-01T18:00:00.000Z', containerName: 'Grudzień', splitName: 'Upper', exercises: [
-        { exerciseId: 'ex_bench_press', name: 'Wyciskanie sztangi leżąc', sets: [{ weight: 80, reps: 8, done: true }] },
-        { exerciseId: 'ex_barbell_row', name: 'Wiosłowanie sztangą', sets: [{ weight: 60, reps: 8, done: true }] }
+    { id: 'w_prev', date: '2026-02-01', finishedAt: '2026-02-01T18:00:00.000Z', containerName: 'Październik', splitName: 'Upper', exercises: [
+        { exerciseId: 'ex_upper_chest_press', name: 'Upper Chest Press', sets: [{ weight: 110, reps: 8, done: true }] },
+        { exerciseId: 'ex_back_row', name: 'Back Row', sets: [{ weight: 120, reps: 9, done: true }] }
     ] },
-    { id: 'w_prev2', date: '2026-01-25', finishedAt: '2026-01-25T18:00:00.000Z', containerName: 'Grudzień', splitName: 'Upper', exercises: [
-        { exerciseId: 'ex_bench_press', name: 'Wyciskanie sztangi leżąc', sets: [{ weight: 80, reps: 8, done: true }] }
+    { id: 'w_prev2', date: '2026-01-25', finishedAt: '2026-01-25T18:00:00.000Z', containerName: 'Październik', splitName: 'Upper', exercises: [
+        { exerciseId: 'ex_upper_chest_press', name: 'Upper Chest Press', sets: [{ weight: 110, reps: 8, done: true }] }
     ] },
-    { id: 'w_prev3', date: '2026-01-18', finishedAt: '2026-01-18T18:00:00.000Z', containerName: 'Grudzień', splitName: 'Upper', exercises: [
-        { exerciseId: 'ex_bench_press', name: 'Wyciskanie sztangi leżąc', sets: [{ weight: 80, reps: 8, done: true }] }
+    { id: 'w_prev3', date: '2026-01-18', finishedAt: '2026-01-18T18:00:00.000Z', containerName: 'Październik', splitName: 'Upper', exercises: [
+        { exerciseId: 'ex_upper_chest_press', name: 'Upper Chest Press', sets: [{ weight: 110, reps: 8, done: true }] }
     ] }
 ];
 
 const session = workoutService.createSession(plan, catalog, container, split, history);
-check('split seeds six exercises', session.exercises.length, 6);
-check('session carries container name', session.containerName, 'Grudzień');
-check('previous weight prefilled from history', session.exercises[0].sets[0].weight, 80);
+check('split seeds eight exercises', session.exercises.length, 8);
+check('session carries container name', session.containerName, 'Październik');
+check('previous weight prefilled from history', session.exercises[0].sets[0].weight, 110);
 check('previous reps prefilled from history', session.exercises[0].sets[0].reps, 8);
 check('only one set is seeded', session.exercises.every(entry => entry.sets.length === 1) === true);
 check('first time exercise has no previous', session.exercises[2].previous === null);
@@ -84,31 +84,33 @@ const app = {
 const workout = createWorkoutView(app);
 const workoutHtml = workout.render();
 
-check('workout shows exercise name', workoutHtml.includes('Wyciskanie sztangi leżąc'));
-check('workout shows position', workoutHtml.includes('1/6'));
-check('workout shows split and container', workoutHtml.includes('Upper · Grudzień'));
-check('workout shows previous performance', workoutHtml.includes('80 kg × 8 powt.'));
+check('workout shows exercise name', workoutHtml.includes('Upper Chest Press'));
+check('workout shows position', workoutHtml.includes('1/8'));
+check('workout shows split and container', workoutHtml.includes('Upper · Październik'));
+check('workout shows previous performance', workoutHtml.includes('110 kg × 8 powt.'));
 check('workout shows weight input', workoutHtml.includes('data-input="weight"'));
 check('workout shows reps input', workoutHtml.includes('data-input="reps"'));
-check('workout shows rep range hint', workoutHtml.includes('Zakres 6–10 powt.'));
+check('workout shows rep range hint', workoutHtml.includes('Zakres 4–8 powt.'));
 check('workout has plus and minus steps', (workoutHtml.match(/data-action="adjust"/g) || []).length === 4);
 check('workout seeds a single set chip', (workoutHtml.match(/data-action="toggle-set"/g) || []).length === 1);
 check('single set has no remove button', !workoutHtml.includes('data-action="remove-set"'));
 check('workout always offers add set', workoutHtml.includes('data-action="add-set"'));
-check('workout has skip action', workoutHtml.includes('Pomiń ćwiczenie'));
+check('workout has skip action', workoutHtml.includes('data-action="skip"') && workoutHtml.includes('Pomiń'));
+check('workout has previous and next arrows', workoutHtml.includes('data-action="step-prev"') && workoutHtml.includes('data-action="step-next"'));
+check('first exercise disables the previous arrow', workoutHtml.includes('data-action="step-prev" aria-label="Poprzednie ćwiczenie" disabled'));
 check('workout has confirm set action', workoutHtml.includes('Zapisz serię'));
 check('workout header hides global nav', !workoutHtml.includes('app-nav'));
 
-workoutService.updateSet(session, 0, { weight: 82.5, reps: 6, done: true });
-check('suggestion after a set at 6 reps', workout.render().includes('Dołóż powtórzenie'));
-workoutService.updateSet(session, 0, { reps: 10 });
+workoutService.updateSet(session, 0, { weight: 110, reps: 5, done: true });
+check('suggestion mid range adds a rep', workout.render().includes('Dołóż powtórzenie'));
+workoutService.updateSet(session, 0, { reps: 8 });
 check('suggestion at top of range bumps weight', workout.render().includes('+2.5 kg'));
-workoutService.updateSet(session, 0, { weight: 80, reps: 6 });
+workoutService.updateSet(session, 0, { weight: 105, reps: 5 });
 
 workoutService.addSet(session);
 const withTwo = workout.render();
-check('added set copies the weight', session.exercises[0].sets[1].weight, 82.5);
-check('added set copies the reps', session.exercises[0].sets[1].reps, 10);
+check('added set copies the weight', session.exercises[0].sets[1].weight, 105);
+check('added set copies the reps', session.exercises[0].sets[1].reps, 5);
 check('added set starts empty of done flag', session.exercises[0].sets[1].done === false);
 check('two sets render two chips', (withTwo.match(/data-action="toggle-set"/g) || []).length === 2);
 check('two sets render remove buttons', (withTwo.match(/data-action="remove-set"/g) || []).length === 2);
@@ -116,11 +118,11 @@ check('set counter shows 1 z 2', withTwo.includes('1 z 2'));
 
 workoutService.step(session, 1);
 check('stepping moves to second exercise', session.currentIndex, 1);
-check('second exercise shows its own previous', workout.render().includes('60 kg × 8 powt.'));
+check('second exercise shows its own previous', workout.render().includes('120 kg × 9 powt.'));
 const back = workoutService.step(session, -1);
 check('stepping back returns', [back, session.currentIndex], [true, 0]);
 check('cannot step before the first exercise', workoutService.step(session, -1) === false);
-check('cannot step past the last exercise', workoutService.step({ ...session, currentIndex: 5 }, 1) === false);
+check('cannot step past the last exercise', workoutService.step({ ...session, currentIndex: 7 }, 1) === false);
 
 workoutService.setIndex(session, 5);
 check('jump to any exercise works', session.currentIndex, 5);
@@ -128,7 +130,7 @@ workoutService.setIndex(session, 0);
 
 session.exercises[1].skipped = true;
 workoutService.setIndex(session, 1);
-check('skip action label after skipping', workout.render().includes('Przywróć ćwiczenie'));
+check('skip action label after skipping', workout.render().includes('Przywróć'));
 workoutService.setIndex(session, 0);
 
 const finished = workoutService.finish(session);
@@ -143,7 +145,7 @@ const summaryHtml = summaryView.render();
 check('summary congratulates', summaryHtml.includes('Dobra robota!'));
 check('summary shows duration', summaryHtml.includes('Czas'));
 check('summary shows volume', summaryHtml.includes('Objętość'));
-check('summary names the container', summaryHtml.includes('Grudzień'));
+check('summary names the container', summaryHtml.includes('Październik'));
 check('summary lists plateau section', summaryHtml.includes('Plateau'));
 check('summary shows save status', summaryHtml.includes('data-save-status'));
 

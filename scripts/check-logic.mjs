@@ -134,13 +134,28 @@ workoutService.updateSet(carried, 0, { weight: 50 });
 check('below previous → deload', workoutService.recommendationFor(carried.exercises[0]).level, 'down');
 
 check('estimate 1RM Epley', Math.round(workoutAnalysis.estimateOneRepMax(100, 10)), 133);
+
+const assisted = { sets: [{ weight: -15, reps: 7, done: true }], repMin: 3, repMax: 7, increment: 2.5, previous: { weight: -15, reps: 7 } };
+const bodyweight = { sets: [{ weight: 0, reps: 13, done: true }], repMin: 9, repMax: 13, increment: 2.5, previous: null };
+check('assisted progression removes assistance', workoutAnalysis.recommendationFor(assisted, assisted.previous, assisted).headline, '−2.5 kg asysty');
+check('bodyweight at top of range adds load', workoutAnalysis.recommendationFor(bodyweight, null, bodyweight).level, 'up');
+const assistedDetail = workoutAnalysis.recommendationFor(assisted, assisted.previous, assisted).detail;
+const bodyweightDetail = workoutAnalysis.recommendationFor(bodyweight, null, bodyweight).detail;
+check('assisted keeps the signed weight', assistedDetail, 'Wszystkie serie na 7 powt. Następnym razem zdejmij 2.5 kg asysty (cel: -12.5 kg).');
+check('bodyweight tip names the next load', bodyweightDetail, 'Wszystkie serie na 13 powt. Następnym razem spróbuj 2.5 kg.');
+check('bodyweight below range holds', workoutAnalysis.recommendationFor({ ...bodyweight, sets: [{ weight: 0, reps: 7, done: true }] }, null, bodyweight).level, 'hold');
 check('volume skips undone sets', workoutAnalysis.sessionVolume(threeSetSession), 0);
 workoutService.updateSet(threeSetSession, 0, { weight: 100, reps: 5, done: true });
 check('volume uses done sets', workoutAnalysis.entryVolume(threeSetSession.exercises[0]), 500);
 
 check('catalog weights list every exercise', workoutAnalysis.currentWeights(catalog, history).length, 1);
 check('catalog weight is last top set', workoutAnalysis.currentWeights(catalog, history)[0].weight, 60);
-check('catalog weight ignores splits', workoutAnalysis.currentWeights({ zz: { name: 'Unused', group: 'X' } }, history)[0].weight, 0);
+check('catalog weight ignores splits', workoutAnalysis.currentWeights({ zz: { name: 'Unused', group: 'X' } }, history)[0].weight, null);
+check('bodyweight set has no weight', workoutAnalysis.currentWeights({ bw: { name: 'Dip', group: 'X' } }, [{ id: 'w', date: '2026-02-02', finishedAt: '2026-02-02T10:00:00.000Z', exercises: [{ exerciseId: 'bw', sets: [{ weight: 0, reps: 13, done: true }] }] }])[0].weight, null);
+check('bodyweight set still counts as done', workoutAnalysis.isCompletedSet({ weight: 0, reps: 13, done: true }), true);
+check('assisted set counts as done', workoutAnalysis.isCompletedSet({ weight: -15, reps: 7, done: true }), true);
+check('assisted load uses absolute value', workoutAnalysis.entryVolume({ sets: [{ weight: -15, reps: 7, done: true }] }), 105);
+check('assisted set makes a record', workoutAnalysis.isPersonalRecord([], 'w', { exerciseId: 'p', sets: [{ weight: -15, reps: 7, done: true }] }), true);
 check('personal record beats history', workoutAnalysis.isPersonalRecord(history, 'w9', { exerciseId: 'ex_a', sets: [{ weight: 70, reps: 8, done: true }] }), true);
 check('same load is not a record', workoutAnalysis.isPersonalRecord(history, 'w9', { exerciseId: 'ex_a', sets: [{ weight: 60, reps: 8, done: true }] }), false);
 

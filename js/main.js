@@ -49,15 +49,15 @@ const app = {
         return JSON.stringify(this.draftExercises) !== JSON.stringify(this.exercises);
     },
     markPlanDirty() {
-        render({ force: true });
+        render();
     },
     markExercisesDirty({ render: repaint = false } = {}) {
-        if (repaint) render({ force: true });
+        if (repaint) render();
     },
     selectContainer(containerId) {
         this.planUI.containerId = containerId;
         this.planUI.selectedSplitId = null;
-        render({ force: true });
+        render();
     },
     render,
     go,
@@ -83,6 +83,7 @@ const views = {
 };
 
 const root = document.getElementById('view');
+const boundRoutes = new Set();
 
 window.addEventListener('hashchange', render);
 boot();
@@ -146,8 +147,7 @@ async function reloadData() {
     if (ok) notify('Dane wczytane.', { type: 'success' });
 }
 
-function render(options = {}) {
-    const force = options.force === true;
+function render() {
     const { route, param } = parseRoute();
     const showNav = route !== 'workout';
 
@@ -155,20 +155,15 @@ function render(options = {}) {
     renderNav(showNav, route);
 
     if (!app.isReady) {
-        app.renderedRoute = null;
         renderLoading();
         return;
     }
 
     if (app.loadError) {
-        app.renderedRoute = null;
         root.innerHTML = renderLoadError();
         root.querySelector('[data-action="reload"]')?.addEventListener('click', reloadData);
         return;
     }
-
-    const routeKey = `${route}/${param || ''}`;
-    if (!force && app.renderedRoute === routeKey && root.innerHTML) return;
 
     if (route === 'workout' && !app.session) {
         go('#/plan');
@@ -180,8 +175,11 @@ function render(options = {}) {
 
     const view = views[route] || views.plan;
     root.innerHTML = view.render();
-    view.bind(root);
-    app.renderedRoute = routeKey;
+
+    if (!boundRoutes.has(route)) {
+        view.bind(root);
+        boundRoutes.add(route);
+    }
 }
 
 function renderHeader(route) {
@@ -198,15 +196,7 @@ function renderHeader(route) {
             <span class="brand__mark material-symbols-rounded" aria-hidden="true">bolt</span>
             <span class="brand__name">XERFIT</span>
         </div>
-        <span class="header-meta">${escapeMeta(subtitleFor(route))}</span>
     `;
-}
-
-function subtitleFor(route) {
-    if (route === 'history') return `${app.workouts.length} treningów`;
-    if (route === 'settings') return 'Ustawienia progresji';
-    if (route === 'exercises') return `${Object.keys(app.draftExercises).length} ćwiczeń`;
-    return app.currentContainer()?.name || 'Plan';
 }
 
 function renderNav(show, route) {
@@ -273,7 +263,7 @@ function promptResume() {
         }
         app.session = null;
         workoutService.clearFromDevice();
-        render({ force: true });
+        render();
     });
 }
 
@@ -281,7 +271,7 @@ function advanceAfterExercise() {
     const moved = workoutService.step(app.session, 1);
     if (moved) {
         notify('Ćwiczenie gotowe.', { type: 'success' });
-        render({ force: true });
+        render();
         return;
     }
     finishWorkout();
@@ -323,14 +313,14 @@ function finishWorkout() {
 
 async function pushSummary(session) {
     app.summarySave = { state: 'saving' };
-    render({ force: true });
+    render();
 
     try {
         await workoutService.save(session);
         app.summarySave = { state: 'saved' };
         app.workouts = [...app.workouts.filter(item => item.id !== session.id), session];
         storageService.clear(STORAGE_KEYS.PENDING_SAVE);
-        render({ force: true });
+        render();
     } catch (error) {
         app.summarySave = {
             state: 'error',
@@ -339,7 +329,7 @@ async function pushSummary(session) {
             actionLabel: 'Ponów'
         };
         storageService.write(STORAGE_KEYS.PENDING_SAVE, session);
-        render({ force: true });
+        render();
     }
 }
 
@@ -372,7 +362,7 @@ function promptPendingSave() {
 
 async function savePlan() {
     app.planSave = { state: 'saving' };
-    render({ force: true });
+    render();
 
     try {
         await planService.save(app.draft);
@@ -387,12 +377,12 @@ async function savePlan() {
             actionLabel: 'Ponów'
         };
     }
-    render({ force: true });
+    render();
 }
 
 async function saveExercises() {
     app.exercisesSave = { state: 'saving' };
-    render({ force: true });
+    render();
 
     try {
         await exercisesService.save(app.draftExercises);
@@ -407,7 +397,7 @@ async function saveExercises() {
             actionLabel: 'Ponów'
         };
     }
-    render({ force: true });
+    render();
 }
 
 function discardPlanDraft() {
@@ -416,25 +406,25 @@ function discardPlanDraft() {
     app.planUI.containerId = app.plan.containers[0]?.id || null;
     app.planSave = { state: 'idle' };
     notify('Zmiany planu cofnięte.', { type: 'info' });
-    render({ force: true });
+    render();
 }
 
 function discardExercisesDraft() {
     app.draftExercises = JSON.parse(JSON.stringify(app.exercises));
     app.exercisesSave = { state: 'idle' };
     notify('Zmiany katalogu cofnięte.', { type: 'info' });
-    render({ force: true });
+    render();
 }
 
 function clearSession() {
     app.session = null;
     workoutService.clearFromDevice();
-    render({ force: true });
+    render();
 }
 
 function go(hash) {
     if (window.location.hash !== hash) window.location.hash = hash;
-    render({ force: true });
+    render();
 }
 
 function parseRoute() {

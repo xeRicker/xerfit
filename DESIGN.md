@@ -146,11 +146,11 @@ Treningowy, głośny, czytelny z odległości wyciągniętej ręki. Czarny canva
 - **Container tabs (zakładki):** poziomy pasek przewijanych chipów nad treścią planu. Aktywna zakładka ma limonkowy tekst, limonkową obwódkę i tło `brand-lime-dimmer`. Ostatni chip to przerywany „+” na nową zakładkę.
 - **Stepper wartości:** duże pole numeryczne w Barlow Condensed italic pomiędzy dwoma przyciskami +/− po 60px. Obsługuje wpisanie wartości z klawiatury numerycznej telefonu.
 - **Set chip:** wiersz serii z numerem lub checkiem, wartością `ciężar × powtórzenia` i akcjami edycji oraz usunięcia. Stan zapisany to limonkowe tło i limonkowa obwódka, stan aktywny dostaje dodatkowy pierścień. Sesja startuje z jednym chipem — przycisk usunięcia pojawia się dopiero przy drugiej serii, a „Dodaj serię” jest zawsze widoczny.
-- **Logger:** docelowo jedno pole ciężaru i jedno pole powtórzeń na ekranie. Kolejne serie dodajesz świadomie, nie są wypełniane z góry.
+- **Logger:** jedno pole ciężaru i jedno pole powtórzeń na ekranie. Kolejne serie dodajesz świadomie, nie są wypełniane z góry. Pasek akcji trybu treningu (Pomiń + Zapisz serię, 60px) siedzi na stałe na dole ekranu, nie w treści strony — kciuk ma go pod ręką, a treść robi zapas miejsca.
 - **Badge progresji:** mały, pod polem wpisywania, w trzech wariantach: `up` (limonka, dołożenie ciężaru lub powtórzenia), `hold` (warning, utrzymanie ciężaru), `down` (info, zejście z ciężarem). Nigdy nie zasłania pól.
 - **Wykresy:** własne SVG, nie biblioteka. Limonkowa linia, numeryczne etykiety osi, kropki z tooltipem. Jeden wykres na ćwiczenie, przełączany metrykami (ciężar, 1RM, powtórzenia, objętość).
 - **Feedback:** `dialogService` (alert / confirm / confirmDanger / prompt), `sheetService` (arkusz dolny do wyboru ćwiczenia z katalogu i formularzy) i `notify` (toast). Bez natywnych `alert`, `confirm`, `prompt` i bez natywnych `select`.
-- **Status zapisu:** jeden komponent `renderSaveStatus` ze stanami `idle`, `saving`, `saved`, `error`. Osobny status dla planu i dla katalogu ćwiczeń; w stanie `error` zawsze pokazuje akcję ponowienia, bo dane nigdy nie mogą zginąć.
+- **Pasek zapisu:** pojawia się tylko wtedy, gdy jest co zapisać — ciemna pływająca karta (Cofnij + Zapisz) nad dolną nawigacją, znikająca po zapisaniu. Nigdy nie jest widoczny bez zmian.
 - **Icons:** Material Symbols Rounded jako znaczniki funkcji, nie ozdoby.
 
 ## Copy

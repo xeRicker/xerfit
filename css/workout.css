@@ -178,6 +178,10 @@
     text-align: center;
 }
 
+.logger__hint--assist {
+    color: var(--brand-primary);
+}
+
 .suggestion {
     display: flex;
     align-items: center;

@@ -4,8 +4,10 @@ Mobile-first tracker progresu w treningu siłowym: katalog ćwiczeń, zakładki 
 
 ## Commands
 - `node dev-server.js` — serves the site on http://localhost:8100 and handles local JSON `PUT` under `database/`. Without it the site opens but local saves fail; check its terminal for save errors.
-- `npm run check` — sanity checks for pure logic, view rendering and the workout flow (`scripts/check-*.mjs`). These are throwaway harnesses, not a test runner: they stub `window`/`document`/`localStorage`/`fetch` in Node and load the real modules, so they catch crashes and wrong output, not layout.
+- `npm run check` — Node sanity checks for pure logic, view rendering and the workout flow (`scripts/check-*.mjs`). These stub `window`/`document`/`localStorage`/`fetch` and load the real modules, so they catch crashes and wrong output, but they never exercise real event handling.
+- `npm run check:browser` — drives headless Chrome over the DevTools Protocol (needs `node dev-server.js` running): real clicks, real layout measurements at 390×844, and it restores `database/*.json` afterwards. Use it for anything involving clicks, state and repaints; `npm run check` alone will not catch those bugs.
 - After any CSS change, check a mobile viewport (390px). Nothing may scroll horizontally.
+- `node scripts/seed-workouts.mjs` — regenerates `database/workouts.json` from the set lists inside the script. It exists so a factory-reset database can be restored; do not run it over real training history.
 
 ## Never
 - Native `alert/confirm/prompt` or native `select` — use `dialogService` / `sheetService` / `notify` from `js/ui/components/dialogs.js`.
@@ -15,6 +17,7 @@ Mobile-first tracker progresu w treningu siłowym: katalog ćwiczeń, zakładki 
 - Empty or log-only `catch`. Every catch shows a notice/dialog or rethrows. A failed fetch/write never resolves to a silent default.
 - Hardcoding, logging or printing the GitHub token. `config.js` ships the literal `__GH_TOKEN__`; only the deploy workflow replaces it, `js/services/token.js` may hold a browser-local override.
 - Losing a finished workout when the GitHub write fails: keep the record and show the retry action.
+- A guard that skips repainting when the route has not changed, or calling `bind()` again on a re-render. Both silently break in-place actions — see the failure log.
 
 ## Ask first
 - Changing the JSON data shape (touches `api.js`, `planService.js`, `workoutService.js`, `workoutAnalysis.js` and every view together).
@@ -43,7 +46,12 @@ Mobile-first tracker progresu w treningu siłowym: katalog ćwiczeń, zakładki 
 - The site must stay unindexed (`robots.txt` disallow, `noindex` in `index.html`).
 
 ## Routes
-Hash routing in `js/main.js`: `#/plan`, `#/exercises` (with optional `#/exercises/<exerciseId>`), `#/workout`, `#/summary`, `#/history` (with optional `#/history/<exerciseId>`), `#/settings`. The Historia tab (Treningi / Ćwiczenia) is view state in `app.historyUI.tab`, not a route. `render()` is idempotent per route and skips repainting when the route has not changed — state handlers call `app.render({ force: true })` to repaint in place, and `app.markPlanDirty()` repaints on its own. `#/workout` hides the bottom nav and falls back to `#/plan` without a live session.
+Hash routing in `js/main.js`: `#/plan`, `#/exercises` (with optional `#/exercises/<exerciseId>`), `#/workout`, `#/summary`, `#/history` (with optional `#/history/<exerciseId>`), `#/settings`. The Historia tab (Treningi / Ćwiczenia) is view state in `app.historyUI.tab`, not a route. `render()` always repaints the current route; `hashchange` is the only caller that needs no repaint logic, and it repaints too. The listener for each route is attached exactly once (see `boundRoutes`), and views keep no state in closures, so re-rendering is safe. `#/workout` hides the bottom nav and falls back to `#/plan` without a live session.
+
+## Render path
+- Views read current state, never the last saved snapshot: `app.draft` (plan) and `app.draftExercises` (catalog). Reading `app.plan` / `app.exercises` in a view makes in-memory edits invisible and greys out nothing — the bug always looks like "the button does nothing".
+- `app.markPlanDirty()` / `app.markExercisesDirty()` repaint; the dirty flag is derived, so save bars appear and disappear on their own.
+- Floating save bars (`.action-bar`) are `position: fixed` above the bottom nav and render only when there is something to save; the workout's own thumb bar is `.workout-actions`.
 
 ## Conventions
 - Tokens only: colors from `css/theme/palette.css`, fonts via `--font-heading` / `--font-body`. A new palette role is added to `palette.css` and `DESIGN.md` in the same change.
@@ -64,3 +72,8 @@ Hash routing in `js/main.js`: `#/plan`, `#/exercises` (with optional `#/exercise
 
 ## Failure log
 Add one imperative line, specific to this repo, whenever you are corrected on something.
+- Never skip the repaint when a route is unchanged: every in-place action (workout +/-, steppers, copying a container) mutates state and then re-renders, and a "same route" guard made all of them look dead.
+- Never attach a view's event listeners on every render: the handlers accumulated, so one tap on „Dodaj serię” added nine sets and one tap on „+” jumped two steps. Bind each route once (`boundRoutes` in `main.js`).
+- Never read `app.plan` / `app.exercises` in a view: they are the last saved snapshot, so in-memory edits (new container, copied zakładka) never appeared. Views read `app.draft` / `app.draftExercises`.
+- Verify click behaviour in `npm run check:browser`, not `npm run check`: the Node stubs never dispatch events, so a fully broken button passes every Node check.
+- Kill any stale `node dev-server.js` before trusting a browser run — an old server on port 8100 keeps serving the previous revision and makes fixed bugs look unfixed.

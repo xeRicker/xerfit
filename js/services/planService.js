@@ -103,7 +103,7 @@ function copyContainer(plan, containerId) {
 
     const copy = {
         id: generateId('cont'),
-        name: uniqueContainerName(plan, `${source.name} kopia`),
+        name: uniqueContainerName(plan, `${stripCopySuffix(source.name)} kopia`),
         splits: source.splits.map(split => ({
             id: generateId('split'),
             name: split.name,
@@ -113,6 +113,10 @@ function copyContainer(plan, containerId) {
 
     plan.containers.push(copy);
     return copy;
+}
+
+function stripCopySuffix(name) {
+    return String(name).replace(/(\s+kopia)(\s+\d+)?$/i, '');
 }
 
 function uniqueContainerName(plan, name) {
