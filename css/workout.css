@@ -1,0 +1,295 @@
+.workout-topbar {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+.workout-topbar__position {
+    font-family: var(--font-heading);
+    font-style: italic;
+    font-weight: var(--weight-black);
+    font-size: 22px;
+    line-height: 1;
+    color: var(--brand-primary);
+}
+
+.workout-topbar__split {
+    font-size: var(--font-size-caption);
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-weight: var(--weight-bold);
+}
+
+.workout-progress {
+    height: 6px;
+    border-radius: var(--radius-pill);
+    background-color: var(--app-surface-raised);
+    overflow: hidden;
+    margin-top: calc(var(--space-md) * -1);
+}
+
+.workout-progress__fill {
+    display: block;
+    height: 100%;
+    border-radius: var(--radius-pill);
+    background-color: var(--brand-primary);
+    transition: width 200ms ease;
+}
+
+.exercise-stage {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+}
+
+.exercise-stage__head {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+    align-items: flex-start;
+}
+
+.exercise-stage__name {
+    font-size: 30px;
+    overflow-wrap: anywhere;
+}
+
+.previous-line {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--space-md);
+    padding: var(--space-sm) var(--space-md);
+    border-radius: var(--radius-sm);
+    background-color: var(--app-surface);
+    border: 1px solid var(--app-border);
+}
+
+.previous-line__label {
+    font-size: var(--font-size-caption);
+    font-weight: var(--weight-bold);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+}
+
+.previous-line__value {
+    font-family: var(--font-heading);
+    font-style: italic;
+    font-weight: var(--weight-bold);
+    font-size: 21px;
+}
+
+.logger {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-lg);
+}
+
+.logger__field {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+}
+
+.logger__label {
+    font-size: var(--font-size-caption);
+    font-weight: var(--weight-bold);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+}
+
+.logger__row {
+    display: grid;
+    grid-template-columns: var(--tap-target-large) 1fr var(--tap-target-large);
+    gap: var(--space-sm);
+    align-items: stretch;
+}
+
+.logger__step {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: var(--tap-target-large);
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--app-border-strong);
+    background-color: var(--app-surface-raised);
+    color: var(--brand-primary);
+    transition: background-color 100ms ease, transform 80ms ease;
+}
+
+.logger__step .material-symbols-rounded {
+    font-size: 30px;
+    font-weight: 700;
+}
+
+.logger__step:active {
+    background-color: var(--brand-primary-subtle);
+    transform: scale(0.96);
+}
+
+.logger__input-wrap {
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    gap: var(--space-xs);
+    padding: 0 var(--space-sm);
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--app-border);
+    background-color: var(--app-surface);
+    min-width: 0;
+}
+
+.logger__input-wrap:focus-within {
+    border-color: var(--brand-primary);
+    box-shadow: 0 0 0 3px var(--brand-primary-glow);
+}
+
+.logger__input {
+    width: 100%;
+    min-width: 0;
+    border: none;
+    background: none;
+    outline: none;
+    text-align: center;
+    font-family: var(--font-heading);
+    font-style: italic;
+    font-weight: var(--weight-black);
+    font-size: var(--font-size-display);
+    line-height: 1;
+    padding: 6px 0;
+    color: var(--text-primary);
+    font-variant-numeric: tabular-nums;
+}
+
+.logger__unit {
+    font-size: var(--font-size-label);
+    font-weight: var(--weight-bold);
+    color: var(--text-muted);
+    flex-shrink: 0;
+}
+
+.logger__hint {
+    font-size: var(--font-size-caption);
+    color: var(--text-muted);
+    text-align: center;
+}
+
+.suggestion {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    flex-wrap: wrap;
+    padding: var(--space-sm) var(--space-md);
+    border-radius: var(--radius-sm);
+    background-color: var(--app-surface);
+    border: 1px solid var(--app-border);
+}
+
+.suggestion__detail {
+    font-size: var(--font-size-caption);
+    color: var(--text-muted);
+    flex: 1;
+    min-width: 0;
+}
+
+.set-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+}
+
+.set-chips {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-sm);
+}
+
+.set-chip {
+    display: flex;
+    align-items: stretch;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--app-border);
+    background-color: var(--app-surface);
+    overflow: hidden;
+}
+
+.set-chip.is-done {
+    border-color: color-mix(in srgb, var(--brand-primary) 40%, transparent);
+    background-color: var(--brand-primary-dimmer);
+}
+
+.set-chip.is-active {
+    border-color: var(--brand-primary);
+    box-shadow: 0 0 0 2px var(--brand-primary-glow);
+}
+
+.set-chip__main {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    min-height: var(--tap-target);
+    padding: 0 var(--space-md);
+    min-width: 0;
+    text-align: left;
+}
+
+.set-chip__index {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background-color: var(--app-surface-raised);
+    color: var(--text-secondary);
+    font-size: var(--font-size-caption);
+    font-weight: var(--weight-bold);
+    flex-shrink: 0;
+}
+
+.set-chip.is-done .set-chip__index {
+    background-color: var(--brand-primary);
+    color: var(--app-text-inverse);
+}
+
+.set-chip__index .material-symbols-rounded {
+    font-size: 15px;
+}
+
+.set-chip__value {
+    font-weight: var(--weight-medium);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.set-chip__edit,
+.set-chip__remove {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    min-height: var(--tap-target);
+    color: var(--text-muted);
+    border-left: 1px solid var(--app-border);
+}
+
+.set-chip__edit .material-symbols-rounded,
+.set-chip__remove .material-symbols-rounded {
+    font-size: 18px;
+}
+
+.set-chip__remove:disabled {
+    opacity: 0.3;
+}
+
+.set-chip__edit:hover,
+.set-chip__remove:hover:not(:disabled) {
+    color: var(--text-primary);
+    background-color: var(--app-surface-raised);
+}

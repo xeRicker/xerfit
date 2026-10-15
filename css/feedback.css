@@ -1,0 +1,260 @@
+.feedback-layer {
+    position: fixed;
+    inset: 0;
+    z-index: 60;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    padding: var(--space-lg);
+    padding-bottom: calc(var(--space-lg) + var(--safe-bottom));
+    background-color: rgba(3, 4, 2, 0.72);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 160ms ease, visibility 160ms ease;
+}
+
+.feedback-layer.is-open {
+    opacity: 1;
+    visibility: visible;
+}
+
+.feedback-card {
+    width: 100%;
+    max-width: 420px;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+    padding: var(--space-xl);
+    border-radius: var(--radius-lg);
+    background-color: var(--app-surface-overlay);
+    border: 1px solid var(--app-border-strong);
+    box-shadow: var(--shadow-overlay);
+    transform: translateY(12px);
+    transition: transform 180ms ease;
+}
+
+.feedback-layer.is-open .feedback-card {
+    transform: translateY(0);
+}
+
+.feedback-card__title {
+    font-size: var(--font-size-heading);
+}
+
+.feedback-card__message {
+    font-size: var(--font-size-label);
+    color: var(--text-secondary);
+    overflow-wrap: anywhere;
+}
+
+.feedback-card__actions {
+    display: flex;
+    gap: var(--space-sm);
+    margin-top: var(--space-xs);
+}
+
+.feedback-card__actions .btn {
+    flex: 1;
+}
+
+.sheet {
+    position: fixed;
+    inset: 0;
+    z-index: 70;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    background-color: rgba(3, 4, 2, 0.72);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 160ms ease, visibility 160ms ease;
+}
+
+.sheet.is-open {
+    opacity: 1;
+    visibility: visible;
+}
+
+.sheet__panel {
+    width: 100%;
+    max-width: var(--shell-width);
+    max-height: 88dvh;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+    padding: var(--space-lg) var(--space-lg) calc(var(--space-lg) + var(--safe-bottom));
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    background-color: var(--app-surface);
+    border-top: 1px solid var(--app-border-strong);
+    transform: translateY(16px);
+    transition: transform 200ms ease;
+}
+
+.sheet.is-open .sheet__panel {
+    transform: translateY(0);
+}
+
+.sheet__handle {
+    width: 42px;
+    height: 4px;
+    margin: 0 auto;
+    border-radius: var(--radius-pill);
+    background-color: var(--app-border-strong);
+    flex-shrink: 0;
+}
+
+.sheet__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-md);
+}
+
+.sheet__title {
+    font-size: var(--font-size-heading);
+}
+
+.sheet__search {
+    display: flex;
+    gap: var(--space-sm);
+}
+
+.sheet__body {
+    flex: 1;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+}
+
+.sheet__actions {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+}
+
+.chip-row {
+    display: flex;
+    gap: var(--space-sm);
+    flex-wrap: wrap;
+}
+
+.chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    min-height: 36px;
+    padding: 0 var(--space-md);
+    border-radius: var(--radius-pill);
+    border: 1px solid var(--app-border);
+    background-color: var(--app-surface);
+    color: var(--text-secondary);
+    font-size: var(--font-size-caption);
+    font-weight: var(--weight-bold);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.chip[aria-pressed="true"] {
+    color: var(--brand-primary);
+    border-color: var(--brand-primary);
+    background-color: var(--brand-primary-dimmer);
+}
+
+.sheet-group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xs);
+}
+
+.sheet-group__title {
+    font-size: var(--font-size-caption);
+    font-weight: var(--weight-bold);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    padding: var(--space-sm) 0 var(--space-xs);
+}
+
+.toast-stack {
+    position: fixed;
+    left: 50%;
+    bottom: calc(var(--nav-height) + var(--safe-bottom) + var(--space-xl));
+    transform: translateX(-50%);
+    z-index: 80;
+    width: calc(100% - var(--space-lg) * 2);
+    max-width: calc(var(--shell-width) - var(--space-lg) * 2);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+    pointer-events: none;
+}
+
+.toast {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    padding: var(--space-md) var(--space-lg);
+    border-radius: var(--radius-md);
+    background-color: var(--app-surface-overlay);
+    border: 1px solid var(--app-border-strong);
+    box-shadow: var(--shadow-overlay);
+    font-size: var(--font-size-label);
+    color: var(--text-primary);
+    animation: toast-in 180ms ease;
+}
+
+.toast .material-symbols-rounded {
+    font-size: 20px;
+}
+
+.toast--success .material-symbols-rounded { color: var(--brand-primary); }
+.toast--danger .material-symbols-rounded { color: var(--danger-color); }
+.toast--warning .material-symbols-rounded { color: var(--app-warning); }
+.toast--info .material-symbols-rounded { color: var(--app-info); }
+
+.save-status {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    padding: var(--space-md) var(--space-lg);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--app-border-strong);
+    background-color: var(--app-surface-raised);
+    font-size: var(--font-size-label);
+}
+
+.save-status .material-symbols-rounded {
+    font-size: 20px;
+}
+
+.save-status__body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+.save-status__title {
+    font-weight: var(--weight-bold);
+}
+
+.save-status__detail {
+    font-size: var(--font-size-caption);
+    color: var(--text-muted);
+    overflow-wrap: anywhere;
+}
+
+.save-status--saving { border-color: color-mix(in srgb, var(--app-info) 40%, transparent); }
+.save-status--saving .material-symbols-rounded { color: var(--app-info); }
+.save-status--saved { border-color: color-mix(in srgb, var(--brand-primary) 45%, transparent); }
+.save-status--saved .material-symbols-rounded { color: var(--brand-primary); }
+.save-status--error { border-color: color-mix(in srgb, var(--danger-color) 45%, transparent); background-color: var(--app-danger-bg); }
+.save-status--error .material-symbols-rounded { color: var(--danger-color); }
+
+@keyframes toast-in {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+}

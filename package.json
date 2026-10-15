@@ -1,0 +1,10 @@
+{
+  "name": "xerfit",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Mobile-first tracker progresu w treningu siłowym.",
+  "scripts": {
+    "dev": "node dev-server.js",
+    "check": "node scripts/check-logic.mjs && node scripts/check-render.mjs && node scripts/check-workout.mjs"
+  }
+}

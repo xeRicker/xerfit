@@ -1,47 +1,62 @@
 ---
-name: Burbone
-description: Dark, dense operations hub for a burger restaurant. One neon-orange accent signals action and state.
+name: XERFIT
+description: Dark, mobile-first tracker progresu w treningu siłowym. Neonowa limonka oznacza akcję, postęp i rekord.
 colors:
-  brand-orange: "#D4521A"
-  brand-orange-hover: "#E76A32"
-  brand-orange-pressed: "#B74112"
-  brand-orange-subtle: "#3A2118"
-  app-black: "#151312"
-  surface-dark: "#1F1B19"
-  surface-raised: "#28221F"
-  surface-overlay: "#302824"
-  text-primary: "#F2ECE8"
-  text-secondary: "#C8BAB3"
-  text-muted: "#A3948B"
-  success: "#7DCE82"
-  danger: "#FF8F82"
-  warning: "#F6C85F"
-  info: "#7AB8FF"
+  brand-lime: "#C6FF00"
+  brand-lime-hover: "#D6FF3D"
+  brand-lime-pressed: "#A8DC00"
+  brand-lime-subtle: "#26310A"
+  brand-lime-dimmer: "#1A2207"
+  app-black: "#070806"
+  surface-dark: "#141613"
+  surface-raised: "#1C1F1A"
+  surface-overlay: "#242821"
+  text-primary: "#F4F7EF"
+  text-secondary: "#B4BCA9"
+  text-muted: "#838B79"
+  success: "#9BE564"
+  danger: "#FF7A6B"
+  warning: "#FFC94D"
+  info: "#7BC6FF"
 typography:
   display:
-    fontFamily: "Segoe UI, -apple-system, BlinkMacSystemFont, sans-serif"
-    fontSize: "24px"
-    fontWeight: 700
-    lineHeight: 1.2
+    fontFamily: "Barlow Condensed, Arial Narrow, sans-serif"
+    fontSize: "46px"
+    fontWeight: 800
+    fontStyle: italic
+    lineHeight: 0.95
   title:
-    fontFamily: "Segoe UI, -apple-system, BlinkMacSystemFont, sans-serif"
-    fontSize: "18px"
+    fontFamily: "Barlow Condensed, Arial Narrow, sans-serif"
+    fontSize: "27px"
     fontWeight: 700
-    lineHeight: 1.3
+    fontStyle: italic
+    lineHeight: 1.05
+  heading:
+    fontFamily: "Barlow Condensed, Arial Narrow, sans-serif"
+    fontSize: "19px"
+    fontWeight: 700
+    fontStyle: italic
+    lineHeight: 1.1
   body:
-    fontFamily: "Segoe UI, -apple-system, BlinkMacSystemFont, sans-serif"
-    fontSize: "14px"
+    fontFamily: "Barlow, -apple-system, Segoe UI, sans-serif"
+    fontSize: "15px"
     fontWeight: 400
-    lineHeight: 1.5
+    lineHeight: 1.45
   label:
-    fontFamily: "Segoe UI, -apple-system, BlinkMacSystemFont, sans-serif"
+    fontFamily: "Barlow, -apple-system, Segoe UI, sans-serif"
+    fontSize: "13px"
+    fontWeight: 500
+    lineHeight: 1.4
+  caption:
+    fontFamily: "Barlow, -apple-system, Segoe UI, sans-serif"
     fontSize: "12px"
     fontWeight: 700
-    lineHeight: 1.2
-    letterSpacing: "0.02em"
+    lineHeight: 1.3
+    letterSpacing: "0.06em"
 rounded:
-  sm: "6px"
-  md: "12px"
+  sm: "8px"
+  md: "14px"
+  lg: "20px"
   pill: "999px"
 spacing:
   xs: "4px"
@@ -50,77 +65,109 @@ spacing:
   lg: "16px"
   xl: "20px"
   2xl: "24px"
+  3xl: "32px"
 components:
   button-primary:
-    backgroundColor: "{colors.brand-orange}"
+    backgroundColor: "{colors.brand-lime}"
     textColor: "{colors.app-black}"
     rounded: "{rounded.sm}"
-    padding: "8px 20px"
+    minHeight: "48px"
+    padding: "0 16px"
+  button-secondary:
+    backgroundColor: "{colors.surface-raised}"
+    textColor: "{colors.text-primary}"
+    rounded: "{rounded.sm}"
+    minHeight: "48px"
   button-ghost:
     backgroundColor: "transparent"
     textColor: "{colors.text-secondary}"
     rounded: "{rounded.sm}"
-    padding: "8px 20px"
+    minHeight: "48px"
   card:
     backgroundColor: "{colors.surface-dark}"
     rounded: "{rounded.md}"
-    padding: "24px"
+    padding: "16px"
   input:
     backgroundColor: "{colors.surface-raised}"
     textColor: "{colors.text-primary}"
     rounded: "{rounded.sm}"
-    padding: "8px 12px"
+    minHeight: "48px"
+    padding: "0 12px"
+  number-display:
+    backgroundColor: "{colors.surface-dark}"
+    textColor: "{colors.text-primary}"
+    fontFamily: "Barlow Condensed italic"
+    fontSize: "46px"
+    fontWeight: 800
 ---
 
-# Design System: Burbone
+# Design System: XERFIT
 
-Professional, calm, scannable. Hierarchy comes from tonal contrast, text size and sparing orange — never from decoration.
+Treningowy, głośny, czytelny z odległości wyciągniętej ręki. Czarny canvas, ciemne karty i jedna limonka, która zawsze coś znaczy.
 
 ## Hard limits
-- **4 font sizes (24 / 18 / 14 / 12), 2 weights (400 / 700), one family.** No new sizes; handle overflow with wrapping or layout, not smaller text.
-- **Spacing only from the scale** (4, 8, 12, 16, 20, 24). No arbitrary pixel values.
-- **Colors only from the tokens above.** No new dominant colors, no gradients, no pure white or pure black as primary contrast.
-- **Emphasis budget:** roughly 60% app-black/neutral, 30% surfaces, 10% orange. If everything is highlighted, nothing is.
+- **Wyłącznie dark mode.** Bez trybu jasnego, bez przełącznika, bez `prefers-color-scheme`.
+- **7 stopni tekstu (46 / 30 / 27 / 19 / 15 / 13 / 12).** Duże liczby i nagłówki to zawsze Barlow Condensed italic; tekst interfejsu to Barlow. Bez nowych rozmiarów — przepełnienie rozwiązuje zawijanie i layout.
+- **Spacing tylko ze skali** (4, 8, 12, 16, 20, 24, 32). Bez dowolnych pikseli.
+- **Kolory tylko z tokenów.** Żadnych gradientów (poza wypełnieniem wykresu), czystej bieli ani czystej czerni jako kontrastu.
+- **Każdy element dotykowy ma minimum 48px.** Główne akcje mają 60px i siedzą na dole ekranu.
+- **Budżet limonki: około 10% powierzchni.** Jeśli wszystko jest limonkowe, nic nie jest.
 
 ## Color
-- Orange means action, active state or the key result. It is not decoration.
-- Hover: `brand-orange-hover`. Pressed: `brand-orange-pressed`. Selected/active fill: `brand-orange-subtle` plus an orange outline.
-- Text: `text-primary` for key values, `text-secondary` for descriptions, `text-muted` for metadata. Text on filled orange is `app-black`.
-- Semantic colors (`success`, `danger`, `warning`, `info`) only for status, and never as a second accent.
+- Limonka oznacza akcję, aktywny stan, postęp i rekord. Nigdy dekorację.
+- Hover `brand-lime-hover`, pressed `brand-lime-pressed`. Aktywny stan to wypełnienie `brand-lime-dimmer` plus obwódka limonkowa.
+- Tekst na wypełnionej limonce to zawsze `app-black`.
+- `text-primary` dla wartości, `text-secondary` dla opisów, `text-muted` dla metadanych i podpisów osi.
+- Kolory semantyczne (`success`, `danger`, `warning`, `info`) służą tylko statusowi: zapis do GitHuba, plateau, walidacja. Nigdy jako drugi akcent.
+- Wykresy: linia `brand-lime` na `app-chart-grid`, wypełnienie pod linią z przezroczystością limonki.
 
 ## Typography
-- Display 24/700: brand name and top-level titles. Title 18/700: section and card headings. Body 14/400: forms, tables, reports. Label 12/700 with +0.02em tracking: control labels and statuses.
-- Large numbers (KPIs, totals): body family with `font-variant-numeric: tabular-nums` so values don't jump as digits change. For a decimal part, reuse the Title size instead of adding one.
+- Display 46/800 italic: wartość wpisywanego ciężaru i powtórzeń. Title 27/700 italic: nagłówek widoku i nazwa ćwiczenia w trybie treningu. Heading 19/700 italic: nagłówki kart i pozycja w serii. Body 15/400: listy, opisy, formularze. Label 13/500: treść przycisków i pól. Caption 12/700 z `+0.06em`: etykiety pól i statusy (uppercase).
+- Nagłówki są pisane wersalikami przez CSS (`text-transform: uppercase`), więc w danych trzymamy normalną wielkość liter.
+- Wszystkie liczby, które się zmieniają, używają `font-variant-numeric: tabular-nums`, żeby wartości nie skakały.
 
 ## Layout
-- Generator: single column, ~600px container, tabs switch views. Admin: ~1240px, dense grids, tables, analytic panels.
-- Group related elements tightly and separate groups with larger gaps; spacing inside elements follows the same scale.
-- Mobile: grids collapse to one column, tabs wrap or scroll, filters stack. Touch targets stay comfortable without losing density.
+- Mobile-first: jedna kolumna, kontener do 560px, padding 16px. Szerokość odniesienia to 390px.
+- Cztery widoki: Plan (zakładki → splity → ćwiczenia), Ćwiczenia (globalny katalog), Historia (treningi + progresja), Ustawienia. Dolna nawigacja ma cztery pozycje i jest stała.
+- Ćwiczenia są globalne, splity należą do zakładki. Pasek zakładek przewija się poziomo i pokazuje, na czym pracujesz — reszta widoku należy do wybranej zakładki.
+- Tryb treningu ukrywa nawigację dolną: cały ekran należy do jednego ćwiczenia, a nawigacja między ćwiczeniami to strzałki w górnym pasku.
+- Akcje główne siedzą w zasięgu kciuka: dolny pasek akcji albo przycisk `position: fixed` nad nawigacją, z zapasem `padding-bottom` w treści, żeby nic nie zasłaniał.
+- Sekcje rozdzielamy większym oddechem (20–24px), elementy w grupie mniejszym (8–12px).
 
 ## Depth and shape
-- Layer by surface tone first, shadow only for lift or overlay. Cards: `surface-dark` + thin warm outline.
-- Raised: `0 1px 1px rgba(0,0,0,.5), 0 0 0 1px rgba(255,244,238,.04)`. Overlay: `0 12px 28px rgba(0,0,0,.46), 0 0 0 1px var(--app-border)`.
-- Radius: 12px cards/groups, 6px controls, pill for statuses and toggles. Outlines are thin and warm; stronger on focus or active.
+- Głębokość budujemy tonem powierzchni, nie cieniem. Cień tylko dla warstw unoszących się: arkusza dolnego i dialogu.
+- Karty: `surface-dark` + cienka obwódka `app-border`, promień 14px. Kontrolki: 8px. Statusy i przełączniki: pill.
+- Obwódki są cienkie i chłodne (odcień limonki), mocniejsze przy hover, fokusie i stanie aktywnym.
+- Fokus klawiatury: obwódka limonkowa 2px z odstępem 2px. Nigdy nie usuwamy fokusu.
 
 ## Components
-- **Button primary:** orange, 6px radius, `8px 20px`, lighter on hover, visible focus ring. **Ghost:** transparent or tonal, `text-secondary`, outline.
-- **Input:** `surface-raised`, thin outline, 6px radius; focus = orange outline + subtle ring; error = `danger`; disabled lowers contrast but stays visible.
-- **Tabs/toggles:** neutral text, gentle surface change on hover; active = orange label/icon/outline + tonal background.
-- **Icons:** Material Symbols Rounded as functional markers, not ornaments.
-- **Daily Operations Generator:** one flow (revenue, team, burgers, ingredients, hours) that shows the next step, keeps form state, and ends in a clear generate/copy action.
+- **Button primary:** limonkowe tło, czarny tekst, 8px promienia, minimum 48px, wariant `--large` 60px dla akcji w trybie treningu i na dole ekranu.
+- **Button secondary:** `surface-raised` z mocniejszą obwódką. **Ghost:** przezroczysty, `text-secondary`. **Danger:** tylko obwódka i tekst `danger` — do usuwania.
+- **Container tabs (zakładki):** poziomy pasek przewijanych chipów nad treścią planu. Aktywna zakładka ma limonkowy tekst, limonkową obwódkę i tło `brand-lime-dimmer`. Ostatni chip to przerywany „+” na nową zakładkę.
+- **Stepper wartości:** duże pole numeryczne w Barlow Condensed italic pomiędzy dwoma przyciskami +/− po 60px. Obsługuje wpisanie wartości z klawiatury numerycznej telefonu.
+- **Set chip:** wiersz serii z numerem lub checkiem, wartością `ciężar × powtórzenia` i akcjami edycji oraz usunięcia. Stan zapisany to limonkowe tło i limonkowa obwódka, stan aktywny dostaje dodatkowy pierścień. Sesja startuje z jednym chipem — przycisk usunięcia pojawia się dopiero przy drugiej serii, a „Dodaj serię” jest zawsze widoczny.
+- **Logger:** docelowo jedno pole ciężaru i jedno pole powtórzeń na ekranie. Kolejne serie dodajesz świadomie, nie są wypełniane z góry.
+- **Badge progresji:** mały, pod polem wpisywania, w trzech wariantach: `up` (limonka, dołożenie ciężaru lub powtórzenia), `hold` (warning, utrzymanie ciężaru), `down` (info, zejście z ciężarem). Nigdy nie zasłania pól.
+- **Wykresy:** własne SVG, nie biblioteka. Limonkowa linia, numeryczne etykiety osi, kropki z tooltipem. Jeden wykres na ćwiczenie, przełączany metrykami (ciężar, 1RM, powtórzenia, objętość).
+- **Feedback:** `dialogService` (alert / confirm / confirmDanger / prompt), `sheetService` (arkusz dolny do wyboru ćwiczenia z katalogu i formularzy) i `notify` (toast). Bez natywnych `alert`, `confirm`, `prompt` i bez natywnych `select`.
+- **Status zapisu:** jeden komponent `renderSaveStatus` ze stanami `idle`, `saving`, `saved`, `error`. Osobny status dla planu i dla katalogu ćwiczeń; w stanie `error` zawsze pokazuje akcję ponowienia, bo dane nigdy nie mogą zginąć.
+- **Icons:** Material Symbols Rounded jako znaczniki funkcji, nie ozdoby.
 
 ## Copy
-- Labels are short and say what the action does. A button names its real outcome, not an adjacent one.
-- Don't repeat words already in the heading or section label above. State once, then drop it from values and buttons.
-- Prefer clarity over completeness; if a label needs a second sentence, the layout is wrong.
+- Etykiety krótkie i mówiące, co robi akcja: „Zapisz serię”, „Startuj”, „Pomiń ćwiczenie”, „Zakończ trening”.
+- Nazwa przycisku opisuje jego prawdziwy skutek, nie sąsiedni.
+- Kontener nazywamy „zakładką” w interfejsie (nazwy własne to miesiące), a w kodzie i danych zostaje `container`.
+- Nie powtarzamy słów, które już są w nagłówku sekcji.
+- Jednostki trzymamy w `kg` i `powt.`, zakres zawsze w formie `6–10 powt.`.
 
 ## Do
-- Reuse the same visual pattern for related things (same marker, same chip) so users connect them without reading.
-- Choose the simpler visual when unsure: a clear chart beats a fancy one.
-- Keep labels, keyboard focus and semantic control states.
-- Design the mobile generator and dense admin together.
+- Trzymaj tę samą formę dla rzeczy pokrewnych: seria zawsze wygląda jak set chip, status zawsze jak badge, zapis zawsze jak save status.
+- Pokazuj poprzedni wynik obok aktualnego wpisywania — to jest cała wartość aplikacji.
+- Utrzymuj duże pola dotykowe i czytelne liczby; aplikacja działa w hałasie siłowni i w jednej ręce.
+- Projektuj najpierw dla 390px, potem sprawdź szerszy ekran.
 
 ## Don't
-- Put cards inside cards or add effects that cost data readability.
-- Add gradients, blur, stacked shadows or skeuomorphic effects.
-- Change data formats, features or control behavior during visual work.
+- Nie dodawaj kart w kartach ani efektów, które kosztują czytelność.
+- Nie dodawaj gradientów, blurów poza nagłówkiem nawigacji, ani skeuomorfizmu.
+- Nie zmieniaj formatu danych, funkcji ani zachowania kontrolek przy pracy nad warstwą wizualną.
+- Nie ukrywaj postępu za interakcją — sugestia progresji jest widoczna od razu, bez tapnięcia.

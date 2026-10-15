@@ -1,52 +1,61 @@
 # AGENTS.md
 
-Static admin + generator site for BURBONE food trucks. ES modules, no bundler, no build/lint/test step. UI copy is Polish, code identifiers English. Visual rules live in `DESIGN.md`.
+Mobile-first tracker progresu w treningu siłowym: katalog ćwiczeń, zakładki (kontenery) ze splitami, tryb treningu, sugestie progresji, historia. Static site: ES modules, no bundler, no build step. UI copy is Polish, code identifiers English. Visual rules live in `DESIGN.md`.
 
 ## Commands
-- `node dev-server.js` — serves the site and handles local JSON `PUT` under `database/`. Without it the site opens but saves fail; check its terminal for save errors.
-- No test runner. Verify by exercising the changed flow in `index.html` / `admin.html`. For non-trivial pure logic, sanity-check with a throwaway `node -e` assert; don't add test files.
-- After any CSS change, check a mobile viewport (admin has dense grids and fixed row actions).
+- `node dev-server.js` — serves the site on http://localhost:8100 and handles local JSON `PUT` under `database/`. Without it the site opens but local saves fail; check its terminal for save errors.
+- `npm run check` — sanity checks for pure logic, view rendering and the workout flow (`scripts/check-*.mjs`). These are throwaway harnesses, not a test runner: they stub `window`/`document`/`localStorage`/`fetch` in Node and load the real modules, so they catch crashes and wrong output, not layout.
+- After any CSS change, check a mobile viewport (390px). Nothing may scroll horizontally.
 
 ## Never
-- Native `alert/confirm/prompt` or native `select`/`date`/`time` — use `dialogService` and `enhanceCustomControls()`.
-- Bespoke messages — only `noticeService` / `dialogService` (`.notice--<info|success|danger|warning|muted|loading>`).
+- Native `alert/confirm/prompt` or native `select` — use `dialogService` / `sheetService` / `notify` from `js/ui/components/dialogs.js`.
 - Raw hex/rgb outside `css/theme/palette.css`; derive with `color-mix()` from an existing variable.
-- A new dependency, wrapper or abstraction when something in `js/services/` or `js/ui/components/` already covers it.
-- Cards inside cards. Cards are for repeated items, tables, panels and modals only.
-- Code comments of any kind. Strip ones you find in code you touch; no separate cleanup pass.
-- Empty or log-only `catch`. Every catch shows a notice/dialog or rethrows. A failed fetch/API call never resolves to a silent default.
-- Hardcoding, logging or printing the GitHub token used by `services/api.js`.
+- A new dependency, wrapper or abstraction when something in `js/services/` or `js/ui/` already covers it. Charts are hand-written SVG in `js/ui/charts.js`.
+- Code comments of any kind.
+- Empty or log-only `catch`. Every catch shows a notice/dialog or rethrows. A failed fetch/write never resolves to a silent default.
+- Hardcoding, logging or printing the GitHub token. `config.js` ships the literal `__GH_TOKEN__`; only the deploy workflow replaces it, `js/services/token.js` may hold a browser-local override.
+- Losing a finished workout when the GitHub write fails: keep the record and show the retry action.
 
 ## Ask first
-- Deleting anything under `database/`.
-- Changing the JSON data shape (requires updating `api.js`, `analytics.js`, `reportFormatter.js` and the admin panel together).
-- Touching `services/auth.js`.
-- Any request that could reasonably mean two different things.
+- Changing the JSON data shape (touches `api.js`, `planService.js`, `workoutService.js`, `workoutAnalysis.js` and every view together).
+- Deleting or rewriting records inside `database/`.
+- Any request that could reasonably mean two different meanings.
 
 ## Data model gotchas
-- Layout: `database/<location-folder>/<dd.mm.yyyy>.json` reports; catalogs `locations.json`, `employees.json`, `products.json`, `payments.json`, `settings.json`, `burgers.json`.
-- Dates: `dd.mm.yyyy` in reports, ISO `yyyy-mm-dd` in forms.
-- Locations: `path` (folder) is immutable, `name` is mutable, `aliases` keep old report names matched after a rename. Folder slug comes from `slugifyLocation`, never typed by hand. Names contain Polish characters (`Oświęcim`) — don't normalize paths. New/renamed locations need no code change.
-- Location switches are independent: `enabled: false` hides from the generator picker only; `stats: false` drops from every calculation but stays in generator and Listy; `deleted: true` archives from both, files stay, restore reinstates previous switches.
-- Admin data sets: `sourceData` (raw) → `allData` (archived removed, feeds Listy) → `statsData` (feeds all calculations). Calculations must use `statsData`.
-- Payments: status and remaining amount are derived in `services/payments.js`, never stored.
-- Generator state (`localStorage: burbone_state`) expires at local end-of-day; the one-shift temp employee is never persisted.
+- Three files. `database/exercises.json` is the global exercise catalog: `{ version, exercises: { ex_id: { name, group } } }`. `database/plan.json` is `{ version, defaults, containers }` — containers („zakładki”, e.g. Grudzień) hold splits, splits hold ordered `{ exerciseId, repMin, repMax, increment }` items. `database/workouts.json` is `{ version, workouts: [...] }`, one record per finished session, sorted by `date`.
+- Exercises are global and referenced by id everywhere. Progress, plateau and PR are computed per `exerciseId`, so the same exercise in two splits and two containers shares one history line. Never store progression on the exercise itself.
+- A container is the editable unit: `copyContainer` clones it with fresh container and split ids but the same `exerciseId` references, so editing a copy never touches the original. Per-split target overrides live in the split item, not in the catalog.
+- There is no set count in the plan. Every exercise value in a session starts as exactly one set (`workoutService.createSession`), and „Dodaj serię” appends another one copying the previous values.
+- Per-split overrides are `null` in `plan.json` and resolved against `defaults` by `planService.listSplitExercises`. Views must never read raw `repMin` off a split item.
+- Workout records denormalise `containerId`/`containerName` and `splitId`/`splitName` and each entry's `name`, `group`, `repMin`, `repMax`, `increment`, so old history stays readable after the plan changes. Empty `containerName` means a record from before containers existed.
+- `date` is ISO `yyyy-mm-dd` in the data; `dd.mm.yyyy` (via `formatDate`) is display only.
+- Derived values are never stored: volume, estimated 1RM (`weight * (1 + reps/30)`), progression suggestion, plateau and PR all come from `services/workoutAnalysis.js`.
+- Plateau = no improvement in estimated 1RM across the last `WORKOUT_CONFIG.PLATEAU_LENGTH` (3) sessions. A suggestion is computed from the last completed session of that exercise, and the workout screen prefills the last logged weight/reps.
+- Deleting an exercise drops it from every split but leaves history records alone — existing sessions keep their denormalised name.
+- Plan edits live only in `app.draft` until „Zapisz plan” runs `planService.save`; catalog edits live in `app.draftExercises` until „Zapisz”. `isPlanDirty()` / `isExercisesDirty()` compare drafts with loaded data by serialised value.
+- Active session is stored under `localStorage: xerfit_session` and survives refresh; a finished workout that failed to save is kept under `xerfit_pending_save` and offered again on the next launch.
+- Writes read the target file's SHA immediately before the `PUT`, so two consecutive writes cannot collide on a stale SHA.
 
 ## Environments
-- Prod is GitHub Pages: static, no `PUT`. Catalog/report writes go through `services/api.js` via the GitHub API; no separate deploy step for data. Code ships by pushing to the Pages branch.
-- Catalog reads prefer the GitHub API over the Pages CDN when a token is configured (Pages lags after a save). A catalog changed in another tab prompts for confirmation instead of silently reverting.
-- Localhost: `fetchAllData` merges real `database/` reports with generated mock data for the last 3 months (`services/mockData.js`); a real report for the same location+date wins. Prod never generates.
-- A failed catalog write keeps the panel dirty with an actionable message — read it before assuming a bug elsewhere.
-- The site must stay unindexed (`robots.txt` disallow, `noindex` on both pages).
+- Prod is GitHub Pages: static, no `PUT`. `exercises.json` / `plan.json` / `workouts.json` writes go through `services/api.js` via the GitHub API, so there is no deploy step for data. Code ships by pushing to the Pages branch.
+- Reads prefer the GitHub API when a token exists, and fall back to the static `./database/*.json` when it does not (localhost and tokenless builds).
+- On localhost writes go to the dev server instead of GitHub, so `dev-server.js` must be running.
+- The site must stay unindexed (`robots.txt` disallow, `noindex` in `index.html`).
+
+## Routes
+Hash routing in `js/main.js`: `#/plan`, `#/exercises` (with optional `#/exercises/<exerciseId>`), `#/workout`, `#/summary`, `#/history` (with optional `#/history/<exerciseId>`), `#/settings`. The Historia tab (Treningi / Ćwiczenia) is view state in `app.historyUI.tab`, not a route. `render()` is idempotent per route and skips repainting when the route has not changed — state handlers call `app.render({ force: true })` to repaint in place, and `app.markPlanDirty()` repaints on its own. `#/workout` hides the bottom nav and falls back to `#/plan` without a live session.
 
 ## Conventions
-- Tokens only: colors from `css/theme/palette.css`, fonts via `--font-body` / `--font-heading`. A new palette role is added to `palette.css` and `DESIGN.md` in the same change.
+- Tokens only: colors from `css/theme/palette.css`, fonts via `--font-heading` / `--font-body`. A new palette role is added to `palette.css` and `DESIGN.md` in the same change.
+- One CSS file per view (`plan.css`, `workout.css`, `history.css`, `settings.css`), all imported from `style.css`. The Ćwiczenia view reuses `plan.css` list styles.
+- Views are factories: `createXView(app)` returns `{ render(), bind(root) }`. Views own markup and event handling; all persistence and maths live in `js/services/`.
 - Icons via `renderMaterialIcon()` with real Material Symbols ligature names; a bad name renders as overlapping text.
-- Naming: one word per concept. `location` is canonical (not "point") in new code. Catalog modules use add / rename / visibility-toggle / remove — don't mix in create/update/delete. Booleans read as assertions: `isArchived`, `hasReport`, `canEdit`.
-- Size: files ~400 lines, functions ~50, nesting ~3 levels. Split along an existing seam (never a grab-bag `utils.js`) and flatten with guard clauses. These are splitting triggers, not rewrite triggers.
+- Every interactive control is at least 48px tall; primary actions are 60px.
+- Booleans read as assertions: `isPlanDirty`, `isReady`, `hasToken`. Naming: one word per concept (`session` is the live workout, `workout` is a stored record).
+- Size: files ~400 lines, functions ~50, nesting ~3 levels. Split along an existing seam and flatten with guard clauses.
 
 ## Working style
-- Before writing code: reuse an existing util/pattern → native feature → installed dependency → shortest correct one-liner. Grep real usage; don't trust memory of file layout or library APIs.
+- Before writing code: reuse an existing util/pattern → native feature → shortest correct one-liner. Grep real usage; don't trust memory of file layout.
 - A bug report names one symptom — grep every caller and fix the shared function once.
 - No unrequested features, options, copy or UI. Match existing patterns over parallel ones.
 - Reversible ambiguity: state the assumption in one line and proceed; list assumptions at the top of the summary.
@@ -55,4 +64,3 @@ Static admin + generator site for BURBONE food trucks. ES modules, no bundler, n
 
 ## Failure log
 Add one imperative line, specific to this repo, whenever you are corrected on something.
-- Never rewrite repo files through PowerShell `Get-Content`/`Set-Content`: Windows PowerShell decodes UTF-8 as ANSI and silently corrupts Polish characters (`Oświęcim`, `Ilość`). Use the editor tools, or `[System.IO.File]::ReadAllText`/`WriteAllText` with an explicit UTF-8 encoder.

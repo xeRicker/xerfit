@@ -1,0 +1,39 @@
+{
+  "version": 2,
+  "defaults": {
+    "repMin": 6,
+    "repMax": 10,
+    "increment": 2.5
+  },
+  "containers": [
+    {
+      "id": "cont_default",
+      "name": "Grudzień",
+      "splits": [
+        {
+          "id": "split_upper",
+          "name": "Upper",
+          "exercises": [
+            { "exerciseId": "ex_bench_press", "repMin": null, "repMax": null, "increment": 2.5 },
+            { "exerciseId": "ex_barbell_row", "repMin": null, "repMax": null, "increment": 2.5 },
+            { "exerciseId": "ex_ohp", "repMin": null, "repMax": null, "increment": 2.5 },
+            { "exerciseId": "ex_lat_pulldown", "repMin": null, "repMax": null, "increment": 2.5 },
+            { "exerciseId": "ex_barbell_curl", "repMin": null, "repMax": null, "increment": 2.5 },
+            { "exerciseId": "ex_triceps_pushdown", "repMin": null, "repMax": null, "increment": 2.5 }
+          ]
+        },
+        {
+          "id": "split_lower",
+          "name": "Lower",
+          "exercises": [
+            { "exerciseId": "ex_squat", "repMin": null, "repMax": null, "increment": 2.5 },
+            { "exerciseId": "ex_rdl", "repMin": null, "repMax": null, "increment": 2.5 },
+            { "exerciseId": "ex_leg_press", "repMin": null, "repMax": null, "increment": 5 },
+            { "exerciseId": "ex_leg_curl", "repMin": null, "repMax": null, "increment": 2.5 },
+            { "exerciseId": "ex_calf_raise", "repMin": null, "repMax": null, "increment": 5 }
+          ]
+        }
+      ]
+    }
+  ]
+}

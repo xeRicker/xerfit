@@ -1,0 +1,95 @@
+@import url("https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,600;0,700;0,800;1,600;1,700;1,800&family=Barlow:wght@400;500;600;700&display=swap");
+
+:root {
+    --brand-primary: #C6FF00;
+    --brand-primary-hover: #D6FF3D;
+    --brand-primary-pressed: #A8DC00;
+    --brand-primary-subtle: #26310A;
+    --brand-primary-dimmer: #1A2207;
+    --brand-primary-glow: rgba(198, 255, 0, 0.28);
+
+    --app-bg: #070806;
+    --app-surface: #141613;
+    --app-surface-raised: #1C1F1A;
+    --app-surface-overlay: #242821;
+    --app-border: rgba(238, 255, 220, 0.10);
+    --app-border-strong: rgba(238, 255, 220, 0.20);
+
+    --app-text: #F4F7EF;
+    --app-text-subtle: #B4BCA9;
+    --app-text-muted: #838B79;
+    --app-text-inverse: #0C1000;
+
+    --app-success: #9BE564;
+    --app-success-bg: #1B2A12;
+    --app-danger: #FF7A6B;
+    --app-danger-bg: #331714;
+    --app-warning: #FFC94D;
+    --app-warning-bg: #302408;
+    --app-info: #7BC6FF;
+    --app-info-bg: #122534;
+
+    --app-chart-1: #C6FF00;
+    --app-chart-2: #7BC6FF;
+    --app-chart-3: #FFC94D;
+    --app-chart-4: #FF7A6B;
+    --app-chart-5: #C79BFF;
+    --app-chart-grid: rgba(238, 255, 220, 0.08);
+
+    --bg-color: var(--app-bg);
+    --surface-color: var(--app-surface);
+    --surface-raised: var(--app-surface-raised);
+    --surface-overlay: var(--app-surface-overlay);
+    --surface-active: var(--brand-primary-subtle);
+    --primary-color: var(--brand-primary);
+    --primary-hover: var(--brand-primary-hover);
+    --primary-pressed: var(--brand-primary-pressed);
+    --primary-soft: var(--brand-primary-subtle);
+    --primary-glow: var(--brand-primary-glow);
+    --text-primary: var(--app-text);
+    --text-secondary: var(--app-text-subtle);
+    --text-muted: var(--app-text-muted);
+    --success-color: var(--app-success);
+    --danger-color: var(--app-danger);
+    --warning-color: var(--app-warning);
+    --border-color: var(--app-border);
+    --border-focused: var(--brand-primary);
+
+    --shadow-raised: 0 1px 1px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(238, 255, 220, 0.04);
+    --shadow-overlay: 0 16px 32px rgba(0, 0, 0, 0.6), 0 0 0 1px var(--app-border);
+
+    --font-heading: "Barlow Condensed", "Arial Narrow", var(--font-body);
+    --font-body: "Barlow", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+
+    --font-size-display: 46px;
+    --font-size-title: 27px;
+    --font-size-heading: 19px;
+    --font-size-body: 15px;
+    --font-size-label: 13px;
+    --font-size-caption: 12px;
+
+    --weight-regular: 400;
+    --weight-medium: 500;
+    --weight-bold: 700;
+    --weight-black: 800;
+
+    --space-xs: 4px;
+    --space-sm: 8px;
+    --space-md: 12px;
+    --space-lg: 16px;
+    --space-xl: 20px;
+    --space-2xl: 24px;
+    --space-3xl: 32px;
+
+    --radius-sm: 8px;
+    --radius-md: 14px;
+    --radius-lg: 20px;
+    --radius-pill: 999px;
+
+    --tap-target: 48px;
+    --tap-target-large: 60px;
+    --shell-width: 560px;
+    --nav-height: 64px;
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+    --safe-top: env(safe-area-inset-top, 0px);
+}
