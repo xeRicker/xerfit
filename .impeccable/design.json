@@ -1,0 +1,237 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-16T00:00:00.000Z",
+  "title": "Design System: XERFIT",
+  "extensions": {
+    "colorMeta": {
+      "volt": {
+        "role": "primary",
+        "displayName": "Volt",
+        "canonical": "#C6FF00",
+        "tonalRamp": ["oklch(0.22 0.08 128)", "oklch(0.32 0.12 128)", "oklch(0.44 0.16 128)", "oklch(0.56 0.20 128)", "oklch(0.68 0.23 128)", "oklch(0.78 0.25 128)", "oklch(0.89 0.26 128)", "oklch(0.96 0.15 128)"]
+      },
+      "volt-hover": { "role": "primary", "displayName": "Volt Hover", "canonical": "#D6FF3D" },
+      "volt-pressed": { "role": "primary", "displayName": "Volt Pressed", "canonical": "#A8DC00" },
+      "volt-subtle": { "role": "primary", "displayName": "Volt Subtle", "canonical": "#26310A" },
+      "volt-dimmer": { "role": "primary", "displayName": "Volt Dimmer", "canonical": "#1A2207" },
+      "instrument-black": {
+        "role": "neutral",
+        "displayName": "Instrument Black",
+        "canonical": "#070806",
+        "tonalRamp": ["oklch(0.14 0.005 130)", "oklch(0.19 0.006 130)", "oklch(0.25 0.007 130)", "oklch(0.33 0.008 130)", "oklch(0.45 0.008 130)", "oklch(0.62 0.008 130)", "oklch(0.80 0.008 130)", "oklch(0.96 0.006 130)"]
+      },
+      "panel": {
+        "role": "neutral",
+        "displayName": "Panel",
+        "canonical": "#141613",
+        "tonalRamp": ["oklch(0.20 0.007 130)", "oklch(0.26 0.007 130)", "oklch(0.33 0.008 130)", "oklch(0.42 0.008 130)", "oklch(0.54 0.008 130)", "oklch(0.68 0.008 130)", "oklch(0.82 0.008 130)", "oklch(0.95 0.006 130)"]
+      },
+      "panel-raised": {
+        "role": "neutral",
+        "displayName": "Panel Raised",
+        "canonical": "#1C1F1A",
+        "tonalRamp": ["oklch(0.22 0.007 130)", "oklch(0.28 0.007 130)", "oklch(0.35 0.008 130)", "oklch(0.44 0.008 130)", "oklch(0.56 0.008 130)", "oklch(0.70 0.008 130)", "oklch(0.84 0.008 130)", "oklch(0.96 0.006 130)"]
+      },
+      "panel-overlay": {
+        "role": "neutral",
+        "displayName": "Panel Overlay",
+        "canonical": "#242821",
+        "tonalRamp": ["oklch(0.25 0.007 130)", "oklch(0.31 0.007 130)", "oklch(0.38 0.008 130)", "oklch(0.47 0.008 130)", "oklch(0.59 0.008 130)", "oklch(0.72 0.008 130)", "oklch(0.85 0.008 130)", "oklch(0.96 0.006 130)"]
+      },
+      "chalk": {
+        "role": "neutral",
+        "displayName": "Chalk",
+        "canonical": "#F4F7EF",
+        "tonalRamp": ["oklch(0.18 0.006 130)", "oklch(0.30 0.007 130)", "oklch(0.42 0.007 130)", "oklch(0.55 0.007 130)", "oklch(0.68 0.007 130)", "oklch(0.80 0.006 130)", "oklch(0.90 0.005 130)", "oklch(0.97 0.004 130)"]
+      },
+      "chalk-dim": { "role": "neutral", "displayName": "Chalk Dim", "canonical": "#B4BCA9" },
+      "chalk-muted": { "role": "neutral", "displayName": "Chalk Muted", "canonical": "#838B79" },
+      "ink": { "role": "neutral", "displayName": "Ink", "canonical": "#0C1000" },
+      "hairline": { "role": "neutral", "displayName": "Hairline", "canonical": "rgba(238, 255, 220, 0.10)" },
+      "hairline-strong": { "role": "neutral", "displayName": "Hairline Strong", "canonical": "rgba(238, 255, 220, 0.20)" },
+      "success": {
+        "role": "tertiary",
+        "displayName": "Success Chroma",
+        "canonical": "#9BE564",
+        "tonalRamp": ["oklch(0.22 0.05 135)", "oklch(0.34 0.08 135)", "oklch(0.46 0.11 135)", "oklch(0.58 0.14 135)", "oklch(0.70 0.16 135)", "oklch(0.80 0.17 135)", "oklch(0.88 0.15 135)", "oklch(0.95 0.08 135)"]
+      },
+      "success-dim": { "role": "tertiary", "displayName": "Success Dim", "canonical": "#1B2A12" },
+      "danger": {
+        "role": "tertiary",
+        "displayName": "Danger Coral",
+        "canonical": "#FF7A6B",
+        "tonalRamp": ["oklch(0.22 0.05 30)", "oklch(0.34 0.08 30)", "oklch(0.46 0.11 30)", "oklch(0.58 0.14 30)", "oklch(0.68 0.17 30)", "oklch(0.78 0.16 30)", "oklch(0.87 0.12 30)", "oklch(0.95 0.05 30)"]
+      },
+      "danger-dim": { "role": "tertiary", "displayName": "Danger Dim", "canonical": "#331714" },
+      "warning": {
+        "role": "tertiary",
+        "displayName": "Warning Amber",
+        "canonical": "#FFC94D",
+        "tonalRamp": ["oklch(0.23 0.05 85)", "oklch(0.35 0.08 85)", "oklch(0.47 0.11 85)", "oklch(0.60 0.13 85)", "oklch(0.72 0.14 85)", "oklch(0.83 0.15 85)", "oklch(0.90 0.12 85)", "oklch(0.96 0.06 85)"]
+      },
+      "warning-dim": { "role": "tertiary", "displayName": "Warning Dim", "canonical": "#302408" },
+      "info": {
+        "role": "tertiary",
+        "displayName": "Info Blue",
+        "canonical": "#7BC6FF",
+        "tonalRamp": ["oklch(0.22 0.05 240)", "oklch(0.34 0.08 240)", "oklch(0.46 0.10 240)", "oklch(0.58 0.12 240)", "oklch(0.70 0.13 240)", "oklch(0.80 0.12 240)", "oklch(0.87 0.09 240)", "oklch(0.95 0.04 240)"]
+      },
+      "info-dim": { "role": "tertiary", "displayName": "Info Dim", "canonical": "#122534" }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display", "purpose": "The one number the screen exists for: logger value, summary headline, 1RM, PR celebration. 46px italic condensed black, tabular." },
+      "title": { "displayName": "Title", "purpose": "Brand lockup (27px, 0.04em) and screen titles. The summary hero is the same role at 38px." },
+      "heading": { "displayName": "Heading", "purpose": "Card, section, sheet and empty-state titles." },
+      "body": { "displayName": "Body", "purpose": "Running Polish copy in Barlow roman. Never uppercase, never condensed." },
+      "label": { "displayName": "Label", "purpose": "Secondary readable text: subtitles, status messages, toast text, hints." },
+      "caption": { "displayName": "Caption", "purpose": "Every eyebrow and all metadata: field labels, stat labels, dates, badges, chips, axis ticks. 12px caps at 0.08em." }
+    },
+    "shadows": [
+      { "name": "shadow-raised", "value": "0 1px 1px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(238, 255, 220, 0.04)", "purpose": "The lighter of the two floating-layer lifts. Declared for layers that sit just above the page; not a level in an elevation scale." },
+      { "name": "shadow-overlay", "value": "0 16px 32px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(238, 255, 220, 0.10)", "purpose": "Action bars, the workout thumb bar, toasts, the feedback dialog, the bottom sheet, the PR celebration. Floating layers only." },
+      { "name": "focus-ring", "value": "0 0 0 3px rgba(198, 255, 0, 0.28)", "purpose": "Focused text input and logger field (--brand-primary-glow)." },
+      { "name": "active-set-ring", "value": "0 0 0 2px rgba(198, 255, 0, 0.28)", "purpose": "The set currently being edited." },
+      { "name": "pr-ring", "value": "0 0 0 6px rgba(198, 255, 0, 0.28)", "purpose": "The PR celebration's border glow. The loudest state in the system." }
+    ],
+    "motion": [
+      { "name": "state-color", "value": "120ms ease", "purpose": "Default: colour, border-colour and background transitions on every control." },
+      { "name": "press", "value": "80ms ease", "purpose": "transform: scale(0.985) on buttons; scale(0.96) on stepper keys." },
+      { "name": "action-bar-in", "value": "160ms ease", "purpose": "Floating save bar entering (opacity plus 10px translate)." },
+      { "name": "toast-in", "value": "180ms ease", "purpose": "Toast entering (opacity plus 8px translate)." },
+      { "name": "sheet-in", "value": "200ms ease", "purpose": "Bottom sheet and feedback dialog entering (opacity plus 12-16px translate)." },
+      { "name": "progress-width", "value": "200ms ease", "purpose": "The 6px workout progress rail." },
+      { "name": "celebration-spring", "value": "220ms cubic-bezier(0.2, 0.9, 0.3, 1.4)", "purpose": "The PR celebration only. The single springy curve in the system." },
+      { "name": "reduced-motion", "value": "0.01ms", "purpose": "Global prefers-reduced-motion rule flattens every animation and transition." }
+    ],
+    "breakpoints": [
+      { "name": "shell-widen", "value": "600px", "purpose": "Page gutters widen from 16px to 20px; the sticky header's negative margins widen with them." },
+      { "name": "stepper-stack", "value": "340px", "purpose": "Below this the settings stepper stacks its label above its controls instead of shrinking the 48px keys." }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The single committing action on a screen: solid Volt fill, Ink text, 48px tall (60px when large).",
+      "html": "<button class=\"ds-btn-primary\">ZAPISZ SERIĘ</button>",
+      "css": ".ds-btn-primary { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 48px; padding: 0 16px; border: 1px solid transparent; border-radius: 8px; background-color: var(--brand-primary, #C6FF00); color: var(--app-text-inverse, #0C1000); font-family: var(--font-heading, 'Barlow Condensed', 'Arial Narrow'); font-style: italic; font-weight: 800; font-size: 15px; letter-spacing: 0.06em; text-transform: uppercase; transition: background-color 120ms ease, border-color 120ms ease, color 120ms ease, transform 80ms ease; } .ds-btn-primary:hover { background-color: var(--brand-primary-hover, #D6FF3D); } .ds-btn-primary:active { background-color: var(--brand-primary-pressed, #A8DC00); transform: scale(0.985); } .ds-btn-primary:focus-visible { outline: 2px solid var(--brand-primary, #C6FF00); outline-offset: 2px; } .ds-btn-primary:disabled { opacity: 0.45; }"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "The quieter sibling: Panel Raised fill with a strong hairline, Chalk text, Volt on hover. The discard/cancel voice.",
+      "html": "<button class=\"ds-btn-secondary\"><svg width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M4 10h11a5 5 0 0 1 0 10h-4\"/><path d=\"m8 6-4 4 4 4\"/></svg><span>COFNIJ</span></button>",
+      "css": ".ds-btn-secondary { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 48px; padding: 0 16px; border: 1px solid var(--app-border-strong, rgba(238, 255, 220, 0.2)); border-radius: 8px; background-color: var(--app-surface-raised, #1C1F1A); color: var(--app-text, #F4F7EF); font-family: var(--font-heading, 'Barlow Condensed', 'Arial Narrow'); font-style: italic; font-weight: 700; font-size: 15px; letter-spacing: 0.06em; text-transform: uppercase; transition: background-color 120ms ease, border-color 120ms ease, color 120ms ease, transform 80ms ease; } .ds-btn-secondary:hover { border-color: var(--brand-primary, #C6FF00); color: var(--brand-primary, #C6FF00); } .ds-btn-secondary:active { transform: scale(0.985); } .ds-btn-secondary:focus-visible { outline: 2px solid var(--brand-primary, #C6FF00); outline-offset: 2px; }"
+    },
+    {
+      "name": "Stepper Input",
+      "kind": "input",
+      "refersTo": "input-text",
+      "description": "The 48px field with its caption eyebrow, hairline stroke and the 3px volt focus ring. The logger's borderless variant keeps the same ring through a wrapper.",
+      "html": "<label class=\"ds-field\"><span class=\"ds-field-label\">CIĘŻAR (KG)</span><input class=\"ds-input\" value=\"82.5\" inputmode=\"decimal\"></label>",
+      "css": ".ds-field { display: flex; flex-direction: column; gap: 8px; } .ds-field-label { font-family: var(--font-body, Barlow); font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--app-text-muted, #838B79); } .ds-input { width: 100%; min-height: 48px; padding: 0 12px; border: 1px solid var(--app-border, rgba(238, 255, 220, 0.1)); border-radius: 8px; background-color: var(--app-surface-raised, #1C1F1A); color: var(--app-text, #F4F7EF); font-family: var(--font-body, Barlow); font-size: 16px; font-weight: 500; transition: border-color 120ms ease, box-shadow 120ms ease; } .ds-input:focus { outline: none; border-color: var(--brand-primary, #C6FF00); box-shadow: 0 0 0 3px var(--brand-primary-glow, rgba(198, 255, 0, 0.28)); } .ds-input:disabled { opacity: 0.5; }"
+    },
+    {
+      "name": "Chip",
+      "kind": "chip",
+      "refersTo": "chip",
+      "description": "36px pill filter or tab. Selected turns Volt text on Volt Dimmer with a full Volt border; the dashed action chip is the add affordance.",
+      "html": "<div class=\"ds-chip-row\"><button class=\"ds-chip is-selected\" aria-pressed=\"true\">Październik</button><button class=\"ds-chip\" aria-pressed=\"false\">Wrzesień</button><button class=\"ds-chip ds-chip-action\"><svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" aria-hidden=\"true\"><path d=\"M12 5v14M5 12h14\"/></svg>Zakładka</button></div>",
+      "css": ".ds-chip-row { display: flex; flex-wrap: wrap; gap: 8px; } .ds-chip { display: inline-flex; align-items: center; gap: 4px; min-height: 36px; padding: 0 12px; border: 1px solid var(--app-border, rgba(238, 255, 220, 0.1)); border-radius: 999px; background-color: var(--app-surface, #141613); color: var(--app-text-subtle, #B4BCA9); font-family: var(--font-body, Barlow); font-size: 12px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; transition: color 120ms ease, border-color 120ms ease, background-color 120ms ease; } .ds-chip:hover { color: var(--app-text, #F4F7EF); border-color: var(--app-border-strong, rgba(238, 255, 220, 0.2)); } .ds-chip.is-selected { color: var(--brand-primary, #C6FF00); border-color: var(--brand-primary, #C6FF00); background-color: var(--brand-primary-dimmer, #1A2207); } .ds-chip-action { border-style: dashed; color: var(--app-text-muted, #838B79); } .ds-chip:focus-visible { outline: 2px solid var(--brand-primary, #C6FF00); outline-offset: 2px; }"
+    },
+    {
+      "name": "Card",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "14px radius, Panel fill, one hairline, 16px padding, 12px internal gap, no shadow. Never nests.",
+      "html": "<section class=\"ds-card\"><div class=\"ds-card-head\"><div class=\"ds-card-titles\"><h3 class=\"ds-card-title\">Góra A</h3><p class=\"ds-card-preview\">4 ćwiczenia · 6–10 powt. · skok 2,5 kg</p></div><span class=\"ds-card-chevron\"><svg width=\"22\" height=\"22\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"m9 5 7 7-7 7\"/></svg></span></div></section>",
+      "css": ".ds-card { display: flex; flex-direction: column; gap: 12px; padding: 16px; border: 1px solid var(--app-border, rgba(238, 255, 220, 0.1)); border-radius: 14px; background-color: var(--app-surface, #141613); } .ds-card-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; } .ds-card-titles { display: flex; flex-direction: column; gap: 2px; min-width: 0; } .ds-card-title { margin: 0; font-family: var(--font-heading, 'Barlow Condensed', 'Arial Narrow'); font-style: italic; font-weight: 700; font-size: 19px; line-height: 1.05; letter-spacing: 0.01em; text-transform: uppercase; color: var(--app-text, #F4F7EF); } .ds-card-preview { margin: 0; font-family: var(--font-body, Barlow); font-size: 13px; color: var(--app-text-subtle, #B4BCA9); } .ds-card-chevron { flex-shrink: 0; color: var(--brand-primary, #C6FF00); opacity: 0.75; }"
+    },
+    {
+      "name": "Bottom Navigation",
+      "kind": "nav",
+      "refersTo": null,
+      "description": "Four fixed columns at 64px plus safe area: blurred Instrument Black, hairline top, 24px icon over an uppercase label, active item on a Volt Dimmer pill. Positioned statically here so it renders standalone.",
+      "html": "<nav class=\"ds-nav\" aria-label=\"Nawigacja główna\"><a class=\"ds-nav-item is-active\" aria-current=\"page\" href=\"#\"><svg width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><rect x=\"4\" y=\"6\" width=\"16\" height=\"14\" rx=\"2\"/><path d=\"M4 10h16M9 3v4M15 3v4\"/></svg><span>Plan</span></a><a class=\"ds-nav-item\" href=\"#\"><svg width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" aria-hidden=\"true\"><path d=\"M4 9v6M7 7v10M17 7v10M20 9v6M7 12h10\"/></svg><span>Ćwiczenia</span></a><a class=\"ds-nav-item\" href=\"#\"><svg width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M4 15l5-5 4 3 6-7\"/><path d=\"M15 6h4v4\"/></svg><span>Historia</span></a><a class=\"ds-nav-item\" href=\"#\"><svg width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" aria-hidden=\"true\"><path d=\"M5 8h9M18 8h1M5 16h3M12 16h7\"/><circle cx=\"16\" cy=\"8\" r=\"2\"/><circle cx=\"10\" cy=\"16\" r=\"2\"/></svg><span>Ustawienia</span></a></nav>",
+      "css": ".ds-nav { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); width: 100%; padding: 8px 4px; border-top: 1px solid var(--app-border, rgba(238, 255, 220, 0.1)); background-color: color-mix(in srgb, var(--app-bg, #070806) 88%, transparent); backdrop-filter: blur(12px); } .ds-nav-item { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; min-width: 0; min-height: 48px; padding: 0 2px; border-radius: 8px; color: var(--app-text-muted, #838B79); font-family: var(--font-body, Barlow); font-size: 12px; font-weight: 700; letter-spacing: 0; text-transform: uppercase; text-decoration: none; transition: color 120ms ease, background-color 120ms ease; } .ds-nav-item > span { display: block; max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .ds-nav-item:hover { color: var(--app-text, #F4F7EF); } .ds-nav-item.is-active { color: var(--brand-primary, #C6FF00); background-color: var(--brand-primary-dimmer, #1A2207); } .ds-nav-item:focus-visible { outline: 2px solid var(--brand-primary, #C6FF00); outline-offset: 2px; }"
+    },
+    {
+      "name": "Badges",
+      "kind": "chip",
+      "refersTo": "badge",
+      "description": "Pill status labels with a 15px icon. Up = progression on Volt, PR = the only solid Volt fill, plain = transparent metadata. Badges label, they never act.",
+      "html": "<div class=\"ds-badges\"><span class=\"ds-badge ds-badge-up\"><svg width=\"15\" height=\"15\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.4\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M12 19V5M5 12l7-7 7 7\"/></svg><span>+2,5 kg</span></span><span class=\"ds-badge ds-badge-pr\">Rekord</span><span class=\"ds-badge ds-badge-plain\">52 min</span></div>",
+      "css": ".ds-badges { display: flex; flex-wrap: wrap; gap: 8px; } .ds-badge { display: inline-flex; align-items: center; gap: 6px; padding: 3px 8px; border: 1px solid var(--app-border, rgba(238, 255, 220, 0.1)); border-radius: 999px; background-color: var(--app-surface-raised, #1C1F1A); color: var(--app-text-subtle, #B4BCA9); font-family: var(--font-body, Barlow); font-size: 12px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; white-space: nowrap; } .ds-badge-up { color: var(--brand-primary, #C6FF00); border-color: color-mix(in srgb, var(--brand-primary, #C6FF00) 40%, transparent); background-color: var(--brand-primary-dimmer, #1A2207); } .ds-badge-pr { color: var(--app-text-inverse, #0C1000); background-color: var(--brand-primary, #C6FF00); border-color: var(--brand-primary, #C6FF00); } .ds-badge-plain { background-color: transparent; }"
+    },
+    {
+      "name": "Set Chip",
+      "kind": "custom",
+      "refersTo": null,
+      "description": "Signature component: the logged set as a tappable row. A 22px index disc that becomes a Volt check when done, the value, then 40px edit and remove keys behind hairlines. Active set gets the full Volt border and 2px ring.",
+      "html": "<div class=\"ds-set-chips\"><div class=\"ds-set-chip is-done\"><button class=\"ds-set-main\"><span class=\"ds-set-index\"><svg width=\"15\" height=\"15\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"3\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"m5 13 4 4L19 7\"/></svg></span><span class=\"ds-set-value\">82,5 kg × 8</span></button><button class=\"ds-set-key\" aria-label=\"Edytuj serię\"><svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M4 20h4l10-10-4-4L4 16v4Z\"/></svg></button><button class=\"ds-set-key\" aria-label=\"Usuń serię\"><svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" aria-hidden=\"true\"><path d=\"M6 6l12 12M18 6 6 18\"/></svg></button></div><div class=\"ds-set-chip is-active\"><button class=\"ds-set-main\"><span class=\"ds-set-index\">2</span><span class=\"ds-set-value\">82,5 kg × 8</span></button><button class=\"ds-set-key\" aria-label=\"Edytuj serię\"><svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M4 20h4l10-10-4-4L4 16v4Z\"/></svg></button><button class=\"ds-set-key\" aria-label=\"Usuń serię\"><svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" aria-hidden=\"true\"><path d=\"M6 6l12 12M18 6 6 18\"/></svg></button></div></div>",
+      "css": ".ds-set-chips { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; } .ds-set-chip { display: flex; align-items: stretch; border: 1px solid var(--app-border, rgba(238, 255, 220, 0.1)); border-radius: 8px; background-color: var(--app-surface, #141613); overflow: hidden; } .ds-set-chip.is-done { border-color: color-mix(in srgb, var(--brand-primary, #C6FF00) 40%, transparent); background-color: var(--brand-primary-dimmer, #1A2207); } .ds-set-chip.is-active { border-color: var(--brand-primary, #C6FF00); box-shadow: 0 0 0 2px var(--brand-primary-glow, rgba(198, 255, 0, 0.28)); } .ds-set-main { flex: 1; display: flex; align-items: center; gap: 8px; min-width: 0; min-height: 48px; padding: 0 12px; border: none; background: none; color: var(--app-text, #F4F7EF); text-align: left; cursor: pointer; } .ds-set-index { display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; flex-shrink: 0; border-radius: 50%; background-color: var(--app-surface-raised, #1C1F1A); color: var(--app-text-subtle, #B4BCA9); font-family: var(--font-body, Barlow); font-size: 12px; font-weight: 700; } .ds-set-chip.is-done .ds-set-index { background-color: var(--brand-primary, #C6FF00); color: var(--app-text-inverse, #0C1000); } .ds-set-value { font-family: var(--font-body, Barlow); font-size: 15px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .ds-set-key { display: flex; align-items: center; justify-content: center; width: 40px; min-height: 48px; border: none; border-left: 1px solid var(--app-border, rgba(238, 255, 220, 0.1)); background: none; color: var(--app-text-muted, #838B79); cursor: pointer; } .ds-set-key:hover { color: var(--app-text, #F4F7EF); background-color: var(--app-surface-raised, #1C1F1A); }"
+    },
+    {
+      "name": "Toast",
+      "kind": "custom",
+      "refersTo": "toast",
+      "description": "Floating status notice: Panel Overlay, strong hairline, one shadow, and the status colour carried by the 3px left edge plus the leading icon. Nothing else changes colour.",
+      "html": "<div class=\"ds-toast\"><svg width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.4\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"m5 13 4 4L19 7\"/></svg><span>Plan zapisany</span></div>",
+      "css": ".ds-toast { display: inline-flex; align-items: center; gap: 8px; padding: 12px 16px; border: 1px solid var(--app-border-strong, rgba(238, 255, 220, 0.2)); border-left: 3px solid var(--brand-primary, #C6FF00); border-radius: 8px; background-color: var(--app-surface-overlay, #242821); box-shadow: 0 16px 32px rgba(0, 0, 0, 0.6), 0 0 0 1px var(--app-border, rgba(238, 255, 220, 0.1)); color: var(--app-text, #F4F7EF); font-family: var(--font-body, Barlow); font-size: 13px; font-weight: 500; } .ds-toast svg { flex-shrink: 0; color: var(--brand-primary, #C6FF00); }"
+    },
+    {
+      "name": "Floating Action Bar",
+      "kind": "custom",
+      "refersTo": "action-bar",
+      "description": "The save/discard surface, fixed above the nav in the app: 16px in from the page edges, 8px padding, 14px radius, Panel Overlay, one shadow. The 11px hint line sits above the two buttons.",
+      "html": "<div class=\"ds-action-bar\"><span class=\"ds-action-bar-hint\">Masz niezapisane zmiany</span><div class=\"ds-action-bar-row\"><button class=\"ds-ab-ghost\">COFNIJ</button><button class=\"ds-ab-primary\">ZAPISZ PLAN</button></div></div>",
+      "css": ".ds-action-bar { display: flex; flex-direction: column; gap: 8px; width: 100%; padding: 8px; border: 1px solid var(--app-border-strong, rgba(238, 255, 220, 0.2)); border-radius: 14px; background-color: var(--app-surface-overlay, #242821); box-shadow: 0 16px 32px rgba(0, 0, 0, 0.6), 0 0 0 1px var(--app-border, rgba(238, 255, 220, 0.1)); } .ds-action-bar-hint { font-family: var(--font-body, Barlow); font-size: 12px; color: var(--app-text-muted, #838B79); text-align: center; } .ds-action-bar-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; } .ds-ab-ghost, .ds-ab-primary { display: inline-flex; align-items: center; justify-content: center; min-height: 48px; padding: 0 16px; border-radius: 8px; font-family: var(--font-heading, 'Barlow Condensed', 'Arial Narrow'); font-style: italic; font-weight: 700; font-size: 15px; letter-spacing: 0.06em; text-transform: uppercase; cursor: pointer; transition: background-color 120ms ease, border-color 120ms ease, color 120ms ease, transform 80ms ease; } .ds-ab-ghost { border: 1px solid var(--app-border, rgba(238, 255, 220, 0.1)); background-color: transparent; color: var(--app-text-subtle, #B4BCA9); } .ds-ab-ghost:hover { color: var(--app-text, #F4F7EF); border-color: var(--app-border-strong, rgba(238, 255, 220, 0.2)); } .ds-ab-primary { border: 1px solid transparent; background-color: var(--brand-primary, #C6FF00); color: var(--app-text-inverse, #0C1000); font-weight: 800; } .ds-ab-primary:hover { background-color: var(--brand-primary-hover, #D6FF3D); } .ds-ab-ghost:active, .ds-ab-primary:active { transform: scale(0.985); } .ds-ab-ghost:focus-visible, .ds-ab-primary:focus-visible { outline: 2px solid var(--brand-primary, #C6FF00); outline-offset: 2px; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Instrument Panel",
+    "overview": "XERFIT looks like a readout, not a coach. The world is a near-black housing with a faint green cast, hairline seams between panels, and exactly one volt-lit number per screen — the weight to load next. Type is stamped rather than written: Barlow Condensed, italic, uppercase for every heading and every figure, so the screen reads the way a machine plate reads. Nothing is decorative, and nothing congratulates you. The app's only celebration is a single volt ring around a PR, and even that is a number with a frame around it.\n\nThe atmosphere is industrial and physical: chalk-white type on oil-black panels, borders you can see at arm's length under gym light, four background steps that stand in for depth instead of shadows. Density is deliberately low and the vertical rhythm is generous, because the surface is used one-handed, mid-set, with a phone that is moving. Every control is at least 48px tall and the primary action is 60px, so a misjudged tap still lands on the intended thing.\n\nExpression lives in three places only: the volt accent, the condensed italic voice, and the tonal step of the panel behind a value. Everything else is quiet on purpose — the readout is the interface, so the interface gets out of the readout's way. Motion is state change, never showmanship: 120ms on color and border, 80ms on the press, 160–220ms when a floating layer enters. The one exception is the PR celebration, which is allowed a springy overshoot — it is the only moment the system raises its voice.",
+    "keyCharacteristics": [
+      "One accent (#C6FF00), reserved for the number that changed, the action that commits, and the state that is live.",
+      "Four tonal background steps and two hairline weights carry all structure; no shadow vocabulary.",
+      "Barlow Condensed italic caps for labels and numerals; Barlow roman for sentences only.",
+      "560px single column, 16px gutters, 8/14/20px radii, 48px minimum targets.",
+      "Polish-only, terse, informal second person — the copy tone and the type tone are the same tone.",
+      "No native dialogs or native selects anywhere; sheets, action bars and cards carry all interaction."
+    ],
+    "rules": [
+      { "name": "The One-Signal Rule", "body": "Volt marks the value that changed and the action that commits, and nothing else. Under 10% of any screen carries it; its rarity is what makes a 46px weight readout legible from arm's length in a dim gym. If a screen has three volt moments, two of them are wrong.", "section": "colors" },
+      { "name": "The Four-Surface Rule", "body": "There are exactly four background steps (Instrument Black → Panel → Panel Raised → Panel Overlay) and two hairline weights. Never invent a fifth grey and never reach for a shadow to separate two panels.", "section": "colors" },
+      { "name": "The Green-Cast Rule", "body": "Every neutral is tinted toward the accent's hue: the blacks are green-black, the greys are green-grey, the whites are green-white. A pure grey (#808080) or a blue-grey belongs to a different product.", "section": "colors" },
+      { "name": "The Italic Caps Rule", "body": "Every heading and every readable figure is Barlow Condensed, italic, uppercase, and bold-to-black. Never a roman heading, never sentence case in a heading, and never an upright numeral in a value that a user steps or compares.", "section": "typography" },
+      { "name": "The One-Voice Rule", "body": "Barlow Condensed is for labels and quantities; Barlow roman is for sentences. If a string is a phrase the user reads, it is roman and sentence-cased — do not set body copy in caps to make it look strong.", "section": "typography" },
+      { "name": "The Tabular Rule", "body": "Any number a user compares across rows or steps gets font-variant-numeric: tabular-nums — set pills, weights, reps, stats, ratios, dates, durations, chart labels.", "section": "typography" },
+      { "name": "The Tonal-First Rule", "body": "A new surface reads as closer by taking the next step in the four-step stack, never by gaining a shadow. If a design needs a shadow to communicate hierarchy, the hierarchy is wrong.", "section": "elevation" },
+      { "name": "The Floating-Only Rule", "body": "A shadow means \"this layer is detached from the page\" — action bars, sheets, dialogs, toasts. Nothing that scrolls with the content may have one.", "section": "elevation" },
+      { "name": "The State-Ring Rule", "body": "A volt ring means \"this is live or focused\", never \"this is important\". 3px for a field, 2px for the active set, 6px for the PR. It is the same ring at three intensities, and it never appears as ornament.", "section": "elevation" }
+    ],
+    "dos": [
+      "**Do** reach for `color-mix(in srgb, var(--…))` when a new tint is needed; `css/theme/palette.css` is the only file allowed to hold a literal colour.",
+      "**Do** keep every interactive target at 48px minimum and every primary action at 60px, even if the design would look tighter.",
+      "**Do** keep the numeric readouts in the Display voice (`46px / italic / 800 / tnum`) and let them be the largest thing on the screen.",
+      "**Do** put `tabular-nums` on every value the user compares, steps or scans in a column.",
+      "**Do** separate surfaces with a hairline (10%) or Hairline Strong (20%) and the next tonal step, in that order of preference.",
+      "**Do** use the 3px `--brand-primary-glow` ring for focus on any field, including the borderless logger input, and keep the 2px / 6px variants for the active set and the PR.",
+      "**Do** keep the shell at 560px, the gutters at 16px (20px above 600px), and the bottom clearance at nav + safe-area + 24px.",
+      "**Do** route every confirmation, picker and error through `dialogService` / `sheetService` / `notify` so the sheet, dialog and toast treatments come along.",
+      "**Do** cap motion at 120–200ms of state change, and let the global `prefers-reduced-motion` rule flatten it."
+    ],
+    "donts": [
+      "**Don't** introduce a fifth background step, a third hairline weight, or a shadow on anything that scrolls with the page.",
+      "**Don't** let Volt cover more than roughly a tenth of a screen; if a second and third element compete for it, the emphasis is wrong.",
+      "**Don't** set headings in roman, sentences in caps, or body copy in Barlow Condensed.",
+      "**Don't** use pure white, pure black, or a neutral grey without the green cast.",
+      "**Don't** use a radius that is not 8, 14, 20 or pill, and don't mix two radii inside one component.",
+      "**Don't** ship native `alert`, `confirm`, `prompt` or a native `select`; the sheet, the dialog card and the badge already cover those jobs.",
+      "**Don't** add a fifth nav item to the bar or a third column to `.stat-grid` — at 390px the caps labels already ellipsize at the four the bar has.",
+      "**Don't** animate the celebration's spring curve anywhere else, and don't add a second celebratory moment: the PR ring is the only one."
+    ]
+  }
+}

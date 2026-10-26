@@ -1,7 +1,7 @@
 import { escapeHtml, formatWeight, renderMaterialIcon, sanitizeDecimal, sanitizeInteger } from '../utils.js';
 import { workoutService } from '../services/workoutService.js';
 import { workoutAnalysis } from '../services/workoutAnalysis.js';
-import { dialogService, notify, sheetService } from './components/dialogs.js';
+import { dialogService, notify, sheetService, showCelebration } from './components/dialogs.js';
 
 const SUGGESTION_ICONS = {
     up: 'trending_up',
@@ -28,9 +28,14 @@ export function createWorkoutView(app) {
                         <span class="workout-topbar__position numeric">${session.currentIndex + 1}/${session.exercises.length}</span>
                         <span class="workout-topbar__split">${escapeHtml(session.splitName)} · ${escapeHtml(session.containerName)}</span>
                     </div>
-                    <button type="button" class="icon-btn" data-action="finish" aria-label="Zakończ trening">
-                        ${renderMaterialIcon('flag')}
-                    </button>
+                    <div class="workout-topbar__actions">
+                        <button type="button" class="icon-btn" data-action="exit" aria-label="Wyjdź z treningu, wróć później">
+                            ${renderMaterialIcon('minimize')}
+                        </button>
+                        <button type="button" class="icon-btn" data-action="finish" aria-label="Zakończ trening">
+                            ${renderMaterialIcon('flag')}
+                        </button>
+                    </div>
                 </header>
 
                 ${renderProgressBar(progress)}
@@ -259,6 +264,10 @@ function handleClick(app, event) {
         app.render();
         return;
     }
+    if (action === 'exit') {
+        app.exitWorkout();
+        return;
+    }
     if (action === 'finish') {
         app.finishWorkout();
     }
@@ -335,7 +344,13 @@ function commitAndAdvance(app) {
     workoutService.updateSet(session, index, { weight, reps, done: true });
     if (entry.skipped) workoutService.toggleSkipped(session);
 
-    if (isRecord) notify('Nowy rekord w tym ćwiczeniu!', { type: 'success' });
+    if (isRecord) {
+        showCelebration({
+            title: 'Nowy rekord',
+            headline: `${formatWeight(weight)} kg × ${reps}`,
+            detail: entry.name
+        });
+    }
 
     if (entry.sets.every(set => workoutAnalysis.isCompletedSet(set))) {
         app.advanceAfterExercise();

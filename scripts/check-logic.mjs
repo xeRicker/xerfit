@@ -1,4 +1,5 @@
 import { registerHooks } from 'node:module';
+import { readFileSync } from 'node:fs';
 
 const ROOT = new URL('../', import.meta.url);
 
@@ -176,6 +177,32 @@ check('increment floors at 0.5', plan.defaults.increment, 0.5);
 
 check('sanitize decimal helper', sanitizeDecimal('62,5kg'), '62.5');
 check('format weight trims', formatWeight(62.5), '62,5');
+
+const { profileService, strengthService } = await import(new URL('js/services/profileService.js', ROOT));
+const standards = JSON.parse(readFileSync(new URL('database/strength-standards.json', ROOT), 'utf8'));
+
+check('standards file is usable', strengthService.hasStandards(standards), true);
+check('profile drops junk values', profileService.normalizeProfile({ weight: 'abc' }).weight, null);
+check('profile clamps weight', profileService.normalizeProfile({ weight: 5000 }).weight, 300);
+check('profile defaults to male', profileService.normalizeProfile({}).sex, 'male');
+check('profile is incomplete without weight', profileService.isComplete({ sex: 'male', weight: null }), false);
+check('lean mass without body fat equals weight', profileService.leanMass({ weight: 80, bodyFat: null }), 80);
+check('lean mass uses body fat', profileService.leanMass({ weight: 100, bodyFat: 20 }), 80);
+
+check('matches Upper Chest Press to bench', strengthService.matchLift(standards, 'Upper Chest Press').key, 'bench');
+check('matches Suwnica to squat', strengthService.matchLift(standards, 'Suwnica').key, 'squat');
+check('matches Pullups to pulldown', strengthService.matchLift(standards, 'Pullups').key, 'pulldown');
+check('matches Uganianie Podudzi to leg curl', strengthService.matchLift(standards, 'Uganianie Podudzi').key, 'legcurl');
+check('matches Przywodziciele to adductor', strengthService.matchLift(standards, 'Przywodziciele').key, 'adductor');
+check('unmatched name has no standard', strengthService.matchLift(standards, 'Nieznane urządzenie'), null);
+
+const benchLift = standards.lifts.bench;
+check('1.74x bodyweight is elite for male bench', strengthService.classify(standards, benchLift, 1.74, 'male').id, 'elite');
+check('0.4x bodyweight is beginner for male bench', strengthService.classify(standards, benchLift, 0.4, 'male').id, 'beginner');
+check('0.7x bodyweight is advanced for female bench', strengthService.classify(standards, benchLift, 0.7, 'female').id, 'advanced');
+check('classify rejects zero ratio', strengthService.classify(standards, benchLift, 0, 'male'), null);
+check('classify reports the next threshold', strengthService.classify(standards, benchLift, 0.6, 'male').nextBound, 0.75);
+check('classify reports progress towards the next threshold', Math.round(strengthService.classify(standards, benchLift, 0.625, 'male').progress * 100), 50);
 
 console.log(failures ? `\n${failures} check(s) failed` : '\nall checks passed');
 process.exit(failures ? 1 : 0);

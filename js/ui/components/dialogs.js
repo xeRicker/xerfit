@@ -3,6 +3,7 @@ import { escapeHtml, renderMaterialIcon } from '../../utils.js';
 let feedbackLayer = null;
 let sheetLayer = null;
 let toastStack = null;
+let celebrationLayer = null;
 
 export const dialogService = {
     alert(message, title = 'Komunikat') {
@@ -93,6 +94,32 @@ export const sheetService = {
         if (resolve) resolve(value);
     }
 };
+
+export function showCelebration({ title, headline, detail, icon = 'emoji_events' }) {
+    const layer = ensureCelebrationLayer();
+    const card = layer.querySelector('.celebration');
+    card.innerHTML = `
+        <span class="celebration__icon material-symbols-rounded" aria-hidden="true">${escapeHtml(icon)}</span>
+        <span class="celebration__title">${escapeHtml(title)}</span>
+        <span class="celebration__headline">${escapeHtml(headline)}</span>
+        <span class="celebration__detail">${escapeHtml(detail)}</span>
+    `;
+    layer.classList.add('is-open');
+
+    clearTimeout(layer._timer);
+    layer._timer = setTimeout(() => layer.classList.remove('is-open'), 2600);
+    layer.onclick = () => layer.classList.remove('is-open');
+}
+
+function ensureCelebrationLayer() {
+    if (celebrationLayer) return celebrationLayer;
+
+    celebrationLayer = document.createElement('div');
+    celebrationLayer.className = 'celebration-layer';
+    celebrationLayer.innerHTML = '<div class="celebration" role="status" aria-live="polite"></div>';
+    document.body.appendChild(celebrationLayer);
+    return celebrationLayer;
+}
 
 export function notify(message, { type = 'info', duration = 3200 } = {}) {
     const stack = ensureToastStack();

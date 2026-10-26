@@ -78,7 +78,7 @@ globalThis.window = {
 
 globalThis.fetch = async url => {
     const path = String(url).replace(/^\.\//, '').split('?')[0];
-    const known = ['database/exercises.json', 'database/plan.json', 'database/workouts.json'];
+    const known = ['database/exercises.json', 'database/plan.json', 'database/workouts.json', 'database/strength-standards.json'];
     if (!known.includes(path)) return { ok: false, status: 404, json: async () => ({}) };
     const text = await readFile(new URL(path, ROOT), 'utf8');
     return { ok: true, status: 200, json: async () => JSON.parse(text), text: async () => text };
@@ -131,8 +131,8 @@ const settings = await visit('#/settings');
 check('settings renders steppers', settings.includes('stepper__row'));
 check('settings shows global range', settings.includes('Powtórzenia min') && settings.includes('Powtórzenia max'));
 check('settings has no per-split set count', !settings.includes('Serie na start'));
-check('settings hides the github info panel', !settings.includes('Zapis do GitHuba') && !settings.includes('Gotowe do zapisu'));
-check('settings offers a token button', settings.includes('data-action="token"'));
+check('settings hides the github info panel', !settings.includes('Zapis do GitHuba') && !settings.includes('Personal access token'));
+check('settings has no manual token button', !settings.includes('data-action="token"') && !settings.includes('Personal access token'));
 
 const summary = await visit('#/summary');
 check('summary without session invites to plan', summary.includes('Brak podsumowania'));

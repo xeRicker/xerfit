@@ -3,6 +3,7 @@ import { exercisesService } from '../services/exercisesService.js';
 import { planService } from '../services/planService.js';
 import { workoutAnalysis } from '../services/workoutAnalysis.js';
 import { dialogService, notify, sheetService } from './components/dialogs.js';
+import { renderRecentSessions } from './sessions.js';
 
 export function createExercisesView(app) {
     return {
@@ -20,12 +21,10 @@ export function createExercisesView(app) {
                 const exerciseId = trigger.dataset.exercise;
 
                 if (action === 'open-exercise') {
-                    app.exercisesUI.exerciseId = exerciseId;
-                    app.render();
+                    app.go(`#/exercises/${exerciseId}`);
                 }
                 if (action === 'close-exercise') {
-                    app.exercisesUI.exerciseId = null;
-                    app.render();
+                    app.go('#/exercises');
                 }
                 if (action === 'new-exercise') openExerciseForm(app, null);
                 if (action === 'rename-exercise') openExerciseForm(app, exerciseId);
@@ -40,6 +39,18 @@ export function createExercisesView(app) {
                 const list = root.querySelector('[data-exercise-list]');
                 if (list) list.innerHTML = renderRows(app, app.exercisesUI.query);
             });
+        },
+
+        patch() {
+            const search = document.querySelector('[data-field="exercise-search"]');
+            if (search && search.value !== app.exercisesUI.query) search.value = app.exercisesUI.query;
+
+            const list = document.querySelector('[data-exercise-list]');
+            if (list) list.innerHTML = renderRows(app, app.exercisesUI.query);
+
+            const barHost = document.getElementById('exercises-save-bar');
+            const wanted = renderCatalogSaveBar(app);
+            if (barHost && barHost.innerHTML !== wanted) barHost.innerHTML = wanted;
         }
     };
 }
@@ -60,7 +71,7 @@ function renderCatalog(app) {
         <button type="button" class="btn btn--ghost btn--block" data-action="new-exercise">
             ${renderMaterialIcon('add')}<span>Nowe ćwiczenie</span>
         </button>
-        ${renderCatalogSaveBar(app)}
+        <div id="exercises-save-bar">${renderCatalogSaveBar(app)}</div>
     `;
 }
 
@@ -102,14 +113,15 @@ function renderRow(app, exercise, weights) {
 
     return `
         <li class="list__item exercise-list-item">
-            <button type="button" class="list__body list__item--button" data-action="open-exercise" data-exercise="${exercise.exerciseId}">
-                <span class="list__title">${escapeHtml(exercise.name)}</span>
-                <span class="list__meta">${escapeHtml(meta)}</span>
+            <button type="button" class="exercise-row__button" data-action="open-exercise" data-exercise="${exercise.exerciseId}">
+                <span class="exercise-row__text">
+                    <span class="exercise-row__name">${escapeHtml(exercise.name)}</span>
+                    <span class="exercise-row__meta">${escapeHtml(meta)}</span>
+                </span>
+                <span class="exercise-row__value numeric">${stats?.weight ? `${escapeHtml(formatWeight(stats.weight))} kg` : '—'}</span>
+                ${renderMaterialIcon('chevron_right', 'exercise-row__chevron')}
             </button>
-            <span class="exercise-list-item__weight">
-                <span class="list__value numeric">${stats?.weight ? `${escapeHtml(formatWeight(stats.weight))} kg` : '—'}</span>
-                ${stats?.isPlateau ? '<span class="badge badge--hold">Plateau</span>' : ''}
-            </span>
+            ${stats?.isPlateau ? `<span class="badge badge--hold exercise-row__flag">Plateau</span>` : ''}
         </li>
     `;
 }
@@ -120,26 +132,43 @@ function renderDetail(app) {
     const history = workoutAnalysis.historyForExercise(app.workouts, exerciseId);
     const usage = planService.usageOfExercise(app.draft, exerciseId);
     const last = history.at(-1);
-    const lastTopWeight = last ? Math.max(...workoutAnalysis.completedSets(last.entry).map(set => Number(set.weight))) : 0;
+    const lastSets = last ? workoutAnalysis.completedSets(last.entry) : [];
+    const lastTopWeight = lastSets.length ? Math.max(...lastSets.map(set => Number(set.weight))) : 0;
 
     return `
         <div class="editor-head">
             <button type="button" class="icon-btn" data-action="close-exercise" aria-label="Wróć do katalogu">
                 ${renderMaterialIcon('arrow_back')}
             </button>
-            <h2 class="exercise-detail__name">${escapeHtml(exercise.name)}</h2>
+            <h2 class="editor-head__title">${escapeHtml(exercise.name)}</h2>
         </div>
 
-        <div class="stat-grid">
-            <div class="stat">
-                <span class="stat__label">Ostatnio</span>
-                <span class="stat__value numeric">${last ? escapeHtml(formatWeight(lastTopWeight)) : '—'}</span>
-                <span class="stat__unit">kg</span>
-            </div>
-            <div class="stat">
-                <span class="stat__label">Szacowane 1RM</span>
-                <span class="stat__value numeric">${last ? escapeHtml(formatWeight(Math.round(last.bestOneRepMax * 10) / 10)) : '—'}</span>
-                <span class="stat__unit">kg</span>
+        <div class="detail-facts">
+            <span class="detail-fact">
+                <span class="detail-fact__label">Ostatnio</span>
+                <span class="detail-fact__value numeric">${last ? `${escapeHtml(formatWeight(lastTopWeight))} kg` : '—'}</span>
+            </span>
+            <span class="detail-fact">
+                <span class="detail-fact__label">1RM</span>
+                <span class="detail-fact__value numeric">${last ? `${escapeHtml(formatWeight(Math.round(last.bestOneRepMax * 10) / 10))} kg` : '—'}</span>
+            </span>
+            <span class="detail-fact">
+                <span class="detail-fact__label">Treningi</span>
+                <span class="detail-fact__value numeric">${history.length}</span>
+            </span>
+        </div>
+
+        <div class="detail-actions">
+            <a class="btn btn--primary btn--block" href="#/history/${exerciseId}">
+                ${renderMaterialIcon('show_chart')}<span>Wykres progresji</span>
+            </a>
+            <div class="detail-actions__row">
+                <button type="button" class="btn btn--ghost" data-action="rename-exercise" data-exercise="${exerciseId}">
+                    ${renderMaterialIcon('edit')}<span>Zmień nazwę</span>
+                </button>
+                <button type="button" class="btn btn--danger" data-action="remove-exercise" data-exercise="${exerciseId}">
+                    ${renderMaterialIcon('delete')}<span>Usuń</span>
+                </button>
             </div>
         </div>
 
@@ -149,17 +178,13 @@ function renderDetail(app) {
                 <span class="section__hint">${usage.length} ${plural(usage.length, 'raz', 'razy', 'razy')}</span>
             </div>
             ${usage.length ? `
-                <div class="card card--flush">
-                    <ul class="list">
-                        ${usage.map(item => `
-                            <li class="list__item">
-                                <span class="list__body">
-                                    <span class="list__title">${escapeHtml(item.splitName)}</span>
-                                    <span class="list__meta">${escapeHtml(item.containerName)}</span>
-                                </span>
-                            </li>
-                        `).join('')}
-                    </ul>
+                <div class="chip-row">
+                    ${usage.map(item => `
+                        <span class="chip chip--static">
+                            ${renderMaterialIcon('splitscreen')}
+                            ${escapeHtml(item.splitName)} · ${escapeHtml(item.containerName)}
+                        </span>
+                    `).join('')}
                 </div>
             ` : '<p class="section__hint">To ćwiczenie nie jest teraz w żadnym splicie.</p>'}
         </section>
@@ -167,32 +192,10 @@ function renderDetail(app) {
         <section class="section">
             <div class="section__head">
                 <h3 class="section__title">Ostatnie serie</h3>
-                <a class="section__link" href="#/history/${exerciseId}">Wykres progresji</a>
+                <span class="section__hint">${history.length} ${plural(history.length, 'trening', 'treningi', 'treningów')}</span>
             </div>
-            ${history.length ? `
-                <div class="card card--flush">
-                    <ul class="list">
-                        ${[...history].reverse().slice(0, 8).map(item => `
-                            <li class="list__item">
-                                <span class="list__body">
-                                    <span class="list__title numeric">${escapeHtml(workoutAnalysis.formatSetPlan(item.entry))}</span>
-                                    <span class="list__meta">${escapeHtml(formatDate(item.date))}</span>
-                                </span>
-                            </li>
-                        `).join('')}
-                    </ul>
-                </div>
-            ` : '<p class="section__hint">Brak zapisanych treningów z tym ćwiczeniem.</p>'}
+            ${renderRecentSessions(history, 6)}
         </section>
-
-        <div class="action-bar action-bar--grid">
-            <button type="button" class="btn btn--ghost" data-action="rename-exercise" data-exercise="${exerciseId}">
-                ${renderMaterialIcon('edit')}<span>Zmień nazwę</span>
-            </button>
-            <button type="button" class="btn btn--danger" data-action="remove-exercise" data-exercise="${exerciseId}">
-                ${renderMaterialIcon('delete')}<span>Usuń</span>
-            </button>
-        </div>
     `;
 }
 

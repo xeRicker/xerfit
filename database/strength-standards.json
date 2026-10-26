@@ -1,0 +1,42 @@
+{
+  "version": 1,
+  "note": "Przybliżone progi siły względnej (1RM / masa ciała) dla dorosłych trenujących rekreacyjnie. Wartości są punktem odniesienia, nie certyfikatem — edytuj swobodnie.",
+  "lifts": {
+    "bench": { "label": "Wyciskanie poziome", "male": [0.5, 0.75, 1.0, 1.25], "female": [0.35, 0.5, 0.65, 0.85] },
+    "squat": { "label": "Przysiad / wypychanie nogami", "male": [0.75, 1.0, 1.5, 1.75], "female": [0.5, 0.75, 1.0, 1.35] },
+    "deadlift": { "label": "Martwy ciąg", "male": [1.0, 1.25, 1.75, 2.0], "female": [0.75, 1.0, 1.25, 1.6] },
+    "overhead": { "label": "Wyciskanie nad głowę", "male": [0.35, 0.5, 0.7, 0.85], "female": [0.25, 0.35, 0.5, 0.65] },
+    "row": { "label": "Wiosłowanie", "male": [0.5, 0.7, 0.95, 1.15], "female": [0.35, 0.5, 0.65, 0.85] },
+    "pulldown": { "label": "Ściąganie / podciąganie", "male": [0.5, 0.7, 0.95, 1.15], "female": [0.35, 0.5, 0.7, 0.9] },
+    "curl": { "label": "Uginanie ramion", "male": [0.25, 0.4, 0.55, 0.7], "female": [0.15, 0.25, 0.35, 0.5] },
+    "triceps": { "label": "Triceps", "male": [0.25, 0.4, 0.55, 0.7], "female": [0.15, 0.25, 0.4, 0.5] },
+    "raise": { "label": "Wznosy bokiem / odwodzenie", "male": [0.1, 0.15, 0.22, 0.3], "female": [0.06, 0.1, 0.15, 0.2] },
+    "legcurl": { "label": "Uginanie nóg", "male": [0.35, 0.5, 0.7, 0.85], "female": [0.25, 0.35, 0.5, 0.65] },
+    "adductor": { "label": "Przywodziciele / odwodziciele", "male": [0.5, 0.7, 0.95, 1.2], "female": [0.4, 0.55, 0.75, 0.95] },
+    "calf": { "label": "Łydki", "male": [0.75, 1.0, 1.4, 1.7], "female": [0.55, 0.75, 1.0, 1.3] },
+    "crunch": { "label": "Brzuch na wyciągu", "male": [0.3, 0.45, 0.6, 0.8], "female": [0.2, 0.3, 0.45, 0.6] },
+    "shrug": { "label": "Shrugsy / kaptury", "male": [0.5, 0.75, 1.0, 1.3], "female": [0.35, 0.5, 0.7, 0.95] }
+  },
+  "matching": [
+    { "lift": "bench", "match": ["chest", "butterfly", "fly", "wycisk"] },
+    { "lift": "squat", "match": ["squat", "suwnica", "leg press", "przysiad", "hack"] },
+    { "lift": "deadlift", "match": ["deadlift", "martwy", "rdl", "rumuński"] },
+    { "lift": "overhead", "match": ["ohp", "overhead", "nad głowę", "żołnierskie", "shoulder"] },
+    { "lift": "row", "match": ["row", "wiosł", "t-row", "back row"] },
+    { "lift": "pulldown", "match": ["pulldown", "pullup", "podciąganie", "ściąganie"] },
+    { "lift": "curl", "match": ["curl", "ugina"] },
+    { "lift": "triceps", "match": ["triceps", "dip", "prostowanie ramion", "pushdown"] },
+    { "lift": "raise", "match": ["raise", "wznos", "reverse fly", "reversefly", "odwodzenie"] },
+    { "lift": "legcurl", "match": ["leg curl", "podudzi", "uganianie"] },
+    { "lift": "adductor", "match": ["przywodzic", "odwodzic", "adduct", "abduct"] },
+    { "lift": "calf", "match": ["calf", "łydk", "wspięcia"] },
+    { "lift": "crunch", "match": ["crunch", "brzuch", "skłony", "ab wheel"] },
+    { "lift": "shrug", "match": ["shrug"] }
+  ],
+  "levels": [
+    { "id": "beginner", "label": "Początkujący", "index": 0 },
+    { "id": "novice", "label": "Średni", "index": 1 },
+    { "id": "advanced", "label": "Zaawansowany", "index": 2 },
+    { "id": "elite", "label": "Bardzo mocny", "index": 3 }
+  ]
+}

@@ -5,7 +5,8 @@ import { tokenService } from './token.js';
 const DATA_FILES = {
     exercises: 'database/exercises.json',
     plan: 'database/plan.json',
-    workouts: 'database/workouts.json'
+    workouts: 'database/workouts.json',
+    strengthStandards: 'database/strength-standards.json'
 };
 
 const MAX_ATTEMPTS = 3;

@@ -1,13 +1,13 @@
 import { WORKOUT_CONFIG } from '../config/config.js';
-import { escapeHtml, formatDate, formatDateShort, formatDuration, formatVolume, formatWeight, renderMaterialIcon, formatWeekday } from '../utils.js';
+import { escapeHtml, formatDate, formatDateShort, formatDuration, formatWeight, renderMaterialIcon, formatWeekday } from '../utils.js';
 import { workoutAnalysis } from '../services/workoutAnalysis.js';
 import { renderLineChart } from './charts.js';
+import { renderRecentSessions } from './sessions.js';
 
 const METRICS = {
     weight: { label: 'Ciężar', unit: 'kg', value: item => Math.max(...workoutAnalysis.completedSets(item.entry).map(set => Number(set.weight))) },
     oneRepMax: { label: '1RM', unit: 'kg', value: item => item.bestOneRepMax },
-    reps: { label: 'Powtórzenia', unit: 'powt.', value: item => Math.max(...workoutAnalysis.completedSets(item.entry).map(set => Number(set.reps))) },
-    volume: { label: 'Objętość', unit: 'kg', value: item => item.volume }
+    reps: { label: 'Powtórzenia', unit: 'powt.', value: item => Math.max(...workoutAnalysis.completedSets(item.entry).map(set => Number(set.reps))) }
 };
 
 export function createHistoryView(app) {
@@ -27,16 +27,13 @@ export function createHistoryView(app) {
                 if (action === 'history-tab') {
                     app.historyUI.tab = trigger.dataset.tab;
                     app.historyUI.exerciseId = null;
-                    app.render();
+                    app.go('#/history');
                 }
                 if (action === 'open-exercise') {
-                    app.historyUI.tab = 'exercises';
-                    app.historyUI.exerciseId = trigger.dataset.exercise;
-                    app.render();
+                    app.go(`#/history/${trigger.dataset.exercise}`);
                 }
                 if (action === 'close-exercise') {
-                    app.historyUI.exerciseId = null;
-                    app.render();
+                    app.go(app.historyUI.cameFrom === 'exercises' ? '#/exercises' : '#/history');
                 }
                 if (action === 'metric') {
                     app.historyUI.metric = trigger.dataset.metric;
@@ -98,8 +95,7 @@ function renderSessionCard(app, session) {
             </button>
             <div class="history-card__stats">
                 <span class="badge badge--plain">${renderMaterialIcon('schedule')}<span>${escapeHtml(formatDuration(session.startedAt, session.finishedAt))}</span></span>
-                <span class="badge badge--plain">${renderMaterialIcon('weight')}<span>${escapeHtml(formatVolume(session.volume))} kg</span></span>
-                <span class="badge badge--plain">${renderMaterialIcon('fitness_center')}<span>${performed.length}</span></span>
+                <span class="badge badge--plain">${renderMaterialIcon('fitness_center')}<span>${performed.length} ${sessionWord(performed.length)}</span></span>
             </div>
             ${isOpen ? `
                 <ul class="list history-card__body">
@@ -115,10 +111,10 @@ function renderSessionExercise(entry) {
     const value = sets.length ? sets.map(set => `${formatWeight(set.weight)}×${set.reps}`).join(' · ') : 'brak serii';
 
     return `
-        <li class="list__item">
+        <li class="list__item info-row">
             <span class="list__body">
-                <span class="list__title">${escapeHtml(entry.name)}</span>
-                <span class="list__meta">${escapeHtml(value)}</span>
+                <span class="info-row__title">${escapeHtml(entry.name)}</span>
+                <span class="info-row__meta numeric">${escapeHtml(value)}</span>
             </span>
             ${entry.skipped ? '<span class="badge badge--muted">Pominięte</span>' : ''}
         </li>
@@ -134,17 +130,16 @@ function renderExerciseList(app) {
             <div class="card card--flush">
                 <ul class="list">
                     ${weights.map(item => `
-                        <li>
-                            <button type="button" class="list__item list__item--button" data-action="open-exercise" data-exercise="${item.exerciseId}">
-                                <span class="list__body">
-                                    <span class="list__title">${escapeHtml(item.name)}</span>
-                                    <span class="list__meta">${item.lastDate ? `${escapeHtml(formatDate(item.lastDate))} · ${item.sessions} ${sessionWord(item.sessions)}` : 'brak treningów'}</span>
+                        <li class="list__item exercise-list-item">
+                            <button type="button" class="exercise-row__button" data-action="open-exercise" data-exercise="${item.exerciseId}">
+                                <span class="exercise-row__text">
+                                    <span class="exercise-row__name">${escapeHtml(item.name)}</span>
+                                    <span class="exercise-row__meta">${item.lastDate ? `${escapeHtml(formatDate(item.lastDate))} · ${item.sessions} ${sessionWord(item.sessions)}` : 'brak treningów'}</span>
                                 </span>
-                                <span class="exercise-weight">
-                                    <span class="list__value">${item.weight ? `${escapeHtml(formatWeight(item.weight))} kg` : '—'}</span>
-                                    ${item.isPlateau ? '<span class="badge badge--hold">Plateau</span>' : ''}
-                                </span>
+                                <span class="exercise-row__value numeric">${item.weight ? `${escapeHtml(formatWeight(item.weight))} kg` : '—'}</span>
+                                ${renderMaterialIcon('chevron_right', 'exercise-row__chevron')}
                             </button>
+                            ${item.isPlateau ? '<span class="badge badge--hold exercise-row__flag">Plateau</span>' : ''}
                         </li>
                     `).join('')}
                 </ul>
@@ -174,12 +169,11 @@ function renderExerciseDetail(app) {
 
     return `
         <div class="editor-head">
-            <button type="button" class="icon-btn" data-action="close-exercise" aria-label="Wróć do listy ćwiczeń">
+            <button type="button" class="icon-btn" data-action="close-exercise" aria-label="Wróć">
                 ${renderMaterialIcon('arrow_back')}
             </button>
             <span class="editor-head__name editor-head__name--static">
-                <span class="list__title">${escapeHtml(exercise.name)}</span>
-                <span class="list__meta">${escapeHtml(exercise.group)}</span>
+                <span class="editor-head__title">${escapeHtml(exercise.name)}</span>
             </span>
         </div>
 
@@ -211,19 +205,11 @@ function renderExerciseDetail(app) {
             </div>
 
             <section class="section">
-                <h3 class="section__title">Ostatnie serie</h3>
-                <div class="card card--flush">
-                    <ul class="list">
-                        ${[...history].reverse().slice(0, 8).map(item => `
-                            <li class="list__item">
-                                <span class="list__body">
-                                    <span class="list__title numeric">${escapeHtml(workoutAnalysis.formatSetPlan(item.entry))}</span>
-                                    <span class="list__meta">${escapeHtml(formatDate(item.date))} · 1RM ${escapeHtml(formatWeight(Math.round(item.bestOneRepMax * 10) / 10))} kg</span>
-                                </span>
-                            </li>
-                        `).join('')}
-                    </ul>
+                <div class="section__head">
+                    <h3 class="section__title">Ostatnie serie</h3>
+                    <span class="section__hint">${history.length} ${sessionWord(history.length)}</span>
                 </div>
+                ${renderRecentSessions(history, 8)}
             </section>
         ` : `
             <div class="empty-state">

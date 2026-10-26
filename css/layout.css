@@ -110,12 +110,13 @@
     width: 100%;
     max-width: var(--shell-width);
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 2px;
-    padding: var(--space-sm) var(--space-sm) calc(var(--space-sm) + var(--safe-bottom));
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0;
+    padding: var(--space-sm) var(--space-xs) calc(var(--space-sm) + var(--safe-bottom));
     background-color: color-mix(in srgb, var(--app-bg) 88%, transparent);
     backdrop-filter: blur(12px);
     border-top: 1px solid var(--app-border);
+    container-type: inline-size;
 }
 
 .app-nav__item {
@@ -129,9 +130,9 @@
     padding: 0 2px;
     border-radius: var(--radius-sm);
     color: var(--text-muted);
-    font-size: var(--font-size-caption);
+    font-size: clamp(10px, 3cqw, 13px);
     font-weight: var(--weight-bold);
-    letter-spacing: 0.01em;
+    letter-spacing: 0;
     text-transform: uppercase;
     text-decoration: none;
     transition: color 120ms ease, background-color 120ms ease;
@@ -210,6 +211,64 @@
 
 .app-shell--no-nav {
     padding-bottom: calc(var(--safe-bottom) + 200px);
+}
+
+.resume-bar {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    width: 100%;
+    min-height: 60px;
+    padding: var(--space-md) var(--space-lg);
+    border-radius: var(--radius-md);
+    background-color: var(--brand-primary-dimmer);
+    border: 1px solid var(--brand-primary);
+    color: var(--text-primary);
+    text-align: left;
+}
+
+.resume-bar .material-symbols-rounded {
+    font-size: 26px;
+    color: var(--brand-primary);
+    flex-shrink: 0;
+}
+
+.resume-bar__text {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.resume-bar__title {
+    font-family: var(--font-heading);
+    font-style: italic;
+    font-weight: var(--weight-bold);
+    font-size: var(--font-size-heading);
+    text-transform: uppercase;
+    color: var(--brand-primary);
+}
+
+.resume-bar__meta {
+    font-size: var(--font-size-caption);
+    color: var(--text-secondary);
+}
+
+.resume-bar__chevron {
+    color: var(--brand-primary);
+    opacity: 0.75;
+}
+
+.workout-topbar__actions {
+    display: flex;
+    gap: var(--space-sm);
+    flex-shrink: 0;
+}
+
+.workout-topbar__actions .icon-btn {
+    width: 44px;
+    height: 44px;
 }
 
 .workout-nav {

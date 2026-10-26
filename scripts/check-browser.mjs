@@ -8,7 +8,7 @@ const CHROME = process.env.CHROME_PATH || 'C:/Program Files/Google/Chrome/Applic
 const PORT = Number(process.env.CDP_PORT) || 9333;
 const DEVICE_WIDTH = 390;
 const DEVICE_HEIGHT = 844;
-const DATA_FILES = ['exercises.json', 'plan.json', 'workouts.json'];
+const DATA_FILES = ['exercises.json', 'plan.json', 'workouts.json', 'strength-standards.json'];
 
 const snapshot = new Map(DATA_FILES.map(name => [name, readFileSync(new URL(`../database/${name}`, import.meta.url), 'utf8')]));
 
@@ -249,6 +249,47 @@ try {
     })()`);
     check('workout offers the confirm action', assisted === true);
 
+    await evaluate(clickExpression('[data-action="exit"]'));
+    await sleep(300);
+    const afterExit = await evaluate(`(() => ({
+        hash: location.hash,
+        resumeBar: Boolean(document.querySelector('[data-resume-session]')),
+        resumeText: document.querySelector('.resume-bar__title')?.textContent || '',
+        stored: Boolean(localStorage.getItem('xerfit_session')),
+        workoutVisible: Boolean(document.querySelector('.exercise-stage__name'))
+    }))()`);
+    check('exit leaves the session without ending it', afterExit.hash === '#/plan' && afterExit.workoutVisible === false, JSON.stringify(afterExit));
+    check('exit keeps the session in localStorage', afterExit.stored === true, JSON.stringify(afterExit));
+    check('plan shows a resume banner', afterExit.resumeBar === true, JSON.stringify(afterExit));
+
+    await evaluate(clickExpression('[data-resume-session]'));
+    await sleep(350);
+    const afterResume = await evaluate(`(() => ({
+        hash: location.hash,
+        exercise: document.querySelector('.exercise-stage__name')?.textContent || '',
+        weight: document.querySelector('[data-input="weight"]')?.value ?? null
+    }))()`);
+    check('resume returns to the same exercise', afterResume.hash === '#/workout' && afterResume.exercise.includes('Upper Chest Press'), JSON.stringify(afterResume));
+    check('resume keeps the entered weight', afterResume.weight === '112,5', String(afterResume.weight));
+
+    await evaluate('location.reload()');
+    await sleep(2200);
+    const afterReload = await evaluate(`(() => ({
+        dialogTitle: document.querySelector('.feedback-card__title')?.textContent || '',
+        dialogBody: document.querySelector('.feedback-card__message')?.textContent || ''
+    }))()`);
+    check('reload offers to resume the workout', afterReload.dialogTitle.includes('Wznowić'), JSON.stringify(afterReload));
+    check('resume dialog names the split', afterReload.dialogBody.includes('Upper'), afterReload.dialogBody);
+
+    await evaluate(clickExpression('.feedback-card__actions .btn--primary'));
+    await sleep(400);
+    const afterReloadResume = await evaluate(`(() => ({
+        hash: location.hash,
+        weight: document.querySelector('[data-input="weight"]')?.value ?? null
+    }))()`);
+    check('resuming after reload restores the workout', afterReloadResume.hash === '#/workout', JSON.stringify(afterReloadResume));
+    check('resuming after reload keeps the weight', afterReloadResume.weight === '112,5', String(afterReloadResume.weight));
+
     await evaluate(clickExpression('[data-action="adjust"][data-field="reps"][data-delta="1"]'));
     await sleep(120);
     const afterReps = await evaluate(readExpression);
@@ -355,14 +396,15 @@ try {
     check('save bar floats when dirty', afterStep.actionBarPosition === 'fixed', String(afterStep.actionBarPosition));
 
     await navigate('/#/settings');
+    await evaluate(`window.scrollTo(0, document.body.scrollHeight)`);
+    await sleep(300);
     const bottomCheck = await evaluate(`(() => {
-        const dataCard = [...document.querySelectorAll('.card')].pop();
         const nav = document.getElementById('app-nav');
-        const navTop = nav.getBoundingClientRect().top;
-        const lastRow = dataCard.querySelector('.list__item:last-child')?.getBoundingClientRect();
-        return { navTop: Math.round(navTop), lastRowBottom: lastRow ? Math.round(lastRow.bottom) : null, shellPaddingBottom: getComputedStyle(document.querySelector('.app-shell')).paddingBottom };
+        const clickables = [...document.querySelectorAll('.app-main button, .app-main a[href]')];
+        const lowest = clickables.reduce((bottom, el) => Math.max(bottom, el.getBoundingClientRect().bottom), 0);
+        return { navTop: Math.round(nav.getBoundingClientRect().top), lowestClickable: Math.round(lowest), shellPaddingBottom: getComputedStyle(document.querySelector('.app-shell')).paddingBottom };
     })()`);
-    check('last settings row is not hidden behind the nav', bottomCheck.lastRowBottom !== null && bottomCheck.lastRowBottom <= bottomCheck.navTop, JSON.stringify(bottomCheck));
+    check('last settings control is reachable above the nav', bottomCheck.lowestClickable > 0 && bottomCheck.lowestClickable <= bottomCheck.navTop, JSON.stringify(bottomCheck));
     check('shell reserves space for the nav', parseFloat(bottomCheck.shellPaddingBottom) >= 64, String(bottomCheck.shellPaddingBottom));
 } finally {
     for (const { name, ok, detail } of results) {

@@ -2,6 +2,7 @@ import { formatDate, renderMaterialIcon } from './utils.js';
 import { exercisesService } from './services/exercisesService.js';
 import { planService } from './services/planService.js';
 import { storageService, STORAGE_KEYS } from './services/storage.js';
+import { profileService, strengthService } from './services/profileService.js';
 import { workoutService } from './services/workoutService.js';
 import { dialogService, notify } from './ui/components/dialogs.js';
 import { createPlanView } from './ui/planView.js';
@@ -22,6 +23,8 @@ const app = {
     exercises: {},
     plan: null,
     workouts: [],
+    standards: null,
+    profile: profileService.emptyProfile(),
     draftExercises: {},
     draft: planService.createEmptyPlan(),
     session: null,
@@ -34,7 +37,9 @@ const app = {
     loadError: null,
     planUI: { containerId: null, selectedSplitId: null },
     exercisesUI: { exerciseId: null, query: '' },
-    historyUI: { tab: 'workouts', exerciseId: null, metric: 'weight', openSessionId: null },
+    historyUI: { tab: 'workouts', exerciseId: null, metric: 'weight', openSessionId: null, cameFrom: 'history' },
+    persistentRoute: null,
+    lastFocusedField: null,
     currentContainer() {
         return planService.findContainer(this.draft, this.planUI.containerId);
     },
@@ -48,20 +53,28 @@ const app = {
     isExercisesDirty() {
         return JSON.stringify(this.draftExercises) !== JSON.stringify(this.exercises);
     },
-    markPlanDirty() {
-        render();
+    setProfile(profile) {
+        this.profile = profileService.save(profile);
+        notify('Dane zapisane.', { type: 'success' });
+        fullRender();
     },
-    markExercisesDirty({ render: repaint = false } = {}) {
-        if (repaint) render();
+    fullRender,
+    markPlanDirty() {
+        repaint();
+    },
+    markExercisesDirty({ render: repaintView = false } = {}) {
+        if (repaintView) repaint();
     },
     selectContainer(containerId) {
         this.planUI.containerId = containerId;
         this.planUI.selectedSplitId = null;
-        render();
+        fullRender();
     },
-    render,
+    repaint,
+    render: fullRender,
     go,
     startWorkout,
+    exitWorkout,
     advanceAfterExercise,
     finishWorkout,
     savePlan,
@@ -85,7 +98,15 @@ const views = {
 const root = document.getElementById('view');
 const boundRoutes = new Set();
 
-window.addEventListener('hashchange', render);
+root.addEventListener('focusin', event => {
+    app.lastFocusedField = event.target.dataset?.field || null;
+}, true);
+
+root.addEventListener('click', event => {
+    if (event.target.closest('[data-resume-session]')) go('#/workout');
+});
+
+window.addEventListener('hashchange', fullRender);
 boot();
 
 async function boot() {
@@ -111,22 +132,25 @@ function readStoredSession() {
 
 async function loadData({ silent = false } = {}) {
     try {
-        const [exercises, plan, workouts] = await Promise.all([
+        const [exercises, plan, workouts, standards] = await Promise.all([
             exercisesService.load(),
             planService.load(),
-            workoutService.load()
+            workoutService.load(),
+            strengthService.load().catch(() => null)
         ]);
 
         app.exercises = exercises;
         app.plan = plan;
         app.workouts = workouts;
+        app.standards = standards;
+        app.profile = profileService.load();
         app.draftExercises = JSON.parse(JSON.stringify(exercises));
         app.draft = planService.clonePlan(plan);
         app.planUI.containerId = plan.containers[0]?.id || null;
         app.planUI.selectedSplitId = null;
         app.loadError = null;
         app.isReady = true;
-        render();
+        fullRender();
         if (app.session) promptResume();
         else promptPendingSave();
         return true;
@@ -134,7 +158,7 @@ async function loadData({ silent = false } = {}) {
         if (!silent) notify(error.message, { type: 'danger', duration: 6000 });
         app.isReady = true;
         app.loadError = error.message;
-        render();
+        fullRender();
         return false;
     }
 }
@@ -147,7 +171,16 @@ async function reloadData() {
     if (ok) notify('Dane wczytane.', { type: 'success' });
 }
 
-function render() {
+function fullRender() {
+    app.persistentRoute = null;
+    paint({ rebuild: true });
+}
+
+function repaint() {
+    paint({ rebuild: false });
+}
+
+function paint({ rebuild }) {
     const { route, param } = parseRoute();
     const showNav = route !== 'workout';
 
@@ -170,15 +203,55 @@ function render() {
         return;
     }
 
-    if (route === 'history' && param) app.historyUI.exerciseId = param;
-    if (route === 'exercises' && param) app.exercisesUI.exerciseId = param;
+    if (route === 'history') {
+        app.historyUI.exerciseId = param || null;
+        if (param) app.historyUI.cameFrom = app.historyUI.tab === 'exercises' ? 'exercises' : 'history';
+    }
+    if (route === 'exercises') app.exercisesUI.exerciseId = param || null;
 
     const view = views[route] || views.plan;
-    root.innerHTML = view.render();
+    const canPatch = !rebuild && app.persistentRoute === route && typeof view.patch === 'function' && root.innerHTML;
+
+    if (canPatch) {
+        view.patch(root);
+        return;
+    }
+
+    const restoreField = app.lastFocusedField;
+    root.innerHTML = renderActiveSessionBar(route) + view.render();
+    app.persistentRoute = route;
+    restoreFieldFocus(restoreField);
 
     if (!boundRoutes.has(route)) {
         view.bind(root);
         boundRoutes.add(route);
+    }
+}
+
+function renderActiveSessionBar(route) {
+    if (route === 'workout' || !app.session) return '';
+
+    const done = workoutService.summary(app.session);
+    return `
+        <button type="button" class="resume-bar" data-resume-session>
+            ${renderMaterialIcon('play_circle')}
+            <span class="resume-bar__text">
+                <span class="resume-bar__title">Wróć do treningu</span>
+                <span class="resume-bar__meta">${escapeMeta(app.session.splitName)} · ${done.done + done.skipped}/${done.total} ćwiczeń</span>
+            </span>
+            ${renderMaterialIcon('chevron_right', 'resume-bar__chevron')}
+        </button>
+    `;
+}
+
+function restoreFieldFocus(field) {
+    if (!field) return;
+    const input = root.querySelector(`[data-field="${field}"]`);
+    if (!input) return;
+    input.focus();
+    if (typeof input.setSelectionRange === 'function' && typeof input.value === 'string' && input.value) {
+        const end = input.value.length;
+        input.setSelectionRange(end, end);
     }
 }
 
@@ -252,6 +325,12 @@ async function startWorkout(containerId, splitId) {
     go('#/workout');
 }
 
+function exitWorkout() {
+    if (!app.session) return;
+    workoutService.saveOnDevice(app.session);
+    go('#/plan');
+}
+
 function promptResume() {
     dialogService.confirm(
         `Masz niedokończony trening: ${app.session.splitName} (${app.session.containerName}). Wrócić do niego?`,
@@ -263,15 +342,14 @@ function promptResume() {
         }
         app.session = null;
         workoutService.clearFromDevice();
-        render();
+        fullRender();
     });
 }
 
 function advanceAfterExercise() {
     const moved = workoutService.step(app.session, 1);
     if (moved) {
-        notify('Ćwiczenie gotowe.', { type: 'success' });
-        render();
+        fullRender();
         return;
     }
     finishWorkout();
@@ -313,14 +391,14 @@ function finishWorkout() {
 
 async function pushSummary(session) {
     app.summarySave = { state: 'saving' };
-    render();
+    fullRender();
 
     try {
         await workoutService.save(session);
         app.summarySave = { state: 'saved' };
         app.workouts = [...app.workouts.filter(item => item.id !== session.id), session];
         storageService.clear(STORAGE_KEYS.PENDING_SAVE);
-        render();
+        fullRender();
     } catch (error) {
         app.summarySave = {
             state: 'error',
@@ -329,7 +407,7 @@ async function pushSummary(session) {
             actionLabel: 'Ponów'
         };
         storageService.write(STORAGE_KEYS.PENDING_SAVE, session);
-        render();
+        fullRender();
     }
 }
 
@@ -362,7 +440,7 @@ function promptPendingSave() {
 
 async function savePlan() {
     app.planSave = { state: 'saving' };
-    render();
+    fullRender();
 
     try {
         await planService.save(app.draft);
@@ -377,12 +455,12 @@ async function savePlan() {
             actionLabel: 'Ponów'
         };
     }
-    render();
+    fullRender();
 }
 
 async function saveExercises() {
     app.exercisesSave = { state: 'saving' };
-    render();
+    fullRender();
 
     try {
         await exercisesService.save(app.draftExercises);
@@ -397,7 +475,7 @@ async function saveExercises() {
             actionLabel: 'Ponów'
         };
     }
-    render();
+    fullRender();
 }
 
 function discardPlanDraft() {
@@ -406,25 +484,25 @@ function discardPlanDraft() {
     app.planUI.containerId = app.plan.containers[0]?.id || null;
     app.planSave = { state: 'idle' };
     notify('Zmiany planu cofnięte.', { type: 'info' });
-    render();
+    fullRender();
 }
 
 function discardExercisesDraft() {
     app.draftExercises = JSON.parse(JSON.stringify(app.exercises));
     app.exercisesSave = { state: 'idle' };
     notify('Zmiany katalogu cofnięte.', { type: 'info' });
-    render();
+    fullRender();
 }
 
 function clearSession() {
     app.session = null;
     workoutService.clearFromDevice();
-    render();
+    fullRender();
 }
 
 function go(hash) {
     if (window.location.hash !== hash) window.location.hash = hash;
-    render();
+    fullRender();
 }
 
 function parseRoute() {
